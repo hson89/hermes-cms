@@ -1,50 +1,55 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: 1.0.0 -> 1.1.0
+- Added sections: VI. Strict Domain-Driven Design (DDD), VII. Microservices Architecture
+- Removed sections: N/A
+- Templates requiring updates: ✅ None
+- Follow-up TODOs: None
+-->
+# Multi-tenant Headless CMS Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Multi-tenancy by Default
+Every feature, data model, and API endpoint MUST be designed with multi-tenancy in mind from day one. Data must be physically isolated at the schema level within PostgreSQL. No cross-tenant data bleed is acceptable.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. AI as a First-Class Citizen
+The conversational AI agent is not an add-on; it is the primary interface for content schema design and initial content drafting. All underlying APIs and data structures must support rapid, context-aware AI interactions.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. API-First Content Delivery
+The CMS is strictly headless. Content delivery MUST be exposed via robust, read-only JSON APIs. No assumptions should be made about the consuming front-end application.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Test-First (NON-NEGOTIABLE)
+Test-Driven Development (TDD) is mandatory. Tests must be written before implementation, focusing heavily on tenant isolation, AI orchestration, and API response performance.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Developer Experience (DX) for Tenants
+The platform must provide a frictionless experience for developers building on top of it. This includes managed front-end starter templates, comprehensive documentation, and predictable API structures.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. Strict Domain-Driven Design (DDD)
+The codebase MUST adhere strictly to Domain-Driven Design principles. Business logic must be encapsulated within distinct Bounded Contexts, utilizing clear Aggregates, Entities, and Value Objects. Domain events MUST be used for cross-aggregate communication to decouple domain logic.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### VII. Microservices Architecture
+The system MUST be designed as a set of independent, loosely coupled microservices. Each microservice MUST own its own data (database per service pattern) and correspond to a specific Bounded Context defined by DDD. Inter-service communication MUST rely on asynchronous event-driven mechanisms or well-defined, versioned REST/gRPC APIs, strictly avoiding synchronous coupling where possible.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Multi-tenancy Architecture
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+All database queries MUST explicitly include the tenant context (e.g., via schema routing in Prisma).
+Authentication mechanisms must issue tenant-scoped tokens. Cross-tenant access is strictly prohibited at the database level. Each microservice must independently enforce multi-tenancy rules.
+
+## AI Integration
+
+The AI agent will communicate with external LLMs (e.g., OpenAI). All interactions must be logged in `AIAgentSession` for context continuity.
+The AI is restricted to modifying content and schemas within the active tenant's context only.
+
+## Development Workflow
+
+All new features must begin with a formal specification (`spec.md`) and implementation plan (`plan.md`) under `specs/`.
+Pull requests must pass all unit and integration tests, specifically those validating tenant isolation. The plan MUST detail the Bounded Context and Microservice boundaries impacted by the feature.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This Constitution supersedes all other practices. Any architectural deviation, especially regarding multi-tenancy, the AI copilot workflow, DDD boundaries, or microservices isolation, requires a formal amendment to this document and approval.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+All PRs/reviews must verify compliance with the physical isolation requirement and strict DDD boundary enforcement. Complexity must be justified in the feature's `plan.md`.
+
+**Version**: 1.1.0 | **Ratified**: 2026-05-09 | **Last Amended**: 2026-05-09
