@@ -12,7 +12,6 @@ T003 - Initialize FastAPI Microservice project
 
 from __future__ import annotations
 
-import os
 from contextlib import asynccontextmanager
 from uuid import UUID
 
@@ -22,10 +21,11 @@ from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, field_validator
 
 from src.application.ai_service import AIService
+from src.infrastructure.config import settings
 
 # ── Security ──────────────────────────────────────────────────────────────────
 
-INTERNAL_SECRET = os.environ.get("INTERNAL_SERVICE_SECRET", "")
+INTERNAL_SECRET = settings.INTERNAL_SERVICE_SECRET
 _api_key_header = APIKeyHeader(name="X-Internal-Secret", auto_error=False)
 
 
@@ -66,7 +66,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(","),
+    allow_origins=settings.CORS_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

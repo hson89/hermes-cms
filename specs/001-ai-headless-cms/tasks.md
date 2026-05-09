@@ -45,12 +45,12 @@ description: "Task list template for feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Setup PostgreSQL database schema and migrations for Payload CMS
-- [ ] T008 Setup separate database for AI Microservice
-- [ ] T009 Implement multi-tenancy using @payloadcms/plugin-multi-tenant in apps/cms/src/payload.config.ts
-- [ ] T010 [P] Configure message broker (Kafka or RabbitMQ) connection in both CMS and AI service
-- [ ] T011 [P] Setup base Payload Auth collections (Users & APIKeys) in apps/cms/src/collections/Users/ and apps/cms/src/collections/APIKeys/
-- [ ] T012 [P] Setup base Tenant collection in apps/cms/src/collections/Tenants/
+- [x] T007 Setup PostgreSQL database schema and migrations for Payload CMS
+- [x] T008 Setup separate database for AI Microservice
+- [x] T009 Implement multi-tenancy using @payloadcms/plugin-multi-tenant in apps/cms/src/payload.config.ts
+- [x] T010 [P] Configure message broker (Kafka or RabbitMQ) connection in both CMS and AI service
+- [x] T011 [P] Setup base Payload Auth collections (Users & APIKeys) in apps/cms/src/collections/Users/ and apps/cms/src/collections/APIKeys/
+- [x] T012 [P] Setup base Tenant collection in apps/cms/src/collections/Tenants/
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -66,15 +66,15 @@ description: "Task list template for feature implementation"
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T013 [P] [US1] Integration test for AI content creation flow in apps/ai-agent-service/tests/integration/test_ai_creation.py
+- [x] T013 [P] [US1] Integration test for AI content creation flow in apps/ai-agent-service/tests/integration/test_ai_creation.py
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Create AIAgentSession model in apps/ai-agent-service/src/domain/ai_agent_session/models.py
-- [ ] T015 [P] [US1] Implement Payload ContentType dynamic schema logic in apps/cms/src/collections/ContentTypes/index.ts
-- [ ] T016 [US1] Implement AI Agent service with LangChain 1.2+ for schema/content generation in apps/ai-agent-service/src/application/ai_service.py
-- [ ] T017 [US1] Implement POST /api/ai/generate-schema custom endpoint in apps/cms/src/collections/ContentTypes/endpoints.ts
-- [ ] T018 [US1] Integrate CMS endpoint with AI Microservice via message broker or REST
+- [x] T014 [P] [US1] Create AIAgentSession model in apps/ai-agent-service/src/domain/ai_agent_session/models.py
+- [x] T015 [P] [US1] Implement Payload ContentType dynamic schema logic in apps/cms/src/collections/ContentTypes/index.ts
+- [x] T016 [US1] Implement AI Agent service with LangChain 1.2+ for schema/content generation in apps/ai-agent-service/src/application/ai_service.py
+- [x] T017 [US1] Implement POST /api/ai/generate-schema custom endpoint in apps/cms/src/collections/ContentTypes/endpoints.ts
+- [x] T018 [US1] Integrate CMS endpoint with AI Microservice via message broker or REST
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 

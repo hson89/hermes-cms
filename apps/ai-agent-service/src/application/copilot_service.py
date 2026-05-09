@@ -8,13 +8,13 @@ T023 - Implement AI service logic for localized section editing
 
 from __future__ import annotations
 
-import os
 from uuid import UUID
 
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.application.ai_service import AIService
+from src.infrastructure.config import settings
 
 _COPILOT_SYSTEM_PROMPT = """\
 You are a professional writing assistant embedded in a content management system.
@@ -33,7 +33,6 @@ class CopilotService:
     """
 
     def __init__(self, ai_service: AIService | None = None) -> None:
-        self._model_id = os.environ.get("LANGCHAIN_MODEL", "gpt-4o-mini")
         self.__llm = None  # lazy
         self._ai_service = ai_service
 
@@ -41,7 +40,15 @@ class CopilotService:
     def _llm(self):
         """Return (or create) the LangChain chat model instance."""
         if self.__llm is None:
-            self.__llm = init_chat_model(self._model_id)
+            kwargs = {}
+            if settings.LANGCHAIN_ENDPOINT_URL:
+                kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
+
+            self.__llm = init_chat_model(
+                model=settings.LANGCHAIN_MODEL,
+                model_provider=settings.LANGCHAIN_MODEL_PROVIDER,
+                **kwargs,
+            )
         return self.__llm
 
     async def edit_section(

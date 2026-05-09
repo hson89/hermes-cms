@@ -11,13 +11,13 @@ T016 - Implement AI Agent service with LangChain 1.2+ for schema/content generat
 from __future__ import annotations
 
 import json
-import os
 from uuid import UUID
 
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.domain.ai_agent_session.models import AIAgentSession, SessionStatus
+from src.infrastructure.config import settings
 
 # In-memory session store (replaced by a proper repository in Phase 2 / DB task)
 _sessions: dict[str, AIAgentSession] = {}
@@ -60,16 +60,23 @@ class AIService:
     """
 
     def __init__(self) -> None:
-        # Store model ID; the actual LLM client is lazy-initialised on first use
-        # so that tests can mock this class without needing real API credentials.
-        self._model_id = os.environ.get("LANGCHAIN_MODEL", "gpt-4o-mini")
+        # Client is lazy-initialised on first use so that tests can mock
+        # this class without needing real API credentials.
         self.__llm = None  # lazy
 
     @property
     def _llm(self):
         """Return (or create) the LangChain chat model instance."""
         if self.__llm is None:
-            self.__llm = init_chat_model(self._model_id)
+            kwargs = {}
+            if settings.LANGCHAIN_ENDPOINT_URL:
+                kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
+
+            self.__llm = init_chat_model(
+                model=settings.LANGCHAIN_MODEL,
+                model_provider=settings.LANGCHAIN_MODEL_PROVIDER,
+                **kwargs,
+            )
         return self.__llm
 
     # ── Schema Generation ──────────────────────────────────────────────────
