@@ -5,6 +5,14 @@
 **Status**: Draft  
 **Input**: User description: "I want to build multi-tenant headless Content Management System. The core differentiator is a conversational AI Agent that acts as a primary content creator, allowing users to generate complex content through natural language before refining it in a traditional editor. The system provides managed front-end starter templates for rapid deployment while preserving API-first content delivery."
 
+## Clarifications
+
+### Session 2026-05-09
+- Q: How should the AI Agent interaction flow work with the traditional editor? → A: Side-by-side Copilot
+- Q: How should the Managed Front-end Starter Deployment be handled? → A: Self-Hosted Infrastructure
+- Q: What should be the primary underlying storage format for the rich-text content? → A: Block-based JSON with AGUI
+- Q: What level of data isolation is required for multi-tenancy? → A: Physical Isolation (Separate DB/Schema)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - AI-Powered Content Creation (Priority: P1)
@@ -22,32 +30,33 @@ Users converse with an AI Agent through natural language to describe and generat
 
 ---
 
-### User Story 2 - Content Refinement via Traditional Editor (Priority: P1)
+### User Story 2 - Content Refinement via Traditional Editor with AI Copilot (Priority: P1)
 
-After AI generation, users can open the drafted content in a traditional rich-text/block editor to make manual adjustments, corrections, and formatting changes.
+After AI generation, users can open the drafted content in a traditional rich-text/block editor to make manual adjustments, while the AI Agent remains available as a side-by-side copilot for continuous back-and-forth updates.
 
-**Why this priority**: AI generation isn't always perfect; users must have the ability to manually refine content before publishing.
+**Why this priority**: AI generation isn't always perfect; users must have the ability to manually refine content and request localized AI updates before publishing.
 
-**Independent Test**: Can be fully tested by opening an existing piece of content in the editor, making edits, and saving the changes successfully.
+**Independent Test**: Can be fully tested by opening an existing piece of content in the editor, making manual edits, and asking the copilot to adjust a specific section successfully.
 
 **Acceptance Scenarios**:
 
-1. **Given** a piece of AI-generated content, **When** the user opens it in the traditional editor, **Then** all fields and text are fully editable.
-2. **Given** unsaved edits in the traditional editor, **When** the user clicks "Save", **Then** the content is persisted without losing the manual refinements.
+1. **Given** a piece of AI-generated content, **When** the user opens it in the traditional editor, **Then** all fields and text are fully editable manually.
+2. **Given** the editor is open, **When** the user asks the side-by-side AI copilot to "make the second paragraph more formal", **Then** the AI updates that specific section in the editor without losing other manual refinements.
+3. **Given** unsaved edits in the traditional editor, **When** the user clicks "Save", **Then** the content is persisted.
 
 ---
 
-### User Story 3 - Managed Front-end Starter Deployment (Priority: P2)
+### User Story 3 - Self-Hosted Front-end Starter Deployment (Priority: P2)
 
-Users can select from a gallery of managed front-end starter templates (e.g., Next.js, Astro) and deploy them with pre-configured API connections to their tenant's content.
+Users can select from a gallery of managed front-end starter templates (e.g., Next.js, Astro) and deploy them directly onto the CMS's own infrastructure, automatically pre-configured with API connections to their tenant's content.
 
 **Why this priority**: Lowers the barrier to entry and time-to-value for new tenants, but is secondary to the core content creation flow.
 
-**Independent Test**: Can be fully tested by selecting a template and verifying the deployed site successfully fetches content from the tenant's API.
+**Independent Test**: Can be fully tested by selecting a template and verifying the deployed site successfully serves content from the CMS's internal hosting infrastructure.
 
 **Acceptance Scenarios**:
 
-1. **Given** a provisioned tenant, **When** the user selects a "Blog Starter" template, **Then** the system provides deployment instructions or an automated deployment pipeline linked to their API keys.
+1. **Given** a provisioned tenant, **When** the user selects a "Blog Starter" template, **Then** the system automatically provisions hosting resources internally, deploys the template, and provides a live URL.
 
 ---
 
@@ -61,25 +70,25 @@ Developers can query the CMS via robust APIs to retrieve structured content for 
 
 **Acceptance Scenarios**:
 
-1. **Given** published content items, **When** an authenticated API request is made, **Then** the content is returned in a structured, consistent JSON format.
+1. **Given** published content items, **When** an authenticated API request is made, **Then** the content is returned in a structured, consistent JSON format natively supporting Block-based JSON structures.
 
 ---
 
 ### Edge Cases
 
 - What happens when the AI agent misunderstands a complex schema request?
-- How does the system handle concurrent edits if a user is refining content in the editor while simultaneously asking the AI to update it?
-- What happens when API rate limits are exceeded by a deployed starter template?
+- How does the system resolve conflicts if the user makes a manual edit in the exact same paragraph the AI copilot is currently rewriting?
+- What happens to the self-hosted starter templates during high traffic spikes? Do they auto-scale?
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST support multi-tenancy to securely isolate data, users, and schemas between different organizations.
+- **FR-001**: System MUST support multi-tenancy with physical isolation (separate database or schema per tenant) to securely isolate data, users, and schemas between different organizations.
 - **FR-002**: System MUST provide a conversational AI interface capable of parsing natural language to generate content schemas and draft content items.
-- **FR-003**: System MUST provide a traditional GUI editor supporting rich text and structured fields for manual content refinement.
+- **FR-003**: System MUST provide a traditional GUI editor supporting Block-based JSON (with AGUI capabilities) for rich text and structured fields, seamlessly integrated with the AI copilot.
 - **FR-004**: System MUST expose read-only Content Delivery APIs for retrieving published content.
-- **FR-005**: System MUST provide a mechanism to provision and configure managed front-end starter templates linked to a tenant's API.
+- **FR-005**: System MUST provision and manage internal hosting infrastructure for deploying front-end starter templates natively.
 - **FR-006**: System MUST support content state management (e.g., Draft, Published).
 - **FR-007**: System MUST provide API key management for authenticating delivery API requests.
 
@@ -91,6 +100,7 @@ Developers can query the CMS via robust APIs to retrieve structured content for 
 - **ContentItem**: A specific piece of content adhering to a ContentType.
 - **AIAgentSession**: A record of the conversational context and actions performed between a User and the AI Agent.
 - **APIKey**: A credential used to authenticate requests to the Content Delivery API.
+- **HostedSite**: Represents a front-end starter template deployed on the CMS's internal infrastructure.
 
 ## Success Criteria *(mandatory)*
 
@@ -98,12 +108,11 @@ Developers can query the CMS via robust APIs to retrieve structured content for 
 
 - **SC-001**: Users can generate a complete piece of structured content through the AI agent interface in under 3 minutes.
 - **SC-002**: API content delivery endpoints must maintain a 95th percentile response time of under 200ms.
-- **SC-003**: A new tenant can sign up, generate content, and deploy a starter template in less than 15 minutes.
+- **SC-003**: A new tenant can sign up, generate content, and natively deploy a starter template in less than 15 minutes.
 - **SC-004**: The AI Agent correctly maps natural language requests to structured content schemas in 85% of interactions without requiring manual correction.
 
 ## Assumptions
 
 - We assume users have basic familiarity with the concepts of headless CMS architecture.
 - We assume that a third-party LLM provider (e.g., OpenAI, Anthropic, Gemini) will be used to power the conversational AI Agent capabilities.
-- Starter template deployment may rely on external PaaS providers (e.g., Vercel, Netlify) via automated integration.
-- Traditional editor components will leverage established open-source rich text libraries rather than being built entirely from scratch.
+- Traditional editor components will leverage established open-source rich text libraries (adapted for AGUI Block-based JSON) rather than being built entirely from scratch.
