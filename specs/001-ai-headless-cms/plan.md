@@ -1,32 +1,35 @@
 # Implementation Plan: Multi-tenant Headless CMS
 
-**Branch**: `001-ai-headless-cms` | **Date**: 2026-05-09 | **Spec**: [/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/spec.md]
+**Branch**: `001-ai-headless-cms` | **Date**: 2026-05-09 | **Spec**: [specs/001-ai-headless-cms/spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-ai-headless-cms/spec.md`
 
 ## Summary
 
-Build a multi-tenant headless Content Management System where the core differentiator is a conversational AI Agent for content creation. It features a traditional editor for manual refinement (block-based JSON with AGUI), self-hosted managed front-end starter deployment, and API-first content delivery.
+Build a multi-tenant headless CMS using a hybrid architecture. Payload CMS will serve as the core content management modular monolith (using logical multi-tenancy). The conversational AI agent and other heavy backend processing will be implemented as separate DDD-based microservices.
 
 ## Technical Context
 
-**Language/Version**: TypeScript / Node.js 22.x
-**Primary Dependencies**: NestJS (Backend), React / Next.js (Admin UI & Starters), Prisma ORM
-**Storage**: PostgreSQL (with schema-based multi-tenancy)
-**Testing**: Jest, Supertest
-**Target Platform**: Cloud/Self-Hosted Infrastructure (Docker/K8s ready)
-**Project Type**: web-service + frontend
-**Performance Goals**: API response <200ms p95
-**Constraints**: Physical Isolation (Separate Schema per Tenant)
-**Scale/Scope**: Enterprise-ready multi-tenancy, highly concurrent AI agent interactions
+**Language/Version**: TypeScript (Node.js 26+) for CMS, Python (3.14+) for AI Microservices
+**Primary Dependencies**: Payload CMS 3.84+, Next.js 16+, Postgres 18+ (CMS DB), FastAPI 0.136+ (AI Microservice), LangChain 1.2+ (Python), Agnostic LLMs (OpenAI, Anthropic, Google), Kafka/RabbitMQ
+**Storage**: PostgreSQL (Logical Isolation via `@payloadcms/plugin-multi-tenant` for CMS, separate DB for AI Microservice)
+**Testing**: Jest, Playwright
+**Target Platform**: Docker/Kubernetes (Linux)
+**Project Type**: Hybrid (Modular Monolith CMS + Microservices)
+**Performance Goals**: <200ms p95 API response, AI content < 3 mins
+**Constraints**: Payload CMS Access Control for multi-tenancy, Strict DDD for Microservices
+**Scale/Scope**: Multi-tenant, Enterprise-grade
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-No explicit constitution rules were violated.
-- **Library-First**: Core CMS engine to be built as modular packages where possible.
-- **Test-First (NON-NEGOTIABLE)**: TDD will be strictly enforced for APIs and AI orchestration.
-- **Integration Testing**: Multi-tenancy and AI Copilot will require heavy integration testing.
+- **Multi-tenancy by Default**: PASSED. Logical isolation enforced by Payload CMS ACLs. AI microservices handle tenant IDs contextually.
+- **AI as a First-Class Citizen**: PASSED. AI logic is decoupled into a dedicated DDD microservice for scalability.
+- **API-First Content Delivery**: PASSED. Payload CMS natively exposes REST/GraphQL APIs.
+- **Test-First**: PASSED. Testing strategy defined.
+- **Developer Experience (DX)**: PASSED. Payload admin UI + clear API contracts.
+- **Strict Domain-Driven Design (DDD)**: PASSED. Enforced heavily in the AI Microservice.
+- **Hybrid Architecture**: PASSED. Separation of concerns between Content (Payload) and AI processing (FastAPI/Python).
 
 ## Project Structure
 
@@ -34,42 +37,41 @@ No explicit constitution rules were violated.
 
 ```text
 specs/001-ai-headless-cms/
-├── plan.md              # This file (/speckit-plan command output)
-├── research.md          # Phase 0 output (/speckit-plan command)
-├── data-model.md        # Phase 1 output (/speckit-plan command)
-├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
-└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
+├── plan.md              # This file
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
+└── tasks.md             # Phase 2 output
 ```
 
 ### Source Code (repository root)
 
 ```text
-backend/
-├── src/
-│   ├── ai/
-│   ├── content/
-│   ├── tenant/
-│   └── main.ts
-└── tests/
-
-frontend-admin/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-starters/
-├── nextjs-blog/
-└── astro-portfolio/
+apps/
+├── cms/ (Payload CMS Monolith)
+│   ├── src/
+│   │   ├── collections/
+│   │   │   ├── Tenants/
+│   │   │   ├── Users/
+│   │   │   ├── ContentTypes/
+│   │   │   └── ContentItems/
+│   │   ├── payload.config.ts
+│   │   └── ...
+├── ai-agent-service/ (Python/FastAPI Microservice)
+│   ├── src/
+│   │   ├── domain/
+│   │   │   └── ai_agent_session/
+│   │   ├── application/
+│   │   ├── infrastructure/
+│   │   └── main.py
+│   └── tests/
+├── frontend-starters/
+│   └── ...
 ```
-
-**Structure Decision**: Selected Web application option to separate the backend CMS engine from the admin dashboard and starter templates.
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
+| Hybrid Architecture | Required to leverage Payload CMS while adhering to DDD/Microservices for complex logic. | A pure monolith would violate the DDD/Microservice rules for complex backend tasks like the AI Agent, which needs independent scaling and strict domain logic. |

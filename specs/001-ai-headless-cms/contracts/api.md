@@ -1,40 +1,53 @@
-# Content Delivery API Contract
+# API Contracts
 
-## Base URL
-`GET /api/v1/delivery/`
+## Content Delivery API (Read-only)
 
-## Authentication
-Requires `Authorization: Bearer <APIKey>` header.
+Provided natively by Payload CMS via REST and GraphQL.
 
-## Endpoints
-
-### Get Content Items by Type
-`GET /content/{content_type_name}`
-
-**Query Parameters**:
-- `limit`: Integer (default: 10)
-- `offset`: Integer (default: 0)
-- `status`: String (default: "Published")
-
+### `GET /api/content-items?where[tenant][equals]=<TenantId>&where[contentType][equals]=<TypeId>`
+Retrieves published content items of a specific type.
+**Headers**: 
+- `Authorization: <APIKey or JWT>`
 **Response**:
 ```json
 {
-  "data": [
+  "docs": [
     {
       "id": "uuid",
-      "data": {
-        "title": "Example Post",
-        "body": {
-          "blocks": [
-            { "type": "paragraph", "data": { "text": "Hello world" } }
-          ]
-        }
-      },
-      "published_at": "2026-05-09T00:00:00Z"
+      "title": "Example Title",
+      "content": [ { "blockType": "text", "text": "..." } ],
+      "updatedAt": "2026-05-09T00:00:00Z"
     }
   ],
-  "meta": {
-    "total": 1
-  }
+  "totalDocs": 1,
+  "limit": 10,
+  "totalPages": 1,
+  "page": 1
+}
+```
+
+## Management API (Internal/Editor Custom Endpoints)
+
+Payload CMS allows defining custom endpoints.
+
+### `POST /api/ai/generate-schema`
+Generates a ContentType schema from natural language.
+**Headers**:
+- `Authorization: JWT <UserToken>`
+**Payload**:
+```json
+{
+  "prompt": "Create a blog post schema about technology"
+}
+```
+
+### `POST /api/ai/copilot/edit`
+Applies an AI edit to a specific section of content.
+**Payload**:
+```json
+{
+  "contentItemId": "uuid",
+  "sectionId": "block-id",
+  "prompt": "make the second paragraph more formal"
 }
 ```

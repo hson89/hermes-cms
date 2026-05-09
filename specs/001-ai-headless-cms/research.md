@@ -1,25 +1,22 @@
-# Research: Multi-tenant Headless CMS
+# Research & Decisions
 
-## Language / Version
-- **Decision**: TypeScript with Node.js 22.x
-- **Rationale**: Strong ecosystem for both backend and frontend. Great support for AI SDKs (OpenAI/Anthropic) and unified types across the stack.
-- **Alternatives considered**: Python, Go. Rejected due to the desire for a unified JavaScript ecosystem across backend, admin frontend, and starter templates.
+## Language/Version
+**Decision**: TypeScript (Node.js 24+) for CMS, Python (3.12+) for AI Microservices.
+**Rationale**: Python is the industry standard for AI, ML, and data engineering. It offers the most robust ecosystem for LLM orchestration (LangChain, LangGraph) and broad, agnostic support for various LLM providers (OpenAI, Anthropic, Google). Node.js 24+ ensures the latest LTS support for the Next.js/Payload ecosystem.
+**Alternatives considered**: TypeScript for AI services (Rejected in favor of Python's superior AI ecosystem).
 
 ## Primary Dependencies
-- **Decision**: NestJS for Backend, React (Next.js) for Admin UI, Prisma ORM.
-- **Rationale**: NestJS provides a solid architecture for enterprise-grade applications. Prisma simplifies multi-tenant schema management.
-- **Alternatives considered**: Express, Fastify. Rejected as NestJS offers better structure for complex multi-tenant logic.
+**Decision**: 
+- CMS: Payload CMS 3.84+, Next.js 15+, `@payloadcms/plugin-multi-tenant`
+- AI Microservice: FastAPI 0.136+, SQLAlchemy 2.0+, LangChain 1.2+ (Python), Agnostic LLM Interfaces
+- Comms: Kafka or RabbitMQ, Internal REST APIs
+**Rationale**: Payload handles the generic content and admin UI perfectly. FastAPI provides high-performance, async-native Python microservices that fit well into DDD. LangChain in Python provides the best ecosystem for building multi-provider, agnostic AI agents with complex tool-use and memory. Specifying the latest major/minor stable versions ensures we take advantage of up-to-date performance and security improvements.
+**Alternatives considered**: Building the entire backend in a single language. NestJS for microservices.
 
-## Storage (Multi-tenancy approach)
-- **Decision**: PostgreSQL with Schema-based isolation.
-- **Rationale**: Fulfills the "Physical Isolation (Separate DB/Schema)" requirement efficiently without the overhead of spinning up completely separate database instances per tenant.
-- **Alternatives considered**: Row-level security (RLS), separate database instances. Schema-based offers the best balance of isolation and maintainability.
+## Multi-Tenancy Approach
+**Decision**: Logical Isolation via Payload CMS
+**Rationale**: Payload's official multi-tenant plugin handles the heavy lifting of user/tenant mapping and access control in the CMS. The AI Microservice will respect these tenant boundaries by associating all sessions and generated data with the incoming `tenantId`.
 
-## Testing
-- **Decision**: Jest for unit tests, Supertest for API integration tests.
-- **Rationale**: Industry standard for TypeScript projects.
-- **Alternatives considered**: Mocha, Vitest.
-
-## Scale / Scope
-- **Decision**: Designed for horizontal scaling using stateless backend nodes, Redis for AI session state, and scalable PostgreSQL.
-- **Rationale**: The AI agent sessions and front-end starter deployments require robust scaling infrastructure.
+## Inter-Service Communication
+**Decision**: Asynchronous events via Message Broker (e.g., Kafka) and Synchronous internal REST APIs.
+**Rationale**: When an AI generation request is made via the CMS, the CMS will fire an event to the AI microservice. The AI microservice will stream updates or call back via REST to the CMS to update content schemas and items.
