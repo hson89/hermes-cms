@@ -77,14 +77,14 @@ Developers can query the CMS via robust APIs to retrieve structured content for 
 ### Edge Cases
 
 - What happens when the AI agent misunderstands a complex schema request?
-- How does the system resolve conflicts if the user makes a manual edit in the exact same paragraph the AI copilot is currently rewriting?
-- What happens to the self-hosted starter templates during high traffic spikes? Do they auto-scale?
+- How does the system resolve conflicts if the user makes a manual edit in the exact same paragraph the AI copilot is currently rewriting? (Resolved via optimistic locking and concurrency control in the editor)
+- What happens to the self-hosted starter templates during high traffic spikes? The internal hosting infrastructure automatically scales horizontally (via HPA) based on CPU/Memory utilization to handle traffic spikes.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST support multi-tenancy with physical isolation (separate database or schema per tenant) to securely isolate data, users, and schemas between different organizations.
+- **FR-001**: System MUST support multi-tenancy with logical isolation (shared database, filtered by tenant ID) via Payload CMS access control rules to securely isolate data, users, and schemas between different organizations.
 - **FR-002**: System MUST provide a conversational AI interface capable of parsing natural language to generate content schemas and draft content items.
 - **FR-003**: System MUST provide a traditional GUI editor supporting Block-based JSON (with AGUI capabilities) for rich text and structured fields, seamlessly integrated with the AI copilot.
 - **FR-004**: System MUST expose read-only Content Delivery APIs for retrieving published content.

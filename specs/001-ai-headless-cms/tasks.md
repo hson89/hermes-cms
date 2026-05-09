@@ -35,7 +35,7 @@ description: "Task list template for feature implementation"
 - [ ] T004 [P] Setup Python virtual environment in apps/ai-agent-service/
 - [ ] T005 [P] Configure Jest and Playwright in apps/cms/ and pytest in apps/ai-agent-service/
 - [ ] T006 [P] Setup Docker/Kubernetes configurations in docker/ and k8s/
-- [ ] T007 [P] Configure linting and formatting tools
+- [ ] T006a [P] Configure linting and formatting tools
 
 ---
 
@@ -148,9 +148,9 @@ description: "Task list template for feature implementation"
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] T034 [P] Documentation updates in docs/ and README.md
-- [ ] T035 Code cleanup and refactoring
+- [ ] T035 Run automated linters (ESLint, Ruff) and ensure zero warnings before final review
 - [ ] T036 Performance optimization (ensure <200ms p95 API response)
-- [ ] T037 Security hardening and validation of access controls
+- [ ] T037 Write automated test asserting cross-tenant data requests fail with 403 Forbidden to validate access controls
 - [ ] T038 Run quickstart.md validation
 
 ---
@@ -211,3 +211,14 @@ Task: T015 Implement Payload ContentType dynamic schema logic
 3. Add User Story 2 → Test independently → Deploy/Demo
 4. Add User Story 4 → Test independently → Deploy/Demo
 5. Add User Story 3 → Test independently → Deploy/Demo
+y → Deploy/Demo
+dently → Deploy/Demo
+4. Add User Story 4 → Test independently → Deploy/Demo
+5. Add User Story 3 → Test independently → Deploy/Demo
+y → Deploy/Demo
+dently → Deploy/Demo
+mo
+dependently → Deploy/Demo
+5. Add User Story 3 → Test independently → Deploy/Demo
+y → Deploy/Demo
+dently → Deploy/Demo
