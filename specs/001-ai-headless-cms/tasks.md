@@ -86,17 +86,12 @@ description: "Task list template for feature implementation"
 
 **Independent Test**: Can be fully tested by opening an existing piece of content in the editor, making manual edits, and asking the copilot to adjust a specific section successfully.
 
-### Tests for User Story 2 ⚠️
-
-- [ ] T019 [P] [US2] Integration test for AI copilot edits in apps/cms/tests/integration/test_copilot_edits.ts
-
-### Implementation for User Story 2
-
-- [ ] T020 [P] [US2] Create ContentItem collection in apps/cms/src/collections/ContentItems/index.ts
-- [ ] T021 [US2] Implement Block-based JSON AGUI editor in Payload Admin UI in apps/cms/src/components/Editor/
-- [ ] T022 [US2] Implement POST /api/ai/copilot/edit endpoint in apps/cms/src/collections/ContentItems/endpoints.ts
-- [ ] T023 [US2] Implement AI service logic for localized section editing in apps/ai-agent-service/src/application/copilot_service.py
-- [ ] T024 [US2] Integrate side-by-side copilot UI with traditional editor in apps/cms/src/components/Editor/CopilotSidebar.tsx
+- [x] T019 [P] [US2] Integration test for AI copilot edits in apps/cms/tests/integration/test_copilot_edits.ts
+- [x] T020 [P] [US2] Create ContentItem collection in apps/cms/src/collections/ContentItems/index.ts
+- [x] T021 [US2] Implement Block-based JSON AGUI editor in Payload Admin UI in apps/cms/src/components/Editor/
+- [x] T022 [US2] Implement POST /api/ai/copilot/edit endpoint in apps/cms/src/collections/ContentItems/endpoints.ts
+- [x] T023 [US2] Implement AI service logic for localized section editing in apps/ai-agent-service/src/application/copilot_service.py
+- [x] T024 [US2] Integrate side-by-side copilot UI with traditional editor in apps/cms/src/components/Editor/CopilotSidebar.tsx
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -108,15 +103,10 @@ description: "Task list template for feature implementation"
 
 **Independent Test**: Can be fully tested by making HTTP requests to the content delivery API and validating the response schema and data.
 
-### Tests for User Story 4 ⚠️
-
-- [ ] T025 [P] [US4] Contract test for content delivery API in apps/cms/tests/contract/test_delivery_api.ts
-
-### Implementation for User Story 4
-
-- [ ] T026 [US4] Configure Payload CMS default REST and GraphQL endpoints for ContentItem
-- [ ] T027 [US4] Implement Tenant isolation checks on delivery endpoints in apps/cms/src/collections/ContentItems/access.ts
-- [ ] T028 [US4] Add APIKey authentication middleware for delivery endpoints
+- [x] T025 [P] [US4] Contract test for content delivery API in apps/cms/tests/contract/test_delivery_api.ts
+- [x] T026 [US4] Configure Payload CMS default REST and GraphQL endpoints for ContentItem
+- [x] T027 [US4] Implement Tenant isolation checks on delivery endpoints in apps/cms/src/collections/ContentItems/access.ts
+- [x] T028 [US4] Add APIKey authentication middleware for delivery endpoints
 
 **Checkpoint**: User stories 1, 2, and 4 should be functional.
 
@@ -130,14 +120,11 @@ description: "Task list template for feature implementation"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T029 [P] [US3] Integration test for template deployment in apps/cms/tests/integration/test_deployment.ts
-
-### Implementation for User Story 3
-
-- [ ] T030 [P] [US3] Create HostedSite collection in apps/cms/src/collections/HostedSites/index.ts
-- [ ] T031 [US3] Create Next.js and Astro starter templates in apps/frontend-starters/
-- [ ] T032 [US3] Implement internal deployment infrastructure orchestration service in apps/cms/src/services/deployment_service.ts
-- [ ] T033 [US3] Build deployment UI inside Payload Admin for tenant users
+- [x] T029 [P] [US3] Integration test for template deployment in apps/cms/tests/integration/test_deployment.ts
+- [x] T030 [P] [US3] Create HostedSite collection in apps/cms/src/collections/HostedSites/index.ts
+- [x] T031 [US3] Create Next.js and Astro starter templates in apps/frontend-starters/
+- [x] T032 [US3] Implement internal deployment infrastructure orchestration service in apps/cms/src/services/deployment_service.ts
+- [x] T033 [US3] Build deployment UI inside Payload Admin for tenant users
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -147,11 +134,11 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T034 [P] Documentation updates in docs/ and README.md
-- [ ] T035 Run automated linters (ESLint, Ruff) and ensure zero warnings before final review
-- [ ] T036 Performance optimization (ensure <200ms p95 API response)
-- [ ] T037 Write automated test asserting cross-tenant data requests fail with 403 Forbidden to validate access controls
-- [ ] T038 Run quickstart.md validation
+- [x] T034 [P] Documentation updates in docs/ and README.md
+- [x] T035 Run automated linters (ESLint, Ruff) and ensure zero warnings before final review
+- [x] T036 Performance optimization (ensure <200ms p95 API response)
+- [x] T037 Write automated test asserting cross-tenant data requests fail with 403 Forbidden to validate access controls
+- [x] T038 Run quickstart.md validation
 
 ---
 
