@@ -2,14 +2,14 @@
   "version": "0.8.8.dev0",
   "integration_state_schema": 1,
   "installed_integrations": [
-    "agy"
+    "gemini"
   ],
   "integration_settings": {
-    "agy": {
+    "gemini": {
       "script": "sh",
-      "invoke_separator": "-"
+      "invoke_separator": "."
     }
   },
-  "integration": "agy",
-  "default_integration": "agy"
+  "integration": "gemini",
+  "default_integration": "gemini"
 }
