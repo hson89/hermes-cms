@@ -17,6 +17,24 @@ cleanup() {
 
 trap cleanup INT TERM
 
+# Function to kill process on a port
+kill_port() {
+    local port=$1
+    local pids=$(lsof -ti :$port)
+    if [ -n "$pids" ]; then
+        echo "⚠️  Port $port is in use. Cleaning up (killing PIDs: $pids)..."
+        kill -9 $pids 2>/dev/null || true
+    fi
+}
+
+echo "🧹 Cleaning up existing processes..."
+# Kill by port
+kill_port 3000
+kill_port 8000
+# Kill by name just in case
+pkill -f "next dev" || true
+pkill -f "uvicorn" || true
+
 echo "🚀 Starting infrastructure (Postgres, Kafka)..."
 docker-compose up -d
 
