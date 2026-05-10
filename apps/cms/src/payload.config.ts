@@ -50,7 +50,7 @@ export default buildConfig({
       tenantsSlug: 'tenants',
       // Super-admins bypass tenant isolation
       userHasAccessToAllTenants: (user) =>
-        (user as { role?: string }).role === 'super-admin',
+        user && (user as { role?: string }).role === 'super-admin',
     }),
   ],
 

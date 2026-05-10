@@ -3,21 +3,27 @@
 import React from 'react'
 import { RootLayout } from '@payloadcms/next/layouts'
 import configPromise from '@/payload.config'
-import { importMap } from './admin/importMap'
+import { importMap as realImportMap } from './admin/importMap.js'
 import { handleServerFunctions } from './server-functions'
+
+export const metadata = {
+  title: 'Hermes CMS Admin',
+}
 
 type Args = {
   children: React.ReactNode
 }
 
-const Layout = ({ children }: Args) => (
-  <RootLayout 
-    config={configPromise} 
-    importMap={importMap} 
-    serverFunction={handleServerFunctions}
-  >
-    {children}
-  </RootLayout>
-)
+const Layout = ({ children }: Args) => {
+  return (
+    <RootLayout 
+      config={configPromise} 
+      importMap={realImportMap} 
+      serverFunction={handleServerFunctions}
+    >
+      {children}
+    </RootLayout>
+  )
+}
 
 export default Layout

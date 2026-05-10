@@ -1,4 +1,6 @@
 'use server'
 import { handleServerFunctions as hsf } from '@payloadcms/next/layouts'
 
-export const handleServerFunctions = hsf
+export async function handleServerFunctions(...args: any[]) {
+  return (hsf as any)(...args)
+}

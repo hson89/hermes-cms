@@ -80,15 +80,17 @@ export const ContentItems: CollectionConfig = {
           'Rich text / block-based content. Supports lexical editor blocks.',
       },
     },
+    /*
     {
       name: 'copilotUI',
       type: 'ui',
       admin: {
         components: {
-          Field: '@/components/Editor/index.js#CustomEditorWithCopilot',
+          Field: './src/components/Editor#CustomEditorWithCopilot',
         },
       },
     },
+    */
     {
       name: 'status',
       type: 'select',
