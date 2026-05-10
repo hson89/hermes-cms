@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
-import { copilotEditEndpoint } from './endpoints.js'
+import { copilotEditEndpoint } from './endpoints'
 
-import { tenantDeliveryAccess } from './access.js'
+import { tenantDeliveryAccess } from './access'
 
 /**
  * ContentItems collection.

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { CopilotSidebar } from './CopilotSidebar.js'
+import { CopilotSidebar } from './CopilotSidebar'
 import { FieldLabel } from '@payloadcms/ui'
 import { useField } from '@payloadcms/ui'
 

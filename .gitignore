@@ -24,3 +24,11 @@ secrets/
 kubeconfig*
 *.key
 *.crt
+
+# Next.js & Turbopack
+.next/
+.turbo/
+
+# Cache & Local DB
+*.sst
+*.log

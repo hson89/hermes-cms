@@ -47,7 +47,7 @@ if [ ! -d venv ]; then
     ./venv/bin/pip install -r requirements.txt
 fi
 # Export env vars from .env file for uvicorn
-export $(grep -v '^#' .env | xargs)
+set -a; [ -f .env ] && . .env; set +a
 ./venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload &
 AI_PID=$!
 cd ../..

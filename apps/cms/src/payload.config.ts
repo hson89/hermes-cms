@@ -2,13 +2,13 @@ import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
-import { Tenants } from './collections/Tenants/index.js'
-import { Users } from './collections/Users/index.js'
-import { APIKeys } from './collections/Users/APIKeys.js'
-import { ContentTypes } from './collections/ContentTypes/index.js'
-import { ContentItems } from './collections/ContentItems/index.js'
+import { Tenants } from './collections/Tenants'
+import { Users } from './collections/Users'
+import { APIKeys } from './collections/Users/APIKeys'
+import { ContentTypes } from './collections/ContentTypes'
+import { ContentItems } from './collections/ContentItems'
 
-import { HostedSites } from './collections/HostedSites/index.js'
+import { HostedSites } from './collections/HostedSites'
 
 /**
  * Payload CMS configuration for Hermes CMS.

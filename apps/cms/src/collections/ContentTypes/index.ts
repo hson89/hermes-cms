@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { generateSchemaEndpoint } from './endpoints.js'
+import { generateSchemaEndpoint } from './endpoints'
 
 /**
  * ContentTypes collection.

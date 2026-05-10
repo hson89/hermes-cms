@@ -37,7 +37,7 @@ export const HostedSites: CollectionConfig = {
       ({ doc, operation, req }) => {
         if (operation === 'create') {
           // Dynamically import to avoid circular dependencies if any
-          import('../../services/deployment_service.js').then(({ DeploymentService }) => {
+          import('../../services/deployment_service').then(({ DeploymentService }) => {
             const service = new DeploymentService(req.payload)
             // Trigger asynchronously
             service.triggerDeployment(doc.id).catch(console.error)
