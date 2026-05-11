@@ -14,7 +14,7 @@ type Args = {
 }
 
 export const metadata = {
-  title: 'Hermes CMS Admin',
+  title: 'Hermes AI Admin',
 }
 
 const Page = ({ params, searchParams }: Args) =>

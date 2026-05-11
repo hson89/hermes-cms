@@ -11,7 +11,7 @@ import { ContentItems } from './collections/ContentItems'
 import { HostedSites } from './collections/HostedSites'
 
 /**
- * Payload CMS configuration for Hermes CMS.
+ * Payload CMS configuration for Hermes AI.
  *
  * T007 - Setup PostgreSQL database schema and migrations for Payload CMS
  * T009 - Implement multi-tenancy using @payloadcms/plugin-multi-tenant
@@ -62,11 +62,20 @@ export default buildConfig({
   // Admin panel configuration
   admin: {
     meta: {
-      titleSuffix: '- Hermes CMS',
+      titleSuffix: '- Hermes AI',
       description: 'Multi-tenant headless CMS with AI-powered content creation.',
     },
     // The Users collection that logs into the admin panel
     user: 'users',
+    components: {
+      views: {
+        createFirstUser: {
+          Component: '/src/components/views/InitPage#default',
+          exact: true,
+          path: '/create-first-user',
+        },
+      },
+    },
   },
 
   // GraphQL endpoint (T027 - content delivery API)

@@ -1,7 +1,7 @@
-# Hermes CMS Architecture
+# Hermes AI Architecture
 
 ## Overview
-Hermes CMS uses a modular, hybrid architecture combining a Node.js/Next.js-based Payload CMS setup and a Python-based FastAPI AI Microservice.
+Hermes AI uses a modular, hybrid architecture combining a Node.js/Next.js-based Payload CMS setup and a Python-based FastAPI AI Microservice.
 
 ## Components
 

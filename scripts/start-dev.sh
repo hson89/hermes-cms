@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # start-dev.sh
-# Starts all services required for Hermes CMS local development and testing.
+# Starts all services required for Hermes AI local development and testing.
 
 set -e
 

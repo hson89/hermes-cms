@@ -168,6 +168,7 @@ export interface Tenant {
  */
 export interface User {
   id: number;
+  name: string;
   /**
    * The tenant this user belongs to. Empty for super-admins.
    */
@@ -450,6 +451,7 @@ export interface TenantsSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
   tenantId?: T;
   role?: T;
   tenants?:

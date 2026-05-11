@@ -1,12 +1,12 @@
 # Next.js Blog Starter
 
-This is a pre-configured Next.js template designed to connect seamlessly with the Hermes Headless CMS.
+This is a pre-configured Next.js template designed to connect seamlessly with the Hermes AI Headless CMS.
 
 ## Environment Variables
 
-When deployed via the Hermes CMS Deployment Service, the following environment variables will be injected automatically:
+When deployed via the Hermes AI Deployment Service, the following environment variables will be injected automatically:
 
-- `PAYLOAD_URL`: The URL of the Hermes CMS instance.
+- `PAYLOAD_URL`: The URL of the Hermes AI instance.
 - `PAYLOAD_API_KEY`: The API Key generated for the specific tenant.
 
 ## Fetching Content

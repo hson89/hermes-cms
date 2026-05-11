@@ -21,6 +21,12 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
+      name: 'name',
+      type: 'text',
+      required: true,
+      label: 'Full Name',
+    },
+    {
       name: 'tenantId',
       type: 'relationship',
       relationTo: 'tenants',

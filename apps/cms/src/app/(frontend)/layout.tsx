@@ -2,7 +2,7 @@ import React from 'react'
 import '../globals.css'
 
 export const metadata = {
-  title: 'Hermes CMS',
+  title: 'Hermes AI',
   description: 'Multi-tenant AI-powered Headless CMS',
 }
 

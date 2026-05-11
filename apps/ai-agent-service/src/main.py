@@ -58,7 +58,7 @@ app = FastAPI(
     title="Hermes AI Agent Service",
     description=(
         "Conversational AI microservice for schema generation and content copilot. "
-        "Part of the Hermes Multi-tenant Headless CMS."
+        "Part of the Hermes AI platform."
     ),
     version="0.1.0",
     lifespan=lifespan,
