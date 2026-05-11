@@ -67,8 +67,16 @@ export default buildConfig({
     },
     // The Users collection that logs into the admin panel
     user: 'users',
+    routes: {
+      login: '/login',
+    },
     components: {
       views: {
+        login: {
+          Component: '/src/components/views/LoginPage#default',
+          exact: true,
+          path: '/login',
+        },
         createFirstUser: {
           Component: '/src/components/views/InitPage#default',
           exact: true,
