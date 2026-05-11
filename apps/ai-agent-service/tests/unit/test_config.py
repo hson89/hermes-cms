@@ -24,7 +24,8 @@ def test_settings_load_from_env():
 def test_settings_default_values():
     """Verify default values when environment is empty."""
     with patch.dict(os.environ, {}, clear=True):
-        settings = Settings()
+        # Pass _env_file=None to skip loading from .env file
+        settings = Settings(_env_file=None)
         assert settings.LANGCHAIN_MODEL_PROVIDER == "openai"
         assert settings.LANGCHAIN_MODEL == "gpt-4o-mini"
         assert settings.INTERNAL_SERVICE_SECRET == ""

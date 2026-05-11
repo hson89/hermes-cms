@@ -22,6 +22,8 @@
         "name": "next"
       }
     ],
+    "rootDir": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": [
         "./src/*"
