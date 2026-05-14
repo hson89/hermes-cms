@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_cms_data:/var/lib/postgresql/data
+      - postgres_cms_data:/var/lib/postgresql
 
   # Separate AI Service Database (T008)
   postgres_ai:
@@ -22,7 +22,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_ai_data:/var/lib/postgresql/data
+      - postgres_ai_data:/var/lib/postgresql
 
   # Message Broker (T010)
   zookeeper:
