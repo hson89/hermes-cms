@@ -2,48 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { setupInitialAdmin } from '@/app/(payload)/admin/actions'
-import '@/app/globals.css'
+import { Icon } from '../ui/atoms/Icon'
 
 export const InitPage: React.FC = () => {
-  console.log('--- InitPage Rendering (New Design) ---')
   const [workspaceSlug, setWorkspaceSlug] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-
-  // Inject font and styles to ensure icons work regardless of global CSS loading state
-  useEffect(() => {
-    if (!document.getElementById('material-symbols-font')) {
-      const link = document.createElement('link')
-      link.id = 'material-symbols-font'
-      link.rel = 'stylesheet'
-      link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap'
-      document.head.appendChild(link)
-    }
-
-    const styleId = 'material-symbols-custom-style'
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style')
-      style.id = styleId
-      style.innerHTML = `
-        .material-symbols-outlined {
-          font-family: 'Material Symbols Outlined' !important;
-          font-weight: normal;
-          font-style: normal;
-          font-size: 24px;
-          line-height: 1;
-          letter-spacing: normal;
-          text-transform: none;
-          display: inline-block;
-          white-space: nowrap;
-          word-wrap: normal;
-          direction: ltr;
-          -webkit-font-feature-settings: 'liga';
-          font-feature-settings: 'liga';
-          -webkit-font-smoothing: antialiased;
-        }
-      `
-      document.head.appendChild(style)
-    }
-  }, [])
 
   return (
     <div className="flex h-screen w-full bg-background font-body text-on-surface antialiased overflow-hidden">
@@ -74,7 +37,7 @@ export const InitPage: React.FC = () => {
             onClick={() => window.history.back()}
             className="flex items-center gap-2 text-primary font-label font-semibold uppercase tracking-widest text-xs hover:opacity-70 transition-opacity"
           >
-            <span className="material-symbols-outlined">arrow_back</span>
+            <Icon name="arrow_back" size={20} />
             Back
           </button>
           <div className="flex items-center gap-2">
@@ -150,9 +113,7 @@ export const InitPage: React.FC = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {showPassword ? 'visibility_off' : 'visibility'}
-                      </span>
+                      <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={20} />
                     </button>
                   </div>
                 </div>
@@ -189,7 +150,7 @@ export const InitPage: React.FC = () => {
                     className="w-full flex items-center justify-center gap-3 text-white font-body font-bold py-5 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 group bg-gradient-to-br from-primary to-primary-container"
                   >
                     Initialize Workspace
-                    <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                    <Icon name="arrow_forward" className="transition-transform group-hover:translate-x-1" />
                   </button>
                 </div>
                 <p className="text-center font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 pt-4">
@@ -205,9 +166,9 @@ export const InitPage: React.FC = () => {
           <div className="flex items-center gap-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
             <span className="font-label text-[10px] font-bold uppercase tracking-widest">Trusted by</span>
             <div className="flex gap-4">
-              <span className="material-symbols-outlined">token</span>
-              <span className="material-symbols-outlined">shield</span>
-              <span className="material-symbols-outlined">cloud_done</span>
+              <Icon name="token" size={20} />
+              <Icon name="shield" size={20} />
+              <Icon name="cloud_done" size={20} />
             </div>
           </div>
         </footer>

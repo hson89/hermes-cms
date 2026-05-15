@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Gutter } from '@payloadcms/ui'
+import { Icon } from '../ui/atoms/Icon'
 export const Dashboard: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-background pb-12 overflow-x-hidden">
@@ -30,7 +31,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>corporate_fare</span>
+                  <Icon name="corporate_fare" filled size={28} />
                 </div>
                 <h3 className="font-headline text-xl font-bold text-on-surface m-0">Manage Tenants</h3>
               </div>
@@ -48,7 +49,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>account_tree</span>
+                  <Icon name="account_tree" filled size={28} />
                 </div>
                 <h3 className="font-headline text-xl font-bold text-on-surface m-0">Define Content Types</h3>
               </div>
@@ -66,7 +67,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>edit_square</span>
+                  <Icon name="edit_square" filled size={28} />
                 </div>
                 <h3 className="font-headline text-xl font-bold text-on-surface m-0">Curate Content</h3>
               </div>

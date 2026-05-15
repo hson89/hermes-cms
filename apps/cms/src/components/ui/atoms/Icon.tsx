@@ -17,10 +17,11 @@ export const Icon: React.FC<IconProps> = ({
 }) => {
   return (
     <span 
-      className={`material-symbols-outlined ${className}`} 
+      className={`material-symbols-outlined notranslate ${className}`} 
       style={{ 
         fontVariationSettings: `'FILL' ${filled ? 1 : 0}, 'wght' ${weight}, 'GRAD' 0, 'opsz' ${size}`,
         fontSize: `${size}px`,
+        fontFamily: "'Material Symbols Outlined'",
         lineHeight: 1
       }} 
       {...props}
