@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useActionState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { loginAction } from '@/app/(frontend)/login/actions'
 import { Heading } from '../ui/atoms/Heading'
@@ -80,9 +81,13 @@ export const LoginPage: React.FC = () => {
                 required
               />
               <div className="flex justify-end">
-                <a className="font-label text-xs text-primary hover:text-primary-container transition-colors font-medium" href="#">
+                <button 
+                  type="button"
+                  className="font-label text-xs text-primary hover:text-primary-container transition-colors font-medium bg-transparent border-0 p-0 cursor-pointer"
+                  onClick={() => alert('Password reset functionality is coming soon.')}
+                >
                   Forgot Password?
-                </a>
+                </button>
               </div>
             </div>
 
@@ -98,10 +103,13 @@ export const LoginPage: React.FC = () => {
           </form>
 
           <div className="mt-12 text-center border-t border-outline-variant/20 pt-8">
-            <a className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 group" href="#">
+            <Link 
+              className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 group no-underline" 
+              href="/signup"
+            >
               Sign up for a new workspace
               <Icon name="arrow_right_alt" size={18} className="group-hover:translate-x-1 transition-transform" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

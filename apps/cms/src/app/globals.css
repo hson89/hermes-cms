@@ -137,10 +137,10 @@ body, .payload-default-styles {
   border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 15%, transparent) !important;
 }
 
-@layer base {
-  body {
-    @apply bg-background text-on-surface font-body;
-  }
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-body), sans-serif;
 }
 
 /* Global Icon Utility - Outside of @layer base to ensure it overrides any scoped styles */

@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useActionState } from 'react'
-import { loginAction } from './actions'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { loginAction } from './actions'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -77,9 +78,13 @@ export default function LoginPage() {
                 <label className="font-label text-sm text-on-surface font-semibold tracking-wide" htmlFor="password">
                   Password
                 </label>
-                <a className="font-label text-xs text-primary hover:text-primary-container transition-colors font-medium" href="#">
+                <button 
+                  type="button"
+                  className="font-label text-xs text-primary hover:text-primary-container transition-colors font-medium bg-transparent border-0 p-0 cursor-pointer"
+                  onClick={() => alert('Password reset functionality is coming soon.')}
+                >
                   Forgot Password?
-                </a>
+                </button>
               </div>
               <input 
                 className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3.5 font-body text-on-surface text-base focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm" 
@@ -103,12 +108,15 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-12 text-center border-t border-outline-variant/20 pt-8">
-            <a className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 group" href="#">
+            <Link 
+              className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 group no-underline" 
+              href="/signup"
+            >
               Sign up for a new workspace
               <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
                 arrow_right_alt
               </span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
