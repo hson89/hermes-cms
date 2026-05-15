@@ -182,5 +182,12 @@ docker-compose stop
 7. **Don't hardcode LLM providers** — the AI service uses LangChain's
    `init_chat_model` for provider-agnostic LLM switching.
 8. **Internal service auth** uses `X-Internal-Secret` header between CMS ↔ AI.
-9. **Feature specs** go under `specs/<feature-id>/` with `spec.md`, `plan.md`,
+9. Feature specs go under `specs/<feature-id>/` with `spec.md`, `plan.md`,
    `tasks.md`, and supporting artifacts.
+
+### Payload CMS 3.x Custom Components (CRITICAL)
+When adding custom React components to `payload.config.ts`:
+- **Named Exports Only:** Never use `export default`.
+- **Explicit Paths:** Use absolute-style paths starting with `/src/` and append the named export (e.g., `'/src/components/views/Dashboard#Dashboard'`).
+- **importMap Verification:** If the build fails with `Module not found` in `importMap.js`, manually patch the relative paths in `apps/cms/src/app/(payload)/admin/importMap.js` to include the `src/` directory.
+

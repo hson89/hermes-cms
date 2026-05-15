@@ -74,6 +74,57 @@
   --radius-full: 0.75rem;
 }
 
+/* Payload CMS Custom Theme Overrides - Alexandria Design System */
+:root {
+  --theme-bg: var(--color-background);
+  --theme-elevation-50: var(--color-surface-container-lowest);
+  --theme-elevation-100: var(--color-surface-container-low);
+  --theme-elevation-150: var(--color-surface-container);
+  --theme-elevation-200: var(--color-surface-container-high);
+  
+  --theme-success-400: #0d8a57;
+  --theme-error-400: var(--color-error);
+}
+
+/* Nav & Header specific overrides for the Alexandria "No-Line Rule" and tonal elevation */
+[class*="nav"] {
+  background-color: var(--color-surface-container-lowest) !important;
+  border-right: none !important;
+  box-shadow: 1px 0 20px rgba(0, 0, 0, 0.03);
+}
+
+[class*="app-header"] {
+  border-bottom: none !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px);
+}
+
+/* Payload global typography and shapes */
+body, .payload-default-styles {
+  font-family: var(--font-body), sans-serif !important;
+}
+
+.payload-default-styles .btn {
+  border-radius: var(--radius-lg) !important;
+}
+
+.payload-default-styles .card {
+  border: 1px solid color-mix(in srgb, var(--color-outline-variant) 15%, transparent) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: none !important;
+}
+
+.payload-default-styles .table {
+  border-radius: var(--radius-xl) !important;
+  border: 1px solid color-mix(in srgb, var(--color-outline-variant) 15%, transparent) !important;
+  overflow: hidden;
+}
+
+.payload-default-styles .table th,
+.payload-default-styles .table td {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 15%, transparent) !important;
+}
+
 @layer base {
   body {
     @apply bg-background text-on-surface font-body;

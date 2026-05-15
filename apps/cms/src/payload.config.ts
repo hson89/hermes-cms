@@ -1,4 +1,5 @@
 import { buildConfig } from 'payload'
+console.log('--- Loading Payload Config (v3 Overhaul) ---')
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
@@ -71,6 +72,13 @@ export default buildConfig({
       login: '/login',
     },
     components: {
+      beforeDashboard: [
+        '/src/components/views/Dashboard#Dashboard'
+      ],
+      graphics: {
+        Logo: '/src/components/ui/graphics/Logo#Logo',
+        Icon: '/src/components/ui/graphics/Icon#Icon',
+      },
       views: {
         login: {
           Component: '/src/components/views/LoginPage#default',

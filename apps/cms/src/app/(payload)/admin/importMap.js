@@ -28,6 +28,9 @@ import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } fro
 import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { default as default_11fe2e3d8aeddfa2c8dd279b1b5a0298 } from '../../../../src/components/views/LoginPage'
 import { default as default_9d8465fe0818a95e328764da64c051af } from '../../../../src/components/views/InitPage'
+import { Dashboard as Dashboard_Dashboard } from '../../../../src/components/views/Dashboard'
+import { Logo as Logo_Logo } from '../../../../src/components/ui/graphics/Logo'
+import { Icon as Icon_Icon } from '../../../../src/components/ui/graphics/Icon'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -62,5 +65,8 @@ export const importMap = {
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelectionProvider": TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62,
   "/src/components/views/LoginPage#default": default_11fe2e3d8aeddfa2c8dd279b1b5a0298,
   "/src/components/views/InitPage#default": default_9d8465fe0818a95e328764da64c051af,
+  "/src/components/views/Dashboard#Dashboard": Dashboard_Dashboard,
+  "/src/components/ui/graphics/Logo#Logo": Logo_Logo,
+  "/src/components/ui/graphics/Icon#Icon": Icon_Icon,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

@@ -124,3 +124,13 @@ Super-admin bypass: users with `role === 'super-admin'`.
    hardcode a specific LLM.
 8. CMS ↔ AI auth: `X-Internal-Secret` header.
 9. Feature specs live under `specs/<feature-id>/`.
+
+## Payload CMS 3.x Custom Components (CRITICAL)
+When adding custom React components to `payload.config.ts` (e.g., Dashboards, Graphics, Custom Fields):
+1. **Always use Named Exports:** Never use `export default`. Example: `export const MyComponent: React.FC = ...`
+2. **Pathing in Config:** Use absolute-style paths starting with `/src/` and append the named export. Example: `'/src/components/views/Dashboard#Dashboard'`.
+3. **Manual Import Map Validation:** If the Next.js dev server crashes with a 500 error or `Module not found` related to Payload components, **do not blindly restart the server**. 
+   - Inspect `apps/cms/src/app/(payload)/admin/importMap.js`.
+   - If the paths are miscalculated (e.g., missing `src/` in the relative path), manually correct the `importMap.js` file to bypass the generator deadlock.
+   - Example manual correction: `import { Dashboard as Dashboard_Dashboard } from '../../../../src/components/views/Dashboard'`.
+
