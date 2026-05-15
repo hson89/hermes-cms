@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { setupInitialAdmin } from '@/app/(payload)/admin/actions'
+import '@/app/globals.css'
 
-const InitPage: React.FC = () => {
+export const InitPage: React.FC = () => {
   console.log('--- InitPage Rendering (New Design) ---')
   const [workspaceSlug, setWorkspaceSlug] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -215,4 +216,4 @@ const InitPage: React.FC = () => {
   )
 }
 
-export default InitPage
+

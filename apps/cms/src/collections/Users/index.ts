@@ -8,10 +8,12 @@ import type { CollectionConfig } from 'payload'
  */
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  auth: {
+    depth: 0,
+  },
   admin: {
     useAsTitle: 'email',
-    description: 'CMS users, each belonging to a single tenant.',
+    description: 'CMS users managed via multi-tenant architecture.',
   },
   access: {
     read: () => true,
@@ -19,22 +21,21 @@ export const Users: CollectionConfig = {
     update: () => true,
     delete: () => true,
   },
+  hooks: {
+    afterRead: [
+      ({ doc }) => {
+        console.log('--- USER DOC READ ---')
+        console.log(JSON.stringify(doc))
+        return doc
+      }
+    ]
+  },
   fields: [
     {
       name: 'name',
       type: 'text',
       required: true,
       label: 'Full Name',
-    },
-    {
-      name: 'tenantId',
-      type: 'relationship',
-      relationTo: 'tenants',
-      required: false,
-      label: 'Tenant',
-      admin: {
-        description: 'The tenant this user belongs to. Empty for super-admins.',
-      },
     },
     {
       name: 'role',

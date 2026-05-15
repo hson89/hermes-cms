@@ -9,7 +9,7 @@ import { Button } from '../ui/atoms/Button'
 import { FormField } from '../ui/molecules/FormField'
 import { Icon } from '../ui/atoms/Icon'
 
-const LoginPage: React.FC = () => {
+export const LoginPage: React.FC = () => {
   const router = useRouter()
   const [state, formAction, isPending] = useActionState(loginAction, null)
 
@@ -109,5 +109,5 @@ const LoginPage: React.FC = () => {
   )
 }
 
-export default LoginPage
+
 

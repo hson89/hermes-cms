@@ -2,11 +2,9 @@ import React from 'react'
 
 export const Logo: React.FC = () => (
   <div className="flex items-center gap-3">
-    <div className="h-6 w-6 md:h-8 md:w-8 text-primary">
-      <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor"></path>
-      </svg>
-    </div>
-    <span className="font-headline font-bold text-lg md:text-xl tracking-tight text-on-surface">Hermes AI</span>
+    <span className="material-symbols-outlined text-primary-fixed-dim text-2xl md:text-3xl">psychiatry</span>
+    <span className="font-display text-lg md:text-xl font-bold text-surface-bright tracking-tighter uppercase">
+      HERMES AI
+    </span>
   </div>
 )

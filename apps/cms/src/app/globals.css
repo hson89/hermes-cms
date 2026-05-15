@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;700&family=Inter:wght@400;500;700&family=Public+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
+@source "./";
+@source "../components";
+@source "../collections";
 
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/container-queries";
@@ -88,9 +91,18 @@
 
 /* Nav & Header specific overrides for the Alexandria "No-Line Rule" and tonal elevation */
 [class*="nav"] {
-  background-color: var(--color-surface-container-lowest) !important;
+  background-color: var(--color-on-primary-fixed) !important;
   border-right: none !important;
-  box-shadow: 1px 0 20px rgba(0, 0, 0, 0.03);
+}
+
+[class*="nav"] a {
+  color: var(--color-primary-fixed-dim) !important;
+  transition: all 0.2s ease;
+}
+
+[class*="nav"] a:hover, [class*="nav"] a[class*="active"] {
+  color: var(--color-surface-bright) !important;
+  background-color: var(--color-on-primary-fixed-variant) !important;
 }
 
 [class*="app-header"] {

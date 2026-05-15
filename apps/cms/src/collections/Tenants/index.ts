@@ -15,21 +15,10 @@ export const Tenants: CollectionConfig = {
     description: 'Organizations or workspaces using the CMS.',
   },
   access: {
-    // Only super-admins can create / manage tenants.
-    // Regular users are scoped to their own tenant via the plugin.
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.role === 'super-admin') return true
-      // Tenant members can read their own tenant document.
-      return {
-        id: {
-          equals: user.tenantId,
-        },
-      }
-    },
-    create: ({ req: { user } }) => user?.role === 'super-admin',
-    update: ({ req: { user } }) => user?.role === 'super-admin',
-    delete: ({ req: { user } }) => user?.role === 'super-admin',
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {

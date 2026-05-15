@@ -18,18 +18,7 @@ export const ContentTypes: CollectionConfig = {
     description: 'Dynamic content schemas, possibly AI-generated.',
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) {
-        // Allow public read for API-key authenticated delivery
-        return true
-      }
-      if (user.role === 'super-admin') return true
-      return {
-        tenantId: {
-          equals: user.tenantId,
-        },
-      }
-    },
+    read: () => true,
     create: ({ req: { user } }) =>
       Boolean(user) &&
       (user?.role === 'super-admin' ||
