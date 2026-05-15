@@ -47,6 +47,9 @@ The AI is restricted to modifying content and schemas within the active tenant's
 All new features must begin with a formal specification (`spec.md`) and implementation plan (`plan.md`) under `specs/`.
 Pull requests must pass all unit and integration tests, specifically those validating tenant logical isolation and microservice contracts. The plan MUST detail the Bounded Context and module boundaries impacted by the feature.
 
+### System Health & Resource Management
+A stable development environment is critical for AI-first orchestration. Developers and AI agents MUST proactively monitor system resources. If background processes (e.g., Payload generators) consume excessive CPU or cause file-system locks, they MUST be terminated and restarted cleanly using provided cleanup utilities.
+
 ## Governance
 
 This Constitution supersedes all other practices. Any architectural deviation, especially regarding multi-tenancy, the AI copilot workflow, DDD boundaries, or the hybrid architecture design, requires a formal amendment to this document and approval.

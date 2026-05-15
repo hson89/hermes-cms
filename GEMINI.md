@@ -134,3 +134,9 @@ When adding custom React components to `payload.config.ts` (e.g., Dashboards, Gr
    - If the paths are miscalculated (e.g., missing `src/` in the relative path), manually correct the `importMap.js` file to bypass the generator deadlock.
    - Example manual correction: `import { Dashboard as Dashboard_Dashboard } from '../../../../src/components/views/Dashboard'`.
 
+## Payload 3.x & Next.js 15 Technical Guardrails
+1. **Dynamic Route Naming:** Always use `[...slug]` for the Payload API catch-all route (`src/app/(payload)/api/[...slug]`). Using `[...payload]` or other names may conflict with internal Payload expectations in Next.js 15+.
+2. **Lowercase View Keys:** In `payload.config.ts`, use lowercase keys for standard admin views (e.g., `dashboard`, `login`, `account`). Uppercase keys may be ignored by the Payload 3.x view resolver.
+3. **Process Management:** Stale `payload` processes (generators) can consume 100% CPU and lock files. If the system is slow or `importMap.js` fails to update, kill all `node` processes related to `payload` and `next` before retrying.
+4. **importMap Regeneration:** Changes to custom component registrations in `payload.config.ts` often require a manual `pnpm payload generate:importmap` if the dev server fails to auto-sync.
+

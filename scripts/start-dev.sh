@@ -91,6 +91,7 @@ echo "🗄️  CMS Postgres:   localhost:5432"
 echo "🗄️  AI Postgres:    localhost:5433"
 echo "--------------------------------------------------"
 echo "Press Ctrl+C to stop all services."
+echo "💡 UI broken? Run ./scripts/cleanup-payload.sh to reset mapping."
 
 # Wait for background processes
 wait $AI_PID $CMS_PID
