@@ -8,7 +8,7 @@ const wrapHandler = (handler: any) => {
     const awaitedParams = await args.params;
     const newArgs = { 
       ...args, 
-      params: Promise.resolve({ ...awaitedParams, slug: awaitedParams.payload }) 
+      params: Promise.resolve({ ...awaitedParams, slug: awaitedParams.slug }) 
     };
     return handler(request, newArgs);
   }

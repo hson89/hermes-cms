@@ -140,3 +140,11 @@ When adding custom React components to `payload.config.ts` (e.g., Dashboards, Gr
 3. **Process Management:** Stale `payload` processes (generators) can consume 100% CPU and lock files. If the system is slow or `importMap.js` fails to update, kill all `node` processes related to `payload` and `next` before retrying.
 4. **importMap Regeneration:** Changes to custom component registrations in `payload.config.ts` often require a manual `pnpm payload generate:importmap` if the dev server fails to auto-sync.
 
+## Payload CMS 3.x UI Guardrails (CRITICAL)
+When modifying the Payload Admin UI or adding custom components:
+1. **Layout Hierarchy:** Never place global components (like `Nav` or `Header`) inside View components (like `Dashboard`). Payload automatically wraps all views in its `RootLayout`. Doing so causes severe duplication and overlapping.
+2. **Component Registration:** Global overrides must be registered in `payload.config.ts` under `admin.components`. Strictly follow the expected object syntax (e.g., `header: [ '/src/components/admin/Header#Header' ] as any`).
+3. **CSS Safety:** Never aggressively override or hide core Payload layout classes (e.g., `.nav`, `.app-header`, `.template-default__wrap`) using `display: none !important` globally without understanding the flex/grid container consequences.
+4. **Sidebar Offsets:** The native Next.js App Router template used by Payload expects an 18rem sidebar. If implementing a custom sidebar, ensure the main content wrapper maintains a `margin-left: 18rem`.
+5. **Skill Required:** Any time you are asked to work on or fix the Payload UI, you MUST invoke the `payload-ui` skill first.
+

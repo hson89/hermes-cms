@@ -31,6 +31,9 @@ export default buildConfig({
         },
       },
       Nav: '/src/components/admin/Nav#Nav',
+      header: [
+        '/src/components/admin/Header#Header',
+      ] as any,
     },
   },
   collections: [Tenants, Users, APIKeys, ContentTypes, ContentItems, HostedSites],
