@@ -1,10 +1,12 @@
 'use server'
 
 import { getPayload } from 'payload'
-import config from '@/payload.config'
 import { redirect } from 'next/navigation'
 
 export async function setupInitialAdmin(formData: FormData) {
+  // Use dynamic import to break the circular dependency:
+  // config -> InitPage -> actions -> config
+  const config = (await import('@/payload.config')).default
   const payload = await getPayload({ config })
 
   const name = formData.get('name') as string

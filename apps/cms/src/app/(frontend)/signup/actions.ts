@@ -1,15 +1,14 @@
 'use server'
 
 import { getPayload } from 'payload'
-import config from '@/payload.config'
 import { redirect } from 'next/navigation'
 
 export type SignupState = {
   error?: string
   success?: boolean
 }
-
 export async function signupAction(prevState: any, formData: FormData): Promise<SignupState> {
+  const config = (await import('@/payload.config')).default
   const payload = await getPayload({ config })
 
   const name = formData.get('name') as string

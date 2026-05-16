@@ -1,10 +1,8 @@
 'use server'
 
 import { getPayload } from 'payload'
-import config from '@/payload.config'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-
 export async function loginAction(prevState: any, formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
@@ -16,6 +14,7 @@ export async function loginAction(prevState: any, formData: FormData) {
   }
 
   try {
+    const config = (await import('@/payload.config')).default
     const payload = await getPayload({ config })
     
     const result = await payload.login({

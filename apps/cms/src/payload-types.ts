@@ -161,7 +161,7 @@ export interface Tenant {
   createdAt: string;
 }
 /**
- * CMS users, each belonging to a single tenant.
+ * CMS users managed via multi-tenant architecture.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
@@ -169,10 +169,6 @@ export interface Tenant {
 export interface User {
   id: number;
   name: string;
-  /**
-   * The tenant this user belongs to. Empty for super-admins.
-   */
-  tenantId?: (number | null) | Tenant;
   role: 'super-admin' | 'tenant-admin' | 'editor';
   tenants?:
     | {
@@ -452,7 +448,6 @@ export interface TenantsSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
-  tenantId?: T;
   role?: T;
   tenants?:
     | T
