@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;700&family=Inter:wght@400;500;700&family=Public+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+@import "tailwindcss";
+@source "./";
+@source "../components";
+@source "../collections";
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/container-queries";
+
+@theme {
+  --color-primary: #094cb2;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #3366cc;
+  --color-on-primary-container: #e7ebff;
+  --color-primary-fixed: #d9e2ff;
+  --color-on-primary-fixed: #001946;
+  --color-primary-fixed-dim: #b1c5ff;
+  --color-on-primary-fixed-variant: #00419d;
+  
+  --color-secondary: #5a5f63;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #dfe3e8;
+  --color-on-secondary-container: #606569;
+  --color-secondary-fixed: #dfe3e8;
+  --color-on-secondary-fixed: #171c20;
+  --color-secondary-fixed-dim: #c2c7cc;
+  --color-on-secondary-fixed-variant: #42474b;
+  
+  --color-tertiary: #6d5e00;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #bfab49;
+  --color-on-tertiary-container: #4a3f00;
+  --color-tertiary-fixed: #f9e37a;
+  --color-on-tertiary-fixed: #211b00;
+  --color-tertiary-fixed-dim: #dcc661;
+  --color-on-tertiary-fixed-variant: #524600;
+  
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  
+  --color-background: #faf9fa;
+  --color-on-background: #1b1c1d;
+  
+  --color-surface: #faf9fa;
+  --color-on-surface: #1b1c1d;
+  --color-surface-variant: #e3e2e3;
+  --color-on-surface-variant: #434653;
+  --color-surface-dim: #dbdadb;
+  --color-surface-bright: #faf9fa;
+  --color-surface-tint: #2259bf;
+  
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f5f3f4;
+  --color-surface-container: #efedee;
+  --color-surface-container-high: #e9e8e9;
+  --color-surface-container-highest: #e3e2e3;
+  
+  --color-outline: #737784;
+  --color-outline-variant: #c3c6d5;
+  
+  --color-inverse-surface: #303031;
+  --color-inverse-on-surface: #f2f0f1;
+  --color-inverse-primary: #b1c5ff;
+
+  --font-display: "Noto Serif", serif;
+  --font-headline: "Noto Serif", serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Public Sans", sans-serif;
+  --font-code: "JetBrains Mono", monospace;
+
+  --radius-default: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+}
+
+/* Alexandria Core Overrides */
+:root {
+  --theme-bg: var(--color-background);
+  --theme-elevation-50: var(--color-surface-container-lowest);
+  --theme-elevation-100: var(--color-surface-container-low);
+  --theme-elevation-150: var(--color-surface-container);
+  --theme-elevation-200: var(--color-surface-container-high);
+  --theme-success-400: #0d8a57;
+  --theme-error-400: var(--color-error);
+}
+
+/* 1. Sidebar Control */
+.alexandria-nav {
+  display: flex !important;
+  width: 18rem !important;
+  z-index: 100 !important;
+}
+
+/* Hide Payload's built-in sidebar/nav */
+.nav, aside.nav, [class*="nav"], .sidebar {
+  display: none !important;
+}
+
+/* 2. Content Wrap Control */
+.template-default__wrap {
+  margin-left: 18rem !important;
+  width: calc(100% - 18rem) !important;
+  min-height: 100vh;
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 3. Header Control */
+.app-header {
+  left: 18rem !important;
+  width: calc(100% - 18rem) !important;
+  height: 5rem !important; /* h-20 */
+  padding: 0 !important;
+  border-bottom: none !important;
+  background-color: transparent !important;
+  z-index: 40 !important;
+}
+
+/* Hide Payload's built-in header elements */
+.app-header__account,
+.app-header__logo,
+.app-header__nav-toggler,
+.app-header__step-nav,
+.app-header__controls > a,
+.payload-admin-header__account {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* 4. Responsive Handlers */
+@media (max-width: 1023px) {
+  .template-default__wrap, .app-header {
+    margin-left: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+  }
+  .alexandria-nav {
+    display: none !important;
+  }
+}
+
+/* Global Icon Utility */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-body), sans-serif;
+}
