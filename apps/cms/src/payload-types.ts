@@ -74,6 +74,8 @@ export interface Config {
     'content-types': ContentType;
     'content-items': ContentItem;
     'hosted-sites': HostedSite;
+    'audit-logs': AuditLog;
+    media: Media;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -87,6 +89,8 @@ export interface Config {
     'content-types': ContentTypesSelect<false> | ContentTypesSelect<true>;
     'content-items': ContentItemsSelect<false> | ContentItemsSelect<true>;
     'hosted-sites': HostedSitesSelect<false> | HostedSitesSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -157,8 +161,43 @@ export interface Tenant {
    * Unique URL-safe identifier for the tenant.
    */
   slug: string;
+  status: 'active' | 'suspended' | 'archived';
+  tier: 'standard' | 'premium' | 'enterprise';
+  defaultLocale: 'en' | 'es' | 'fr' | 'de';
+  /**
+   * Hostnames mapped to this tenant for branded access.
+   */
+  domains: {
+    hostname: string;
+    isPrimary?: boolean | null;
+    id?: string | null;
+  }[];
+  branding?: {
+    logo?: (number | null) | Media;
+    primaryColor?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  alt: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * CMS users managed via multi-tenant architecture.
@@ -333,6 +372,46 @@ export interface HostedSite {
   createdAt: string;
 }
 /**
+ * Security and operational event logs.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  /**
+   * E.g., tenant_resolution_failure, impersonation_start
+   */
+  action: string;
+  severity: 'info' | 'warning' | 'error';
+  /**
+   * Reference to the tenant this log belongs to.
+   */
+  tenant?: (number | null) | Tenant;
+  /**
+   * The user who performed the action.
+   */
+  user?: (number | null) | User;
+  /**
+   * Extra context (IP, hostname, etc.).
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * True if action was performed via impersonation.
+   */
+  isImpersonated?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -379,6 +458,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'hosted-sites';
         value: number | HostedSite;
+      } | null)
+    | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null);
   globalSlug?: string | null;
   user:
@@ -439,6 +526,22 @@ export interface PayloadMigration {
 export interface TenantsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  status?: T;
+  tier?: T;
+  defaultLocale?: T;
+  domains?:
+    | T
+    | {
+        hostname?: T;
+        isPrimary?: T;
+        id?: T;
+      };
+  branding?:
+    | T
+    | {
+        logo?: T;
+        primaryColor?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -542,6 +645,39 @@ export interface HostedSitesSelect<T extends boolean = true> {
   deployedUrl?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  action?: T;
+  severity?: T;
+  tenant?: T;
+  user?: T;
+  metadata?: T;
+  isImpersonated?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  tenant?: T;
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

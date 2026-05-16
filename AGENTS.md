@@ -185,6 +185,7 @@ docker-compose stop
 9. Feature specs go under `specs/<feature-id>/` with `spec.md`, `plan.md`,
    `tasks.md`, and supporting artifacts.
 10. **Payload UI Safety:** Any UI/UX modifications to the Payload admin interface *must* begin by invoking the `payload-ui` skill (located in `.agents/skills/payload-ui/SKILL.md`) to prevent layout and configuration breakages.
+11. **Payload CMS Expertise:** When working with Payload CMS backend concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) in `apps/cms/`, you MUST invoke the `payload` skill (located in `.agents/skills/payload/SKILL.md`) first.
 
 ### Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts`:

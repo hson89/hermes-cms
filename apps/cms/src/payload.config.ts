@@ -11,6 +11,8 @@ import { APIKeys } from './collections/Users/APIKeys'
 import { ContentTypes } from './collections/ContentTypes'
 import { ContentItems } from './collections/ContentItems'
 import { HostedSites } from './collections/HostedSites'
+import { AuditLogs } from './collections/AuditLogs'
+import { Media } from './collections/Media'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,20 +25,18 @@ export default buildConfig({
         dashboard: {
           Component: '/src/components/views/Dashboard#Dashboard',
         },
-        CreateFirstUser: {
+        init: {
           Component: '/src/components/views/InitPage#InitPage',
         },
         login: {
           Component: '/src/components/views/LoginPage#LoginPage',
         },
       },
-      Nav: '/src/components/admin/Nav#Nav',
-      header: [
-        '/src/components/admin/Header#Header',
-      ] as any,
+      Nav: ['/src/components/admin/Nav#Nav'] as any,
+      header: ['/src/components/admin/Header#Header'] as any,
     },
   },
-  collections: [Tenants, Users, APIKeys, ContentTypes, ContentItems, HostedSites],
+  collections: [Tenants, Users, APIKeys, ContentTypes, ContentItems, HostedSites, AuditLogs, Media],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || 'YOUR_SECRET_HERE',
   db: postgresAdapter({
@@ -51,6 +51,7 @@ export default buildConfig({
         'content-types': {},
         'content-items': {},
         'api-keys': {},
+        'media': {},
       },
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => {

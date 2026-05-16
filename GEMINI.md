@@ -124,6 +124,7 @@ Super-admin bypass: users with `role === 'super-admin'`.
    hardcode a specific LLM.
 8. CMS ↔ AI auth: `X-Internal-Secret` header.
 9. Feature specs live under `specs/<feature-id>/`.
+10. **Payload Expertise:** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control) in `apps/cms/`, you MUST invoke the `payload` skill first.
 
 ## Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts` (e.g., Dashboards, Graphics, Custom Fields):

@@ -3,8 +3,24 @@
 import React from 'react'
 import Link from 'next/link'
 import { Icon } from '../ui/atoms/Icon'
+import { useAuth } from '@payloadcms/ui'
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth()
+
+  // If user is not yet loaded, show a loading skeleton or simple message
+  // instead of returning null which might make the page look empty.
+  if (!user) {
+    return (
+      <div className="w-full min-h-screen bg-[#faf9fa] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-surface-container-high" />
+          <div className="h-4 w-32 bg-surface-container-high rounded" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full min-h-screen bg-[#faf9fa] pb-12 overflow-x-hidden">
       {/* Canvas */}

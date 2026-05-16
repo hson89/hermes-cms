@@ -96,7 +96,7 @@
 }
 
 /* Hide Payload's built-in sidebar/nav */
-.nav, aside.nav, [class*="nav"], .sidebar {
+.nav, aside.nav, .sidebar, .app-header__nav-toggler {
   display: none !important;
 }
 
@@ -112,8 +112,6 @@
 
 /* 3. Header Control */
 .app-header {
-  left: 18rem !important;
-  width: calc(100% - 18rem) !important;
   height: 5rem !important; /* h-20 */
   padding: 0 !important;
   border-bottom: none !important;
