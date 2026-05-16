@@ -13,6 +13,8 @@ Represents an isolated organizational unit or client.
 | `domains` | array | Yes | No | List of mapped hostnames. |
 | `domains.hostname` | text | Yes | Yes | The actual domain/subdomain string. |
 | `domains.isPrimary` | checkbox | No | No | Marks the primary domain for branding. |
+| `defaultLocale` | select | Yes | No | Default language (e.g., `en`, `es`). |
+| `tier` | select | Yes | No | `standard`, `premium`, `enterprise`. |
 | `branding.logo` | upload | No | No | Workspace logo (links to `media`). |
 | `branding.primaryColor` | text | No | No | Hex code for tenant-specific UI. |
 

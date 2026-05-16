@@ -10,7 +10,7 @@
 ## Clarifications
 
 ### Session 2026-05-16
-- Q: How should the system handle and log failures in tenant/domain resolution? → A: Log to a central audit_logs collection with severity: warning and metadata (IP, host, timestamp).
+- Q: How should the system handle and log failures in tenant/domain resolution? → A: Log to a central AuditLogs collection with severity: warning and metadata (IP, host, timestamp).
 - Q: Is a "Primary" domain mandatory at tenant creation? → A: Mandatory: A primary domain is required at creation; the form will not submit without it.
 - Q: How should the system handle deleting a tenant with existing content? → A: Soft Delete: Mark tenant as `Archived`; hide all content from APIs but preserve the data.
 - Q: Should Super Admins be able to impersonate tenant users? → A: Enabled: Super Admins can switch context to any tenant; all impersonated actions are logged.
@@ -78,14 +78,14 @@ As a Super Admin, I want to configure workspace-specific settings (like branding
 - **FR-005**: System MUST support per-tenant branding configuration (Logo, Primary Color).
 - **FR-006**: System MUST store a unique `slug` for each tenant to be used as a fallback identifier.
 - **FR-007**: System MUST provide an API endpoint to resolve a tenant ID based on a hostname.
-- **FR-008**: System MUST log failures to resolve a tenant/domain to a central `audit_logs` collection with `severity: warning` and relevant metadata.
+- **FR-008**: System MUST log failures to resolve a tenant/domain to a central `AuditLogs` collection with `severity: warning` and relevant metadata.
 - **FR-009**: System MUST support "Soft Delete" by marking a tenant as `Archived`, preventing API access while retaining records.
 - **FR-010**: System MUST support Super Admin impersonation of tenant users with mandatory audit logging of all actions.
-- **FR-011**: System SHOULD support domain limits based on tenant tier; initial implementation MUST enforce a default limit of 10 domains per tenant.
+- **FR-011**: System MUST enforce domain limits based on tenant tier: `standard` (10), `premium` (50), `enterprise` (unlimited).
 
 ### Key Entities *(include if feature involves data)*
 
-- **Tenant**: Represents a client or project. Attributes: Name, Slug, Status, Branding (Logo, Colors).
+- **Tenant**: Represents a client or project. Attributes: Name, Slug, Status, Tier, DefaultLocale, Branding (Logo, Colors).
 - **DomainMapping**: A logical link between a hostname and a Tenant. Attributes: Hostname, IsPrimary, TenantID.
 
 ## Success Criteria *(mandatory)*
@@ -96,6 +96,7 @@ As a Super Admin, I want to configure workspace-specific settings (like branding
 - **SC-002**: 100% of API requests correctly resolve the tenant context when accessed via a mapped domain.
 - **SC-003**: No data leakage between tenants; queries for Tenant A MUST NEVER return data from Tenant B.
 - **SC-004**: 100% success rate for domain uniqueness validation during configuration.
+- **SC-005**: API resolution endpoint responds in < 50ms under peak load (50 concurrent reqs).
 
 ## Assumptions
 

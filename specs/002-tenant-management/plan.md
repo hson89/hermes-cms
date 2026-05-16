@@ -17,8 +17,9 @@ This feature implements the core multi-tenancy management for Hermes AI. It prov
 **Testing**: Jest 30, Playwright 1.59 (TDD workflow)  
 **Target Platform**: Linux / Docker  
 **Project Type**: Headless CMS (Web Service)  
-**Performance Goals**: API tenant resolution < 50ms (NEEDS CLARIFICATION)  
-**Constraints**: Logical isolation via ACLs; default limit of 10 domains per tenant.  
+**Performance Goals**: API tenant resolution < 50ms (Internal Cache optimized)  
+**Constraints**: Logical isolation via ACLs; tier-based domain limits (standard: 10, premium: 50, enterprise: unlimited).
+**Data Model Extensions**: DefaultLocale (per tenant), Tiered Domain Limits, Soft-delete (Archived status).
 **Scale/Scope**: Initial support for up to 100 tenants with primary and secondary domains.
 
 ## Constitution Check
