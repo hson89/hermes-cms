@@ -41,7 +41,8 @@
 - [ ] T005b [P] Implement SQLAlchemy session repository class for CRUD tracking in `apps/ai-agent-service/src/infrastructure/repositories/session_repository.py` (inherits from abstract domain interface)
 - [ ] T006 Initialize empty drafts schema collection configuration for `ContentTypes` in `apps/cms/src/collections/ContentTypes/index.ts`
 - [ ] T007 Initialize dynamic entry store structure for `ContentItems` collection in `apps/cms/src/collections/ContentItems/index.ts`
-- [ ] T008 [P] Register the new collections in the central configuration file `apps/cms/src/payload.config.ts`
+- [ ] T007b Initialize prompt logging collection configuration for `AIPromptHistory` in `apps/cms/src/collections/AIPromptHistory/index.ts`
+- [ ] T008 [P] Register the new collections (ContentTypes, ContentItems, AIPromptHistory) in the central configuration file `apps/cms/src/payload.config.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel.
 
@@ -66,7 +67,7 @@
 - [ ] T012 [US1] Implement corrective feedback loop retry logic (up to 3 retries) on invalid field types in `apps/ai-agent-service/src/application/ai_service.py`
 - [ ] T013 [US1] Expose `/api/ai/generate-schema` and `/api/ai/sessions/{session_id}` endpoints in `apps/ai-agent-service/src/main.py`
 - [ ] T014 [P] [US1] Implement internal proxy endpoints to communicate with AI microservice in `apps/cms/src/collections/ContentTypes/endpoints.ts`
-- [ ] T015 [US1] Build Content Architect Admin Prompt & Generation Preview Panel in `apps/cms/src/components/views/ContentTypes/GeneratorView.tsx`
+- [ ] T015 [US1] Build Content Architect Admin Prompt, polling/subscription handler for async generation, and Generation Preview Panel in `apps/cms/src/components/views/ContentTypes/GeneratorView.tsx` (FR-001, FR-004, NFR-001)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently.
 
@@ -89,8 +90,10 @@
 - [ ] T019 [P] [US2] Implement dynamic field validator logic in `apps/cms/src/collections/ContentItems/validation.ts` (enforce allowed types, required validation, and check dynamic slug/name uniqueness scoped strictly to the current tenant per FR-005)
 - [ ] T020 [US2] Register dynamic validation in the `beforeValidate` collection hook in `apps/cms/src/collections/ContentItems/index.ts`
 - [ ] T021 [P] [US2] Implement destructive change verification checking if ContentItems exist in `apps/cms/src/collections/ContentTypes/hooks.ts` (validate that newly added required fields define fallback default values when existing items are present to prevent API crashes, per FR-005 / FR-008)
+- [ ] T021b [US2] Implement uniqueness validation hook for ContentType slug/name (scoped to tenant) and ensure nested schema field slugs are mutually unique in `apps/cms/src/collections/ContentTypes/hooks.ts` (FR-005)
 - [ ] T022 [US2] Implement optimistic concurrency checking (comparing updatedAt client-submitted header) in `apps/cms/src/collections/ContentTypes/hooks.ts`
 - [ ] T023 [US2] Integrate refinement controls for custom field overrides, relationships, and validations in `apps/cms/src/components/views/ContentTypes/EditorView.tsx`
+- [ ] T023b [US2] Implement the publish schema deployment flow, transitioning `ContentTypes` status from draft to published and applying necessary validations/registrations in `apps/cms/src/collections/ContentTypes/hooks.ts` (FR-008)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently.
 

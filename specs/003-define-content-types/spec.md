@@ -106,4 +106,3 @@ As a Content Architect, I want a visual interface to drag-and-drop or manually c
 - The system defaults to standard naming conventions (camelCase or kebab-case) for slugs if not specified in the prompt.
 - High-level security/access control for content types is managed separately (out of scope for this modeling feature).
 - Multi-tenancy isolation ensures one tenant's prompts/schemas don't leak to others.
-t's prompts/schemas don't leak to others.
