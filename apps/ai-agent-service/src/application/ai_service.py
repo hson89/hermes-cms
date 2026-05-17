@@ -71,15 +71,32 @@ class AIService:
     def _llm(self):
         """Return (or create) the LangChain chat model instance."""
         if self.__llm is None:
-            kwargs = {}
-            if settings.LANGCHAIN_ENDPOINT_URL:
-                kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
+            if settings.LANGCHAIN_MODEL_PROVIDER == "nvidia":
+                from langchain_nvidia_ai_endpoints import ChatNVIDIA
+                kwargs = {
+                    "model": settings.LANGCHAIN_MODEL,
+                    "api_key": settings.NVIDIA_API_KEY,
+                    "temperature": settings.NVIDIA_TEMPERATURE,
+                    "top_p": settings.NVIDIA_TOP_P,
+                    "max_tokens": settings.NVIDIA_MAX_TOKENS,
+                    "model_kwargs": {
+                        "reasoning_budget": settings.NVIDIA_REASONING_BUDGET,
+                        "chat_template_kwargs": {"enable_thinking": settings.NVIDIA_ENABLE_THINKING},
+                    },
+                }
+                if settings.LANGCHAIN_ENDPOINT_URL and "11434" not in settings.LANGCHAIN_ENDPOINT_URL:
+                    kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
+                self.__llm = ChatNVIDIA(**kwargs)
+            else:
+                kwargs = {}
+                if settings.LANGCHAIN_ENDPOINT_URL:
+                    kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
 
-            self.__llm = init_chat_model(
-                model=settings.LANGCHAIN_MODEL,
-                model_provider=settings.LANGCHAIN_MODEL_PROVIDER,
-                **kwargs,
-            )
+                self.__llm = init_chat_model(
+                    model=settings.LANGCHAIN_MODEL,
+                    model_provider=settings.LANGCHAIN_MODEL_PROVIDER,
+                    **kwargs,
+                )
         return self.__llm
 
     # ── Schema Generation ──────────────────────────────────────────────────

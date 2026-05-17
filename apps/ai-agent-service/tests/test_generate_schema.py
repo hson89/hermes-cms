@@ -291,7 +291,11 @@ async def test_corrective_loop_succeeds_on_first_retry():
     # first call returns response1, second call returns response2
     mock_llm.ainvoke = AsyncMock(side_effect=[response1, response2])
 
-    with patch("src.application.ai_service.init_chat_model", return_value=mock_llm):
+    with patch("src.application.ai_service.init_chat_model", return_value=mock_llm), \
+         patch("src.application.ai_service.settings") as mock_settings:
+        mock_settings.LANGCHAIN_MODEL = "test-model"
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "openai"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = None
         result = await ai_service.generate_schema(
             prompt="create a model with markdown body",
             tenant_id=tenant_id,
@@ -328,7 +332,12 @@ async def test_corrective_loop_raises_after_max_retries():
     mock_llm = MagicMock()
     mock_llm.ainvoke = AsyncMock(return_value=bad_response)
 
-    with patch("src.application.ai_service.init_chat_model", return_value=mock_llm):
+    with patch("src.application.ai_service.init_chat_model", return_value=mock_llm), \
+         patch("src.application.ai_service.settings") as mock_settings:
+        mock_settings.LANGCHAIN_MODEL = "test-model"
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "openai"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = None
+        
         with pytest.raises(ValueError, match="Failed to generate a valid schema after 3 retries"):
             await ai_service.generate_schema(
                 prompt="test persistent invalid schemas",
