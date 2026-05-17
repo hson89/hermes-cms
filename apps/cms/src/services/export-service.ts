@@ -30,8 +30,13 @@ export function generatePayloadTS(name: string, slug: string, fields: any[]): st
     }
     if (f.type === 'select' && Array.isArray(f.options)) {
       lines.push(`      options: [`)
+      const seenValues = new Set<string>()
       f.options.forEach((opt: string) => {
-        lines.push(`        { label: '${opt}', value: '${opt.toLowerCase().replace(/[^a-z0-9_-]/g, '')}' },`)
+        const val = opt.toLowerCase().replace(/[^a-z0-9_-]/g, '')
+        if (!seenValues.has(val)) {
+          seenValues.add(val)
+          lines.push(`        { label: '${opt}', value: '${val}' },`)
+        }
       })
       lines.push(`      ],`)
     }

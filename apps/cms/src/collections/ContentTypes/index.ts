@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { generateSchemaEndpoint, getSessionStatusEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint } from './endpoints'
+import { generateSchemaEndpoint, getSessionStatusEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint, listCollectionsEndpoint } from './endpoints'
 import { getTenantIds } from '../Users/utils'
 import { beforeChangeHook } from './hooks'
 
@@ -143,6 +143,15 @@ export const ContentTypes: CollectionConfig = {
         condition: (data) => Boolean(data?.generatedByAI),
       },
     },
+    {
+      name: 'version',
+      type: 'number',
+      required: true,
+      defaultValue: 1,
+      admin: {
+        hidden: true,
+      },
+    },
   ],
   hooks: {
     beforeValidate: [
@@ -156,6 +165,12 @@ export const ContentTypes: CollectionConfig = {
     beforeChange: [beforeChangeHook],
   },
   // T017: Custom AI endpoint for schema generation
-  endpoints: [generateSchemaEndpoint, getSessionStatusEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint],
+  endpoints: [
+    generateSchemaEndpoint,
+    getSessionStatusEndpoint,
+    exportSchemaEndpoint,
+    exportSchemaTSEndpoint,
+    listCollectionsEndpoint,
+  ],
   timestamps: true,
 }

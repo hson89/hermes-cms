@@ -38,6 +38,8 @@ export const EditorView: React.FC = () => {
   const [originalSchema, setOriginalSchema] = useState<any | null>(null)
   const [hasContentItems, setHasContentItems] = useState(false)
   const [version, setVersion] = useState<string>('') // Optimistic concurrency tracking
+  const [docVersion, setDocVersion] = useState<number>(1) // Optimistic integer version tracking
+  const [availableCollections, setAvailableCollections] = useState<{ slug: string; label: string }[]>([])
 
   // Active expanded field index for customization drawer
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
@@ -69,6 +71,7 @@ export const EditorView: React.FC = () => {
           setFields(data.schema?.fields || [])
           setOriginalSchema(data.originalSchema || null)
           setVersion(data.updatedAt || '')
+          setDocVersion(data.version || 1)
 
           // Query check if ContentItems exist for this content type to guard destructive editing
           try {
@@ -89,6 +92,23 @@ export const EditorView: React.FC = () => {
         setIsLoading(false)
       })
   }, [id])
+
+  // Load available collections for relationship target fields dynamically
+  useEffect(() => {
+    fetch('/api/content-types/collections-list')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load collections')
+        return res.json()
+      })
+      .then((data) => {
+        if (data && data.collections) {
+          setAvailableCollections(data.collections)
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load collections list:', err)
+      })
+  }, [])
 
   // Save layout modification draft or publish
   const handleSaveSchema = async (targetStatus?: 'draft' | 'published') => {
@@ -121,6 +141,9 @@ export const EditorView: React.FC = () => {
       if (version) {
         headers['if-unmodified-since'] = version
       }
+      if (docVersion) {
+        headers['x-version'] = String(docVersion)
+      }
 
       const res = await fetch(`/api/content-types/${id}`, {
         method: 'PATCH',
@@ -134,10 +157,13 @@ export const EditorView: React.FC = () => {
         throw new Error(data.errors?.[0]?.message || data.error || 'Failed to update Content Type.')
       }
 
-      // Update state timestamps & status
+      // Update state timestamps, version & status
       setStatus(data.doc?.status || updatedStatus)
       if (data.doc?.updatedAt) {
         setVersion(data.doc.updatedAt)
+      }
+      if (data.doc?.version) {
+        setDocVersion(data.doc.version)
       }
 
       setSuccessMsg(
@@ -556,15 +582,20 @@ export const EditorView: React.FC = () => {
                       {/* Relationship selection bounds */}
                       {field.type === 'relationship' && (
                         <div className="space-y-1.5 animate-fade-slide-up">
-                          <Label htmlFor={`relation-${idx}`}>Relational Target (slug)</Label>
-                          <input
-                            type="text"
+                          <Label htmlFor={`relation-${idx}`}>Relational Target</Label>
+                          <select
                             id={`relation-${idx}`}
                             value={field.relationTo || ''}
                             onChange={(e) => handleUpdateField(idx, { relationTo: e.target.value })}
-                            placeholder="e.g. users, media, content-types"
-                            className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 focus:border-primary/60 outline-none p-3 font-body text-xs text-on-surface placeholder-outline/40"
-                          />
+                            className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 outline-none p-3 font-body text-xs text-on-surface transition-all focus:border-primary/50"
+                          >
+                            <option value="">-- Select Target Collection --</option>
+                            {availableCollections.map((col) => (
+                              <option key={col.slug} value={col.slug}>
+                                {col.label} ({col.slug})
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       )}
 
@@ -664,6 +695,7 @@ export const EditorView: React.FC = () => {
                 <div>Collection: content-items</div>
                 <div>Storage Schema: PostgreSQL 18 JSON</div>
                 <div>Optimistic Version: {version ? `${version.substring(0, 19)}Z` : 'N/A'}</div>
+                <div>Document Edition: v{docVersion}</div>
               </div>
             </div>
           </Card>

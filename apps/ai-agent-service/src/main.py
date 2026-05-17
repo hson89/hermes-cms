@@ -176,18 +176,15 @@ async def get_session(
     schema_data = None
     if session.status == "completed":
         import json
+        import re
         for msg in reversed(session.context):
             if msg.role == "assistant":
                 try:
-                    content = msg.content.strip()
-                    if content.startswith("```"):
-                        lines = content.splitlines()
-                        if lines[0].startswith("```"):
-                            lines = lines[1:]
-                        if lines and lines[-1].startswith("```"):
-                            lines = lines[:-1]
-                        content = "\n".join(lines).strip()
-                    schema_data = json.loads(content)
+                    raw_content = msg.content.strip()
+                    # Clean prompt formatting details from markdown blocks if present
+                    match = re.search(r"```(?:json)?\s*(.*?)\s*```", raw_content, re.DOTALL)
+                    clean_content = match.group(1).strip() if match else raw_content
+                    schema_data = json.loads(clean_content)
                     break
                 except Exception as e:
                     print(f"Error parsing schema from context: {e}")

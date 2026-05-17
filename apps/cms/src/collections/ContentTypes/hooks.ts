@@ -24,17 +24,27 @@ export const beforeChangeHook: CollectionBeforeChangeHook = async ({
   const { payload } = req
 
   // 1. Optimistic Concurrency Check (T022)
-  if (operation === 'update' && originalDoc?.updatedAt) {
-    const unmodifiedSinceHeader = getHeader(req.headers, 'if-unmodified-since')
-    if (unmodifiedSinceHeader) {
-      const clientTime = new Date(unmodifiedSinceHeader).getTime()
-      const dbTime = new Date(originalDoc.updatedAt).getTime()
-
-      // Allow 1s tolerance for date precision conversion discrepancies and clock skew in either direction
-      if (Math.abs(dbTime - clientTime) > 1000) {
+  if (operation === 'update') {
+    const clientVersionHeader = getHeader(req.headers, 'x-version')
+    if (clientVersionHeader && originalDoc?.version) {
+      const clientVersion = parseInt(clientVersionHeader, 10)
+      if (clientVersion !== originalDoc.version) {
         throw new Error(
           'Precondition Failed: The Content Type was modified by another user. Please reload and try again.'
         )
+      }
+    } else if (originalDoc?.updatedAt) {
+      const unmodifiedSinceHeader = getHeader(req.headers, 'if-unmodified-since')
+      if (unmodifiedSinceHeader) {
+        const clientTime = new Date(unmodifiedSinceHeader).getTime()
+        const dbTime = new Date(originalDoc.updatedAt).getTime()
+
+        // Allow 1s tolerance for date precision conversion discrepancies and clock skew in either direction
+        if (Math.abs(dbTime - clientTime) > 1000) {
+          throw new Error(
+            'Precondition Failed: The Content Type was modified by another user. Please reload and try again.'
+          )
+        }
       }
     }
   }
@@ -113,6 +123,15 @@ export const beforeChangeHook: CollectionBeforeChangeHook = async ({
           }
         }
       }
+    }
+  }
+
+  // 5. Version auto-incrementing and default assignment
+  if (data) {
+    if (operation === 'update') {
+      data.version = (originalDoc?.version || 1) + 1
+    } else if (operation === 'create') {
+      data.version = 1
     }
   }
 

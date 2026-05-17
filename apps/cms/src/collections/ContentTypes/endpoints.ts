@@ -306,3 +306,33 @@ export const exportSchemaTSEndpoint: Endpoint = {
     }
   },
 }
+
+/**
+ * Custom endpoint: GET /api/content-types/collections-list
+ *
+ * Securely lists all registered collection slugs in the Payload monolith instance.
+ * Exposes dynamic relationship target options dynamically to the canvas editor UI.
+ */
+export const listCollectionsEndpoint: Endpoint = {
+  path: '/collections-list',
+  method: 'get',
+  handler: async (req) => {
+    const { user, payload } = req
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    try {
+      const collections = Object.keys(payload.collections).map((slug) => ({
+        slug,
+        label: (payload.collections as any)[slug].config.labels?.plural || slug,
+      }))
+
+      return Response.json({ collections })
+    } catch (err) {
+      console.error('[collections-list] Unexpected error:', err)
+      return Response.json({ error: 'Failed to list collections.' }, { status: 500 })
+    }
+  },
+}
