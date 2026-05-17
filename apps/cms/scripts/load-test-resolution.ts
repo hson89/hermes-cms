@@ -29,7 +29,7 @@ async function loadTest() {
       console.log('❌ SC-005 Failed: Average latency > 50ms')
     }
   } catch (error) {
-    console.error('Load test failed:', error.message)
+    console.error('Load test failed:', error instanceof Error ? error.message : String(error))
   }
 }
 

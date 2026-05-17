@@ -21,9 +21,12 @@ async function createFirstUser() {
     data: {
       name: 'Hermes Root',
       slug: 'root',
+      status: 'active',
+      tier: 'standard',
+      defaultLocale: 'en',
       domains: [
         {
-          domain: 'localhost',
+          hostname: 'localhost.hermes-cms.com',
         },
       ],
     },
@@ -40,7 +43,6 @@ async function createFirstUser() {
       tenants: [
         {
           tenant: tenant.id,
-          roles: ['admin'],
         },
       ],
     },
