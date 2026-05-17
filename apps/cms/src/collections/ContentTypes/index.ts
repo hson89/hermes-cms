@@ -30,6 +30,9 @@ export const ContentTypes: CollectionConfig = {
     description: 'Dynamic content schemas, possibly AI-generated.',
     components: {
       views: {
+        list: {
+          Component: '/src/components/views/ContentTypeListPage#ContentTypeListPage',
+        },
         edit: {
           default: {
             Component: '/src/components/views/ContentTypes/GeneratorView#GeneratorView',

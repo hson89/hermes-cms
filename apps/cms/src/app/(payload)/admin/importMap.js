@@ -6,6 +6,7 @@ import { UserListPage as UserListPage_86189bd53a034cea3e66cd5c99ea1212 } from '.
 import { TenantField as TenantField_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { GeneratorView as GeneratorView_1d1663104411f3249e49e11834ea065f } from '../../../../src/components/views/ContentTypes/GeneratorView'
+import { ContentTypeListPage as ContentTypeListPage_a1d37317a26eeea16c6de0a4978585ab } from '../../../../src/components/views/ContentTypeListPage'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -48,6 +49,7 @@ export const importMap = {
   "@payloadcms/plugin-multi-tenant/client#TenantField": TenantField_1d0591e3cf4f332c83a86da13a0de59a,
   "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,
   "/src/components/views/ContentTypes/GeneratorView#GeneratorView": GeneratorView_1d1663104411f3249e49e11834ea065f,
+  "/src/components/views/ContentTypeListPage#ContentTypeListPage": ContentTypeListPage_a1d37317a26eeea16c6de0a4978585ab,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
