@@ -88,8 +88,8 @@ class AIService:
         self,
         *,
         prompt: str,
-        tenant_id: UUID,
-        user_id: UUID,
+        tenant_id: str,
+        user_id: str,
         db: AsyncSession | None = None,
     ) -> dict:
         """
@@ -98,8 +98,8 @@ class AIService:
 
         Args:
             prompt:    Natural-language description of the desired content type.
-            tenant_id: UUID of the tenant that owns the session.
-            user_id:   UUID of the user initiating the request.
+            tenant_id: The ID of the tenant that owns the session.
+            user_id:   The ID of the user initiating the request.
             db:        Optional async SQLAlchemy database session.
 
         Returns:

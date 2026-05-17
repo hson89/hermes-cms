@@ -70,8 +70,8 @@ class GenerateSchemaRequest(BaseModel):
     """Payload for POST /api/ai/generate-schema."""
 
     prompt: str
-    tenant_id: UUID
-    user_id: UUID
+    tenant_id: str
+    user_id: str
 
     @field_validator("prompt")
     @classmethod
@@ -95,8 +95,8 @@ class CopilotEditRequest(BaseModel):
     content_item_id: str
     section_id: str
     prompt: str
-    tenant_id: UUID
-    user_id: UUID
+    tenant_id: str
+    user_id: str
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────

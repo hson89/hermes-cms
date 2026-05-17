@@ -88,8 +88,8 @@ async def test_generate_schema_session_lifecycle(ai_service: AIService, mock_llm
         assert session is not None
         assert session.status == SessionStatus.COMPLETED
         assert len(session.context) == 3 # System, User, Assistant
-        assert session.tenant_id == tenant_id
-        assert session.user_id == user_id
+        assert session.tenant_id == str(tenant_id)
+        assert session.user_id == str(user_id)
 
 
 @pytest.mark.asyncio

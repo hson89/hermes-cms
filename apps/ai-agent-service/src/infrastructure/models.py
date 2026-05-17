@@ -8,7 +8,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Enum, JSON
+from sqlalchemy import Column, DateTime, Enum, JSON, String
 from sqlalchemy.dialects.postgresql import UUID
 
 from src.domain.ai_agent_session.models import SessionStatus
@@ -21,8 +21,8 @@ class AIAgentSessionModel(Base):
     __tablename__ = "ai_agent_sessions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
-    tenant_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    user_id = Column(String(36), nullable=False, index=True)
+    tenant_id = Column(String(36), nullable=False, index=True)
     context = Column(JSON, nullable=False, default=list)
     status = Column(Enum(SessionStatus), nullable=False, default=SessionStatus.ACTIVE)
     created_at = Column(

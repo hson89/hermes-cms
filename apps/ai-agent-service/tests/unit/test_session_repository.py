@@ -64,8 +64,8 @@ async def test_repository_save_and_retrieve(db_session: AsyncSession) -> None:
     retrieved = await repo.get_by_id(session.id)
     assert retrieved is not None
     assert retrieved.id == session.id
-    assert retrieved.tenant_id == tenant_id
-    assert retrieved.user_id == user_id
+    assert retrieved.tenant_id == str(tenant_id)
+    assert retrieved.user_id == str(user_id)
     assert len(retrieved.context) == 2
     assert retrieved.context[0].role == "user"
     assert retrieved.context[0].content == "Hello assistant!"
