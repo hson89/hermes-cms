@@ -245,7 +245,7 @@ export const CreateTenantPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8 lg:py-12 bg-surface-bright min-h-[80vh] font-body text-on-surface antialiased">
+    <div className="custom-tenant-view w-full max-w-6xl mx-auto px-4 py-8 lg:py-12 bg-surface-bright min-h-[80vh] font-body text-on-surface antialiased">
       
       {/* Title Header area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-outline-variant/15 pb-6 mb-8 gap-4">

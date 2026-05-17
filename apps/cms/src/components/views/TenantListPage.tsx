@@ -224,7 +224,7 @@ export const TenantListPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-6 py-8 lg:py-10 bg-background min-h-screen font-body text-on-background antialiased">
+    <div className="custom-tenant-view w-full max-w-[1600px] mx-auto px-6 py-8 lg:py-10 bg-background min-h-screen font-body text-on-background antialiased">
       
       {/* Editorial Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-8 border-b border-outline-variant/15 gap-6">
