@@ -15,6 +15,15 @@ export const Tenants: CollectionConfig = {
     description: 'Organizations or workspaces using the CMS.',
     group: 'Identity',
     defaultColumns: ['name', 'slug', 'status', 'tier', 'updatedAt'],
+    components: {
+      views: {
+        edit: {
+          default: {
+            Component: '/src/components/views/CreateTenantPage#CreateTenantPage',
+          },
+        },
+      },
+    },
   },
   access: {
     // Read: Super Admins can read all. 
