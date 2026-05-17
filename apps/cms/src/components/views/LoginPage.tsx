@@ -2,7 +2,6 @@
 
 import React, { useActionState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { loginAction } from '@/app/(frontend)/login/actions'
 import { Heading } from '../ui/atoms/Heading'
 import { Text } from '../ui/atoms/Text'
@@ -11,15 +10,13 @@ import { FormField } from '../ui/molecules/FormField'
 import { Icon } from '../ui/atoms/Icon'
 
 export const LoginPage: React.FC = () => {
-  const router = useRouter()
   const [state, formAction, isPending] = useActionState(loginAction, null)
 
   useEffect(() => {
     if (state?.success) {
-      router.push('/admin')
-      router.refresh()
+      window.location.href = '/admin'
     }
-  }, [state, router])
+  }, [state])
 
   return (
     <main className="bg-background text-on-surface font-body antialiased min-h-screen flex w-full overflow-hidden">
