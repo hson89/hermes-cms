@@ -18,5 +18,15 @@ export const Media: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      required: false,
+      admin: {
+        description: 'Reference to the tenant this media belongs to.',
+        position: 'sidebar',
+      },
+    },
   ],
 }

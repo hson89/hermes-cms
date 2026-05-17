@@ -24,13 +24,13 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { Nav as Nav_f9fd2b4264c96de9aad33b08efee653b } from '../../../../src/components/admin/Nav'
-import { Header as Header_02cf1ef79dd724a149fdc47d1c79b4ef } from '../../../../src/components/admin/Header'
+import { Nav as Nav_f9fd2b4264c96de9aad33b08efee653b } from '../../../components/admin/Nav'
+import { Header as Header_02cf1ef79dd724a149fdc47d1c79b4ef } from '../../../components/admin/Header'
 import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
-import { Dashboard as Dashboard_2a99722be2bc34386fe3c5345b6f60e6 } from '../../../../src/components/views/Dashboard'
-import { InitPage as InitPage_9d8465fe0818a95e328764da64c051af } from '../../../../src/components/views/InitPage'
-import { LoginPage as LoginPage_11fe2e3d8aeddfa2c8dd279b1b5a0298 } from '../../../../src/components/views/LoginPage'
+import { Dashboard as Dashboard_2a99722be2bc34386fe3c5345b6f60e6 } from '../../../components/views/Dashboard'
+import { InitPage as InitPage_9d8465fe0818a95e328764da64c051af } from '../../../components/views/InitPage'
+import { LoginPage as LoginPage_11fe2e3d8aeddfa2c8dd279b1b5a0298 } from '../../../components/views/LoginPage'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { getTenantIds } from '../Users/utils'
 
 /**
  * HostedSites collection.
@@ -15,21 +16,39 @@ export const HostedSites: CollectionConfig = {
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'super-admin') return true
-      return { tenantId: { equals: user.tenantId } }
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
+      return {
+        tenant: {
+          in: tenantIds,
+        },
+      }
     },
     create: ({ req: { user } }) =>
       Boolean(user) &&
-      (user?.role === 'super-admin' || user?.role === 'tenant-admin'),
+      ((user as any).role === 'super-admin' || (user as any).role === 'tenant-admin'),
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'super-admin') return true
-      return { tenantId: { equals: user.tenantId } }
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
+      return {
+        tenant: {
+          in: tenantIds,
+        },
+      }
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'super-admin') return true
-      return { tenantId: { equals: user.tenantId } }
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
+      return {
+        tenant: {
+          in: tenantIds,
+        },
+      }
     },
   },
   hooks: {
@@ -54,13 +73,7 @@ export const HostedSites: CollectionConfig = {
       required: true,
       label: 'Site Name',
     },
-    {
-      name: 'tenantId',
-      type: 'relationship',
-      relationTo: 'tenants',
-      required: true,
-      label: 'Tenant',
-    },
+
     {
       name: 'template',
       type: 'select',

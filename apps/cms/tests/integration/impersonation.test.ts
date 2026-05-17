@@ -35,6 +35,9 @@ describe('Tenant Impersonation', () => {
         status: 'active',
         tier: 'standard',
         defaultLocale: 'en',
+        domains: [
+          { hostname: `${tenantSlug}.com`, isPrimary: true }
+        ]
       },
       overrideAccess: true,
     })

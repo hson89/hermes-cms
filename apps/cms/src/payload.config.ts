@@ -20,6 +20,9 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     user: Users.slug,
+    importMap: {
+      baseDir: path.resolve(dirname),
+    },
     components: {
       views: {
         dashboard: {
@@ -32,11 +35,11 @@ export default buildConfig({
           Component: '/src/components/views/LoginPage#LoginPage',
         },
       },
-      Nav: ['/src/components/admin/Nav#Nav'] as any,
+      Nav: '/src/components/admin/Nav#Nav',
       header: ['/src/components/admin/Header#Header'] as any,
     },
   },
-  collections: [Tenants, Users, APIKeys, ContentTypes, ContentItems, HostedSites, AuditLogs, Media],
+  collections: [Tenants, Users, ContentTypes, ContentItems, HostedSites, Media, AuditLogs, APIKeys],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || 'YOUR_SECRET_HERE',
   db: postgresAdapter({
@@ -51,7 +54,9 @@ export default buildConfig({
         'content-types': {},
         'content-items': {},
         'api-keys': {},
-        'media': {},
+        'media': { customTenantField: true },
+        'audit-logs': { customTenantField: true },
+        'hosted-sites': {},
       },
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => {

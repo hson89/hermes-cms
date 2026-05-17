@@ -12,15 +12,18 @@ describe('Tenant Soft-Delete', () => {
   })
 
   it('should allow setting status to archived', async () => {
-    // 1. Create a tenant
+    const uniqueId = Date.now()
     const tenant = await payload.create({
       collection: 'tenants',
       data: {
         name: 'Soft Delete Test',
-        slug: 'soft-delete-test',
+        slug: `soft-delete-test-${uniqueId}`,
         status: 'active',
         tier: 'standard',
         defaultLocale: 'en',
+        domains: [
+          { hostname: `soft-delete-test-${uniqueId}.com`, isPrimary: true }
+        ]
       },
       overrideAccess: true,
     })

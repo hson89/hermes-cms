@@ -22,7 +22,7 @@ export const Header: React.FC = () => {
   }
 
   return (
-    <header className="w-full h-20 sticky top-0 z-40 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-10 max-w-full">
+    <header className="w-full h-20 sticky top-0 z-40 bg-surface-container-low/80 backdrop-blur-xl flex justify-between items-center px-10 max-w-full">
       <div className="flex items-center">
         <h2 className="font-headline font-bold text-on-surface text-2xl tracking-tight m-0">
           {currentTitle}

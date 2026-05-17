@@ -70,7 +70,7 @@ export const InitPage: React.FC = () => {
             </div>
 
             {/* Linear-style Glassmorphic Form Container */}
-            <div className="bg-white/80 backdrop-blur-2xl p-8 rounded-xl ring-1 ring-outline-variant/15 shadow-2xl shadow-on-surface/5">
+            <div className="bg-surface-container-lowest backdrop-blur-2xl p-8 rounded-xl shadow-2xl shadow-on-surface/5">
               <form action={setupInitialAdmin} className="space-y-6">
                 <div className="space-y-1">
                   <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1">Full Name</label>
@@ -78,7 +78,7 @@ export const InitPage: React.FC = () => {
                     <input 
                       name="name"
                       required
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
+                      className="w-full bg-surface-container-low border-0 focus:bg-surface-container-high rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all outline-none" 
                       placeholder="e.g. Alex Rivera" 
                       type="text"
                     />
@@ -91,7 +91,7 @@ export const InitPage: React.FC = () => {
                     <input 
                       name="email"
                       required
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
+                      className="w-full bg-surface-container-low border-0 focus:bg-surface-container-high rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all outline-none" 
                       placeholder="alex@company.ai" 
                       type="email"
                     />
@@ -104,7 +104,7 @@ export const InitPage: React.FC = () => {
                     <input 
                       name="password"
                       required
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all pr-12" 
+                      className="w-full bg-surface-container-low border-0 focus:bg-surface-container-high rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all pr-12 outline-none" 
                       placeholder="••••••••" 
                       type={showPassword ? 'text' : 'password'}
                     />
@@ -125,7 +125,7 @@ export const InitPage: React.FC = () => {
                       name="workspaceName"
                       required
                       onChange={(e) => setWorkspaceSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-'))}
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
+                      className="w-full bg-surface-container-low border-0 focus:bg-surface-container-high rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all outline-none" 
                       placeholder="Research Ops" 
                       type="text"
                     />
@@ -137,7 +137,7 @@ export const InitPage: React.FC = () => {
                       required
                       value={workspaceSlug}
                       onChange={(e) => setWorkspaceSlug(e.target.value.toLowerCase())}
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all font-mono text-sm" 
+                      className="w-full bg-surface-container-low border-0 focus:bg-surface-container-high rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all font-mono text-sm outline-none" 
                       placeholder="research-ops" 
                       type="text"
                     />
@@ -147,7 +147,7 @@ export const InitPage: React.FC = () => {
                 <div className="pt-4">
                   <button 
                     type="submit"
-                    className="w-full flex items-center justify-center gap-3 text-white font-body font-bold py-5 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 group bg-gradient-to-br from-primary to-primary-container"
+                    className="w-full flex items-center justify-center gap-3 text-on-primary font-body font-bold py-5 rounded-lg hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] transition-all bg-primary no-underline border-none cursor-pointer"
                   >
                     Initialize Workspace
                     <Icon name="arrow_forward" className="transition-transform group-hover:translate-x-1" />

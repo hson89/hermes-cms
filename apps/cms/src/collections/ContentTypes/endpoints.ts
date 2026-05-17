@@ -1,4 +1,5 @@
 import type { Endpoint, PayloadRequest } from 'payload'
+import { getPrimaryTenantId } from '../Users/utils'
 
 /**
  * Custom endpoint: POST /api/content-types/generate-schema
@@ -20,7 +21,8 @@ export const generateSchemaEndpoint: Endpoint = {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!user.tenantId) {
+    const tenantId = getPrimaryTenantId(user)
+    if (!tenantId) {
       return Response.json(
         { error: 'User does not belong to a tenant.' },
         { status: 403 },
@@ -29,7 +31,6 @@ export const generateSchemaEndpoint: Endpoint = {
 
     let body: { prompt?: string }
     try {
-      // PayloadRequest extends the web Request – .json() is available at runtime
       body = await (req as unknown as Request).json()
     } catch {
       return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
@@ -39,9 +40,6 @@ export const generateSchemaEndpoint: Endpoint = {
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
       return Response.json({ error: 'prompt is required.' }, { status: 400 })
     }
-
-    const tenantId =
-      typeof user.tenantId === 'object' ? user.tenantId.id : user.tenantId
 
     try {
       // Dispatch to AI Microservice

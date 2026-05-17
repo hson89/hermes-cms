@@ -1,4 +1,5 @@
 import type { Endpoint } from 'payload'
+import { getPrimaryTenantId } from '../Users/utils'
 
 /**
  * T022 - Implement POST /api/ai/copilot/edit endpoint
@@ -39,7 +40,7 @@ export const copilotEditEndpoint: Endpoint = {
           content_item_id: contentItemId,
           section_id: sectionId,
           prompt,
-          tenant_id: user.tenantId,
+          tenant_id: getPrimaryTenantId(user),
           user_id: user.id,
         }),
       })

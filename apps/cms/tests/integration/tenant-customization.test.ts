@@ -22,15 +22,20 @@ describe('Tenant Customization & Gating', () => {
       overrideAccess: true,
     })
 
+    const uniqueId = Date.now()
+    const slug = `branding-test-${uniqueId}`
     // 2. Create Tenant with branding
     const tenant = await payload.create({
       collection: 'tenants',
       data: {
         name: 'Branding Test',
-        slug: 'branding-test',
+        slug,
         status: 'active',
         tier: 'standard',
         defaultLocale: 'en',
+        domains: [
+          { hostname: `branding-test-${uniqueId}.com`, isPrimary: true }
+        ],
         branding: {
           primaryColor: '#FF0000',
           logo: media.id
@@ -42,7 +47,7 @@ describe('Tenant Customization & Gating', () => {
     const { TenantService } = await import('../../src/services/tenant-service')
     const service = new TenantService(payload)
 
-    const resolved = await service.resolveTenantByHostname('branding-test.hermes-cms.com')
+    const resolved = await service.resolveTenantByHostname(`${slug}.hermes-cms.com`)
     expect(resolved).not.toBeNull()
     expect(resolved?.branding?.primaryColor).toBe('#FF0000')
     // logo url should be present (mocked or actual)
@@ -50,14 +55,18 @@ describe('Tenant Customization & Gating', () => {
   })
 
   it('should block suspended tenants', async () => {
+    const uniqueId = Date.now()
     await payload.create({
       collection: 'tenants',
       data: {
         name: 'Suspended Tenant',
-        slug: 'suspended-tenant',
+        slug: `suspended-tenant-${uniqueId}`,
         status: 'suspended',
         tier: 'standard',
         defaultLocale: 'en',
+        domains: [
+          { hostname: `suspended-tenant-${uniqueId}.com`, isPrimary: true }
+        ]
       },
       overrideAccess: true,
     })

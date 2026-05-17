@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { TenantService } from '../tenant-service'
 import { BasePayload } from 'payload'
 
@@ -7,7 +8,8 @@ describe('TenantService', () => {
 
   beforeEach(() => {
     mockPayload = {
-      find: jest.fn(),
+      find: jest.fn().mockResolvedValue({ docs: [] }),
+      create: jest.fn().mockResolvedValue({}),
     }
     tenantService = new TenantService(mockPayload as unknown as BasePayload)
   })
@@ -21,7 +23,7 @@ describe('TenantService', () => {
     it('should block suspended tenants', () => {
       const result = tenantService.validateTenantStatus('suspended')
       expect(result.allowed).toBe(false)
-      expect(result.code).toBe('TENANT_BLOCKED')
+      expect(result.code).toBe('TENANT_SUSPENDED')
     })
 
     it('should block archived tenants', () => {

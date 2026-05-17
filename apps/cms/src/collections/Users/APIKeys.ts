@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { getTenantIds } from './utils'
 
 /**
  * APIKeys collection.
@@ -27,15 +28,37 @@ export const APIKeys: CollectionConfig = {
     read: ({ req: { user } }) => {
       if (!user) return false
       if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
       return {
-        tenantId: {
-          exists: true, // Placeholder or real scoping
+        tenant: {
+          in: tenantIds,
         },
       }
     },
     create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => !!user && (user as any).role === 'super-admin',
-    delete: ({ req: { user } }) => !!user && (user as any).role === 'super-admin',
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
+      return {
+        tenant: {
+          in: tenantIds,
+        },
+      }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
+      return {
+        tenant: {
+          in: tenantIds,
+        },
+      }
+    },
   },
   fields: [
     {
@@ -47,16 +70,7 @@ export const APIKeys: CollectionConfig = {
         description: 'A human-readable name for this API key.',
       },
     },
-    {
-      name: 'tenantId',
-      type: 'relationship',
-      relationTo: 'tenants',
-      required: true,
-      label: 'Tenant',
-      admin: {
-        description: 'The tenant this API key grants access to.',
-      },
-    },
+
     {
       name: 'expiresAt',
       type: 'date',

@@ -21,7 +21,12 @@ export async function setupInitialAdmin(formData: FormData) {
     data: {
       name: workspaceName,
       slug: workspaceSlug,
+      status: 'active',
+      tier: 'standard',
+      defaultLocale: 'en',
+      domains: [],
     },
+    draft: false,
   })
 
   // 2. Create the first user (super-admin)
@@ -32,8 +37,13 @@ export async function setupInitialAdmin(formData: FormData) {
       email,
       password,
       role: 'super-admin',
-      tenantId: tenant.id, // Optional: super-admins can also belong to a tenant
+      tenants: [
+        {
+          tenant: tenant.id,
+        },
+      ],
     },
+    draft: false,
   })
 
   // 3. Redirect to login or dashboard

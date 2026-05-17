@@ -56,6 +56,7 @@ export const AuditLogs: CollectionConfig = {
       type: 'relationship',
       relationTo: 'tenants',
       label: 'Tenant',
+      required: false,
       admin: {
         description: 'Reference to the tenant this log belongs to.',
       },

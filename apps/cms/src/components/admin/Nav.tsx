@@ -61,7 +61,7 @@ export const Nav: React.FC<any> = () => {
 
         {/* Footer Navigation */}
         <div className="space-y-2 font-body text-label-sm tracking-wide">
-          <div className="pt-6 border-t border-on-secondary-fixed-variant/30 mt-6">
+          <div className="pt-6 mt-6">
             <Link
               href="/admin/settings"
               className="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-surface-bright hover:bg-on-primary-fixed-variant rounded-xl transition-all duration-200 no-underline group"
@@ -71,7 +71,7 @@ export const Nav: React.FC<any> = () => {
             </Link>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-on-secondary-fixed-variant/30">
+          <div className="mt-4 pt-4 bg-on-primary-fixed-variant/20 rounded-2xl">
             <div className="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim rounded-xl group/profile transition-all duration-200">
               <div className="relative">
                 <img 
