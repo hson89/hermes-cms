@@ -15,13 +15,15 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Request, Security, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, field_validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.ai_service import AIService
 from src.infrastructure.config import settings
+from src.infrastructure.database import get_db
 
 # ── Security ──────────────────────────────────────────────────────────────────
 
@@ -117,6 +119,7 @@ async def health() -> dict:
 async def generate_schema(
     body: GenerateSchemaRequest,
     request: Request,
+    db: AsyncSession = Depends(get_db),
 ) -> GenerateSchemaResponse:
     """
     Accepts a natural-language prompt and returns a structured content schema
@@ -131,6 +134,7 @@ async def generate_schema(
             prompt=body.prompt,
             tenant_id=body.tenant_id,
             user_id=body.user_id,
+            db=db,
         )
         return GenerateSchemaResponse(
             session_id=result["sessionId"],
@@ -155,10 +159,14 @@ async def generate_schema(
     summary="Get AI session status",
     dependencies=[Security(_require_internal_secret)],
 )
-async def get_session(session_id: str, request: Request) -> dict:
+async def get_session(
+    session_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
     """Return the current status and context of an AIAgentSession."""
     ai_service: AIService = request.app.state.ai_service
-    session = ai_service.get_session(session_id)
+    session = await ai_service.get_session(session_id, db=db)
     if session is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
@@ -81,13 +82,14 @@ class AIService:
         return self.__llm
 
     # ── Schema Generation ──────────────────────────────────────────────────
-
+ 
     async def generate_schema(
         self,
         *,
         prompt: str,
         tenant_id: UUID,
         user_id: UUID,
+        db: AsyncSession | None = None,
     ) -> dict:
         """
         Creates a new AIAgentSession, invokes the LLM to generate a JSON schema,
@@ -97,16 +99,26 @@ class AIService:
             prompt:    Natural-language description of the desired content type.
             tenant_id: UUID of the tenant that owns the session.
             user_id:   UUID of the user initiating the request.
+            db:        Optional async SQLAlchemy database session.
 
         Returns:
             dict with keys: sessionId, schema (dict), status
         """
         session = AIAgentSession(user_id=user_id, tenant_id=tenant_id)
-        _sessions[str(session.id)] = session
+        
+        async def save_session():
+            if db is not None:
+                from src.infrastructure.repositories.session_repository import SQLSessionRepository
+                await SQLSessionRepository(db).save(session)
+            else:
+                _sessions[str(session.id)] = session
+
+        await save_session()
 
         # Build initial messages context
         session.add_message("system", _SCHEMA_GENERATION_SYSTEM_PROMPT)
         session.add_message("user", prompt)
+        await save_session()
 
         messages = [
             SystemMessage(content=_SCHEMA_GENERATION_SYSTEM_PROMPT),
@@ -128,6 +140,7 @@ class AIService:
 
                 # Append assistant's raw attempt to aggregate session
                 session.add_message("assistant", raw_content)
+                await save_session()
 
                 # Clean prompt formatting details from markdown blocks if present
                 clean_content = raw_content.strip()
@@ -144,6 +157,7 @@ class AIService:
 
                 # If successful parsing and validation, mark completed and return
                 session.complete()
+                await save_session()
                 return {
                     "sessionId": str(session.id),
                     "schema": schema,
@@ -164,6 +178,7 @@ class AIService:
                 )
 
                 session.add_message("user", feedback_message)
+                await save_session()
 
                 # Append standard conversation turn history to the LangChain prompt thread
                 messages.append(AIMessage(content=raw_content))
@@ -171,18 +186,26 @@ class AIService:
 
             except Exception as exc:
                 session.fail()
+                await save_session()
                 raise RuntimeError(
                     f"Schema generation failed due to unexpected error: {exc}"
                 ) from exc
 
         # If loop exhausts all retries without a valid schema
         session.fail()
+        await save_session()
         raise ValueError(
             f"Failed to generate a valid schema after {max_retries} retries. Last error: {last_error_message}"
         )
 
     # ── Session Retrieval ──────────────────────────────────────────────────
 
-    def get_session(self, session_id: str) -> AIAgentSession | None:
+    async def get_session(self, session_id: str, db: AsyncSession | None = None) -> AIAgentSession | None:
         """Retrieve an existing session by its ID."""
+        if db is not None:
+            from src.infrastructure.repositories.session_repository import SQLSessionRepository
+            try:
+                return await SQLSessionRepository(db).get_by_id(UUID(session_id))
+            except ValueError:
+                return None
         return _sessions.get(session_id)

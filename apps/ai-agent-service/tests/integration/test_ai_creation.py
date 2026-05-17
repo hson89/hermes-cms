@@ -151,6 +151,7 @@ class TestGenerateSchemaEndpoint:
             },
         ), patch(
             "src.application.ai_service.AIService.get_session",
+            new_callable=AsyncMock,
             return_value=MagicMock(
                 id=session_id,
                 status="completed",

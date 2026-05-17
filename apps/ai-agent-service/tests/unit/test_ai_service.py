@@ -83,7 +83,7 @@ async def test_generate_schema_session_lifecycle(ai_service: AIService, mock_llm
         )
 
         session_id = result["sessionId"]
-        session = ai_service.get_session(session_id)
+        session = await ai_service.get_session(session_id)
         
         assert session is not None
         assert session.status == SessionStatus.COMPLETED

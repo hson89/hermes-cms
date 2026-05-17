@@ -57,6 +57,7 @@ describe('generateSchemaEndpoint CMS Handler', () => {
   })
 
   it('should successfully proxy to AI service with snake_case keys in payload', async () => {
+    const createCalls: any[] = []
     const mockReq: any = {
       user: {
         id: 'user-123',
@@ -64,6 +65,12 @@ describe('generateSchemaEndpoint CMS Handler', () => {
         collection: 'users',
       },
       json: async () => ({ prompt: 'Create a blog post schema' }),
+      payload: {
+        create: async (args: any) => {
+          createCalls.push(args)
+          return { id: 'history-123' }
+        }
+      }
     }
 
     const fetchCalls: any[] = []
@@ -74,6 +81,7 @@ describe('generateSchemaEndpoint CMS Handler', () => {
         json: async () => ({
           sessionId: 'session-789',
           status: 'completed',
+          content_schema: { name: 'Luxury Watches', fields: [] },
         }),
       }
     }) as any
@@ -84,6 +92,13 @@ describe('generateSchemaEndpoint CMS Handler', () => {
     expect(response.status).toBe(202)
     expect(json.sessionId).toBe('session-789')
     expect(json.status).toBe('processing')
+
+    // Verify prompt history log write (T007b)
+    expect(createCalls.length).toBe(1)
+    expect(createCalls[0].collection).toBe('ai-prompt-history')
+    expect(createCalls[0].data.prompt).toBe('Create a blog post schema')
+    expect(createCalls[0].data.tenant).toBe('tenant-456')
+    expect(createCalls[0].data.user).toBe('user-123')
 
     // Verify the arguments passed to global.fetch
     expect(fetchCalls.length).toBe(1)
@@ -214,7 +229,10 @@ describe('exportSchemaEndpoint CMS Handler', () => {
   it('should find content type and return dynamic JSON schema download', async () => {
     const findByIDCalls: any[] = []
     const mockReq: any = {
-      user: { id: 'user-123' },
+      user: {
+        id: 'user-123',
+        tenants: [{ tenant: 'tenant-456' }],
+      },
       url: 'http://localhost:3000/api/content-types/ct-abc/export',
       payload: {
         findByID: async (args: any) => {
@@ -223,6 +241,7 @@ describe('exportSchemaEndpoint CMS Handler', () => {
             id: 'ct-abc',
             name: 'Luxury Watches',
             slug: 'luxury-watches',
+            tenant: 'tenant-456',
             schema: {
               fields: [
                 { name: 'model', type: 'text', required: true },
@@ -250,6 +269,32 @@ describe('exportSchemaEndpoint CMS Handler', () => {
       overrideAccess: true,
     })
   })
+
+  it('should return 403 Forbidden if user tries to export content type from another tenant', async () => {
+    const mockReq: any = {
+      user: {
+        id: 'user-123',
+        tenants: [{ tenant: 'tenant-different' }],
+      },
+      url: 'http://localhost:3000/api/content-types/ct-abc/export',
+      payload: {
+        findByID: async () => {
+          return {
+            id: 'ct-abc',
+            name: 'Luxury Watches',
+            slug: 'luxury-watches',
+            tenant: 'tenant-456',
+          }
+        }
+      }
+    }
+
+    const response = await (exportSchemaEndpoint.handler as any)(mockReq)
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error).toBe('Forbidden')
+  })
 })
 
 describe('exportSchemaTSEndpoint CMS Handler', () => {
@@ -268,7 +313,10 @@ describe('exportSchemaTSEndpoint CMS Handler', () => {
   it('should find content type and return dynamically generated static TypeScript collection configuration', async () => {
     const findByIDCalls: any[] = []
     const mockReq: any = {
-      user: { id: 'user-123' },
+      user: {
+        id: 'user-123',
+        tenants: [{ tenant: 'tenant-456' }],
+      },
       url: 'http://localhost:3000/api/content-types/ct-abc/export/ts',
       payload: {
         findByID: async (args: any) => {
@@ -277,6 +325,7 @@ describe('exportSchemaTSEndpoint CMS Handler', () => {
             id: 'ct-abc',
             name: 'Luxury Watches',
             slug: 'luxury-watches',
+            tenant: 'tenant-456',
             schema: {
               fields: [
                 { name: 'model', type: 'text', required: true },
@@ -307,5 +356,31 @@ describe('exportSchemaTSEndpoint CMS Handler', () => {
       id: 'ct-abc',
       overrideAccess: true,
     })
+  })
+
+  it('should return 403 Forbidden if user tries to export TS configuration from another tenant', async () => {
+    const mockReq: any = {
+      user: {
+        id: 'user-123',
+        tenants: [{ tenant: 'tenant-different' }],
+      },
+      url: 'http://localhost:3000/api/content-types/ct-abc/export/ts',
+      payload: {
+        findByID: async () => {
+          return {
+            id: 'ct-abc',
+            name: 'Luxury Watches',
+            slug: 'luxury-watches',
+            tenant: 'tenant-456',
+          }
+        }
+      }
+    }
+
+    const response = await (exportSchemaTSEndpoint.handler as any)(mockReq)
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error).toBe('Forbidden')
   })
 })

@@ -16,7 +16,7 @@ export const generateSchemaEndpoint: Endpoint = {
   path: '/generate-schema',
   method: 'post',
   handler: async (req) => {
-    const { user } = req
+    const { user, payload } = req
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -70,6 +70,22 @@ export const generateSchemaEndpoint: Endpoint = {
       }
 
       const result = await response.json()
+
+      // Log the natural language prompt and generated schema outcome to AIPromptHistory (T007b)
+      try {
+        await payload.create({
+          collection: 'ai-prompt-history' as any,
+          data: {
+            prompt: prompt.trim(),
+            generatedSchema: result.content_schema || result.schema || {},
+            user: user.id,
+            tenant: tenantId,
+          },
+          overrideAccess: true,
+        })
+      } catch (logErr) {
+        console.error('[generate-schema] Failed to log prompt to AIPromptHistory:', logErr)
+      }
 
       return Response.json(
         {
@@ -194,6 +210,21 @@ export const exportSchemaEndpoint: Endpoint = {
         return Response.json({ error: 'Content Type not found' }, { status: 404 })
       }
 
+      // Enforce strict logical tenant isolation to prevent cross-tenant data leaks (Principle I)
+      if ((user as any).role !== 'super-admin') {
+        const tenantId = getPrimaryTenantId(user)
+        if (!tenantId) {
+          return Response.json(
+            { error: 'User does not belong to a tenant.' },
+            { status: 403 },
+          )
+        }
+        const docTenantId = typeof doc.tenant === 'object' ? (doc.tenant as any)?.id : doc.tenant
+        if (!docTenantId || String(docTenantId) !== String(tenantId)) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
+        }
+      }
+
       return new Response(JSON.stringify(doc.schema || {}, null, 2), {
         status: 200,
         headers: {
@@ -243,6 +274,21 @@ export const exportSchemaTSEndpoint: Endpoint = {
 
       if (!doc) {
         return Response.json({ error: 'Content Type not found' }, { status: 404 })
+      }
+
+      // Enforce strict logical tenant isolation to prevent cross-tenant data leaks (Principle I)
+      if ((user as any).role !== 'super-admin') {
+        const tenantId = getPrimaryTenantId(user)
+        if (!tenantId) {
+          return Response.json(
+            { error: 'User does not belong to a tenant.' },
+            { status: 403 },
+          )
+        }
+        const docTenantId = typeof doc.tenant === 'object' ? (doc.tenant as any)?.id : doc.tenant
+        if (!docTenantId || String(docTenantId) !== String(tenantId)) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
+        }
       }
 
       const tsContent = generatePayloadTS(doc.name, doc.slug, doc.schema?.fields || [])
