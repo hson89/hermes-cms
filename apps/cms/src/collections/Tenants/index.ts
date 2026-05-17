@@ -17,6 +17,9 @@ export const Tenants: CollectionConfig = {
     defaultColumns: ['name', 'slug', 'status', 'tier', 'updatedAt'],
     components: {
       views: {
+        list: {
+          Component: '/src/components/views/TenantListPage#TenantListPage',
+        },
         edit: {
           default: {
             Component: '/src/components/views/CreateTenantPage#CreateTenantPage',
