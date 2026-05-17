@@ -69,7 +69,13 @@ apps/ai-agent-service/
 │   ├── application/
 │   │   └── ai_service.py       # Handles LangChain orchestration & self-correction retry loop
 │   ├── domain/
-│   │   └── schema_validator.py # Validates suggested fields against allowed Payload types
+│   │   ├── schema_validator.py # Validates suggested fields against allowed Payload types
+│   │   └── repositories/
+│   │       └── session_repository.py # Abstract repository interface (Strict DDD)
+│   ├── infrastructure/
+│   │   ├── repositories/
+│   │   │   └── session_repository.py # SQLAlchemy session repository implementation
+│   │   └── database.py         # DB connection & base model definitions
 │   └── main.py                 # API request/response schema handlers
 ```
 
