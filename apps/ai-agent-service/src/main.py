@@ -13,6 +13,7 @@ T003 - Initialize FastAPI Microservice project
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
@@ -73,6 +74,13 @@ class GenerateSchemaRequest(BaseModel):
     tenant_id: str
     user_id: str
 
+    @field_validator("tenant_id", "user_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
+
     @field_validator("prompt")
     @classmethod
     def prompt_must_not_be_empty(cls, v: str) -> str:
@@ -97,6 +105,13 @@ class CopilotEditRequest(BaseModel):
     prompt: str
     tenant_id: str
     user_id: str
+
+    @field_validator("content_item_id", "section_id", "tenant_id", "user_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
