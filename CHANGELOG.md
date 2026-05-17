@@ -35,10 +35,24 @@ This feature track implements the core multi-tenancy management foundation for H
   - Built endpoint `GET /api/tenants/resolve?hostname=...` for fast external gateway mapping.
   - Integrated `X-Internal-Secret` header authentication for CMS-to-AI microservice communications.
 
-#### 3. Alexandria Bespoke Admin UI & Layout Cleanups (`apps/cms/src/components/views/` & `apps/cms/src/app/`)
+#### 3. Alexandria Bespoke Admin UI & Shared Registry Components (`apps/cms/src/components/`)
+- **[NEW] Reusable Shared UI Components (`apps/cms/src/components/ui/`)**:
+  - **`RegistryHeader`** ([RegistryHeader.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/molecules/RegistryHeader.tsx)): An editorial-grade view header featuring Outfit/Public Sans typography and staggered soft-blur word entry animations.
+  - **`RegistryTable`** ([RegistryTable.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/organisms/RegistryTable.tsx)): A borderless grid-card hybrid registry container with decorative monogram avatars, flex column layouts, and high-fidelity pulse skeleton loading state.
+  - **`FilterChips`** ([FilterChips.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/molecules/FilterChips.tsx)): Generically typed visual status filtering controls utilizing premium color accents.
+  - **`SearchInput`** ([SearchInput.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/molecules/SearchInput.tsx)): A beautiful search text field with subtle debouncing to limit load refetches.
+  - **`RegistryPagination`** ([RegistryPagination.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/molecules/RegistryPagination.tsx)): High-end page controls for navigating multi-page listings.
+  - **`ConfirmationModal`** ([ConfirmationModal.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/organisms/ConfirmationModal.tsx)): A general-purpose glassmorphism dialog for danger-level double confirmation prompts (e.g. decommissioning).
+- **[NEW] Custom User Registry View (`UserListPage.tsx`)** ([UserListPage.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/views/UserListPage.tsx)):
+  - Built a customized identity admin interface displaying registered accounts with modern monogram avatars.
+  - Formatted Public Sans status tags for roles (e.g. specialized gold/archival tint for Super Admins) and custom badges for affiliated tenant mappings.
+  - Integrated full role filter chips, live search inputs, and deletion workflows protected by self-deletion safeguards.
 - **[MODIFY] Tenant List View (`TenantListPage.tsx`)** ([TenantListPage.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/views/TenantListPage.tsx)):
-  - Crafted high-fidelity editorial registry page featuring Noto Serif headlines and alternating tonal cards (the "No-Line" rule).
-  - Implemented Public Sans status tags, tier badges, debounced search, status-tier filters, and an interactive decommissioning modal with a double-confirmation slug check.
+  - Completely refactored to utilize the newly created shared visual registry components, eliminating over 250 lines of duplicate UI layout structure.
+- **[MODIFY] Users Collection Configuration (`index.ts`)** ([Users/index.ts](file:///home/itlight/dev/hermes-cms/apps/cms/src/collections/Users/index.ts)):
+  - Registered `UserListPage` custom React component inside `admin.components.views.list` to substitute default list grids.
+- **[MODIFY] Global Stylesheet (`globals.css`)** ([globals.css](file:///home/itlight/dev/hermes-cms/apps/cms/src/app/globals.css)):
+  - Added modern Alexandria text stagger animations utilizing keyframe-based soft-blur blur scales (`.animate-soft-blur-in`).
 - **[MODIFY] Tenant Creation/Edit Wizard (`CreateTenantPage.tsx`)** ([CreateTenantPage.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/views/CreateTenantPage.tsx)):
   - Integrated interactive step navigation (Identity -> Domains -> White-Labeling).
   - Added live domain-limit meters, real-time slug format validation, and high-fidelity, real-time branded sidebar preview cards.

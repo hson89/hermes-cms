@@ -98,7 +98,7 @@ export class TenantService {
    * Enables a Super Admin to impersonate a tenant.
    * Logs the impersonation event.
    */
-  async impersonateTenant(superAdminId: string, tenantId: string): Promise<boolean> {
+  async impersonateTenant(superAdminId: number | string, tenantId: number | string): Promise<boolean> {
     const tenant = await this.payload.findByID({
       collection: 'tenants',
       id: tenantId,
@@ -106,13 +106,16 @@ export class TenantService {
 
     if (!tenant) return false
 
+    const parsedTenantId = typeof tenantId === 'string' ? parseInt(tenantId, 10) : tenantId
+    const parsedSuperAdminId = typeof superAdminId === 'string' ? parseInt(superAdminId, 10) : superAdminId
+
     await this.payload.create({
       collection: 'audit-logs',
       data: {
         action: 'IMPERSONATION_START',
         severity: 'info',
-        tenant: tenantId,
-        user: superAdminId, // Payload should accept ID for single relationship
+        tenant: parsedTenantId,
+        user: parsedSuperAdminId,
         isImpersonated: true,
         metadata: {
           impersonatedTenant: tenant.slug,

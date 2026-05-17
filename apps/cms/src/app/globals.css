@@ -198,5 +198,24 @@ div:has(> .custom-tenant-view) > [class*="collection-list"] {
   margin: 0 !important;
 }
 
+/* Alexandria Text Animations (from animate-text skill) */
+@keyframes soft-blur-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-soft-blur-in {
+  animation: soft-blur-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+
 
 
