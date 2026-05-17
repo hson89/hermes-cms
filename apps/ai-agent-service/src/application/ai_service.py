@@ -11,6 +11,7 @@ T016 - Implement AI Agent service with LangChain 1.2+ for schema/content generat
 from __future__ import annotations
 
 import json
+import re
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -143,14 +144,8 @@ class AIService:
                 await save_session()
 
                 # Clean prompt formatting details from markdown blocks if present
-                clean_content = raw_content.strip()
-                if clean_content.startswith("```"):
-                    lines = clean_content.splitlines()
-                    if lines[0].startswith("```"):
-                        lines = lines[1:]
-                    if lines and lines[-1].startswith("```"):
-                        lines = lines[:-1]
-                    clean_content = "\n".join(lines).strip()
+                match = re.search(r"```(?:json)?\s*(.*?)\s*```", raw_content, re.DOTALL)
+                clean_content = match.group(1).strip() if match else raw_content.strip()
 
                 schema = json.loads(clean_content)
                 validate_content_schema(schema)

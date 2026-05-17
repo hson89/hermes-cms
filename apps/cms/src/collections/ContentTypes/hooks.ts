@@ -30,8 +30,8 @@ export const beforeChangeHook: CollectionBeforeChangeHook = async ({
       const clientTime = new Date(unmodifiedSinceHeader).getTime()
       const dbTime = new Date(originalDoc.updatedAt).getTime()
 
-      // Allow 1s tolerance for date precision conversion discrepancies
-      if (dbTime - clientTime > 1000) {
+      // Allow 1s tolerance for date precision conversion discrepancies and clock skew in either direction
+      if (Math.abs(dbTime - clientTime) > 1000) {
         throw new Error(
           'Precondition Failed: The Content Type was modified by another user. Please reload and try again.'
         )
