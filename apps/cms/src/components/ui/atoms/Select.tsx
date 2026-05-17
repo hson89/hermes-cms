@@ -6,7 +6,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select: React.FC<SelectProps> = ({ error, className = '', children, ...props }) => {
-  const baseStyles = 'w-full bg-surface-container-lowest border rounded-xl pl-4 pr-10 py-3.5 font-body text-on-surface text-base focus:outline-none focus:ring-1 transition-all shadow-sm cursor-pointer appearance-none'
+  const baseStyles = 'w-full bg-surface-container-lowest border rounded-xl pl-4 pr-10 py-3.5 font-body text-on-surface text-base focus:outline-none focus:ring-1 transition-all shadow-sm cursor-pointer appearance-none bg-none'
   
   const stateStyles = error 
     ? 'border-error focus:border-error focus:ring-error' 
