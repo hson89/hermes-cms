@@ -10,6 +10,7 @@ import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
 import { RegistryPagination } from '@/components/ui/molecules/RegistryPagination'
 import { ConfirmationModal } from '@/components/ui/organisms/ConfirmationModal'
+import { Badge } from '@/components/ui/atoms/Badge'
 
 interface TenantDomain {
   hostname: string
@@ -180,36 +181,36 @@ export const TenantListPage: React.FC = () => {
   }
 
   // Styling maps based on Alexandria theme & Public Sans metrics
-  const tierBadges = {
+  const tierBadges: Record<Tenant['tier'], { text: string; icon: string; color: 'neutral' | 'primary' | 'gold' }> = {
     standard: {
       text: 'Standard',
       icon: 'verified',
-      classes: 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-300'
+      color: 'neutral'
     },
     premium: {
       text: 'Premium',
       icon: 'stars',
-      classes: 'bg-primary/10 text-primary'
+      color: 'primary'
     },
     enterprise: {
       text: 'Enterprise',
       icon: 'corporate_fare',
-      classes: 'bg-[#6d5e00]/10 text-[#6d5e00] font-semibold' // Archival Gold Theme
+      color: 'gold'
     }
   }
 
-  const statusBadges = {
+  const statusBadges: Record<Tenant['status'], { text: string; color: 'success' | 'danger' | 'neutral' }> = {
     active: {
       text: 'Active',
-      classes: 'bg-green-500/10 text-green-700 dark:text-green-400'
+      color: 'success'
     },
     suspended: {
       text: 'Suspended',
-      classes: 'bg-red-500/10 text-red-700 dark:text-red-400'
+      color: 'danger'
     },
     archived: {
       text: 'Archived',
-      classes: 'bg-neutral-500/15 text-neutral-500 dark:text-neutral-400'
+      color: 'neutral'
     }
   }
 
@@ -296,10 +297,9 @@ export const TenantListPage: React.FC = () => {
         return (
           <div className="flex lg:block items-center justify-between">
             <span className="lg:hidden text-[9px] text-outline uppercase font-label font-bold tracking-wider">Service Tier</span>
-            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-label font-bold uppercase tracking-wider ${tierConf.classes}`}>
-              <Icon name={tierConf.icon} size={11} filled />
+            <Badge color={tierConf.color} icon={tierConf.icon} size="md">
               {tierConf.text}
-            </span>
+            </Badge>
           </div>
         )
       }
@@ -313,9 +313,9 @@ export const TenantListPage: React.FC = () => {
         return (
           <div className="flex lg:block items-center justify-between">
             <span className="lg:hidden text-[9px] text-outline uppercase font-label font-bold tracking-wider">Active Status</span>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-label font-bold uppercase tracking-wider ${statusConf.classes}`}>
+            <Badge color={statusConf.color} size="md">
               {statusConf.text}
-            </span>
+            </Badge>
           </div>
         )
       }

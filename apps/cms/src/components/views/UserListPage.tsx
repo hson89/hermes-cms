@@ -10,6 +10,7 @@ import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
 import { RegistryPagination } from '@/components/ui/molecules/RegistryPagination'
 import { ConfirmationModal } from '@/components/ui/organisms/ConfirmationModal'
+import { Badge } from '@/components/ui/atoms/Badge'
 
 interface UserTenant {
   tenant: string | { id: string; name: string }
@@ -168,21 +169,21 @@ export const UserListPage: React.FC = () => {
   }
 
   // Styling maps based on Alexandria theme & Public Sans metrics
-  const roleBadges = {
+  const roleBadges: Record<User['role'], { text: string; icon: string; color: 'gold' | 'primary' | 'neutral' }> = {
     'super-admin': {
       text: 'Super Admin',
       icon: 'shield_person',
-      classes: 'bg-[#6d5e00]/10 text-[#6d5e00] font-semibold' // Archival Gold Theme
+      color: 'gold'
     },
     'tenant-admin': {
       text: 'Tenant Admin',
       icon: 'admin_panel_settings',
-      classes: 'bg-primary/10 text-primary'
+      color: 'primary'
     },
     editor: {
       text: 'Editor',
       icon: 'edit_square',
-      classes: 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-300'
+      color: 'neutral'
     }
   }
 
@@ -227,10 +228,9 @@ export const UserListPage: React.FC = () => {
         return (
           <div className="flex lg:block items-center justify-between">
             <span className="lg:hidden text-[9px] text-outline uppercase font-label font-bold tracking-wider">User Role</span>
-            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-label font-bold uppercase tracking-wider ${roleConf.classes}`}>
-              <Icon name={roleConf.icon} size={11} filled />
+            <Badge color={roleConf.color} icon={roleConf.icon} size="md">
               {roleConf.text}
-            </span>
+            </Badge>
           </div>
         )
       }
@@ -252,19 +252,20 @@ export const UserListPage: React.FC = () => {
                     ? item.tenant.name 
                     : `Tenant #${item.tenant}`
                   return (
-                    <span 
+                    <Badge 
                       key={idx}
-                      className="font-label text-[9px] font-bold text-primary uppercase tracking-wider bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10"
+                      color="primary"
+                      size="sm"
                     >
                       {name}
-                    </span>
+                    </Badge>
                   )
                 })}
               </div>
             ) : user.role === 'super-admin' ? (
-              <span className="inline-flex items-center gap-1 font-label text-[9px] font-bold text-[#6d5e00] uppercase tracking-wider bg-[#6d5e00]/5 px-2 py-0.5 rounded-full border border-[#6d5e00]/10">
+              <Badge color="gold" size="sm">
                 Global Bypass (All Tenants)
-              </span>
+              </Badge>
             ) : (
               <span className="text-outline text-xs italic font-body">No tenants scoped</span>
             )}
