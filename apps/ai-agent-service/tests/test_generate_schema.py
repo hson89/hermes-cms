@@ -81,6 +81,180 @@ def test_validator_rejects_duplicate_field_names():
         validate_content_schema(invalid_schema)
 
 
+def test_validator_accepts_array_with_nested_fields():
+    """Verify that a schema with a valid array field containing nested subfields passes validation."""
+    valid_schema = {
+        "name": "Luxury Real Estate",
+        "fields": [
+            {"name": "title", "type": "text", "required": True, "label": "Title"},
+            {
+                "name": "features",
+                "type": "array",
+                "label": "Features",
+                "fields": [
+                    {"name": "featureName", "type": "text", "required": True, "label": "Feature Name"},
+                    {"name": "value", "type": "number", "required": False, "label": "Value"}
+                ]
+            }
+        ]
+    }
+    # Should validate without raising exceptions
+    validate_content_schema(valid_schema)
+
+
+def test_validator_accepts_blocks_with_nested_fields():
+    """Verify that a schema with a valid blocks field containing block definitions passes validation."""
+    valid_schema = {
+        "name": "Landing Page Content",
+        "fields": [
+            {"name": "title", "type": "text", "required": True, "label": "Title"},
+            {
+                "name": "layout",
+                "type": "blocks",
+                "label": "Layout Blocks",
+                "blocks": [
+                    {
+                        "slug": "hero",
+                        "label": "Hero Section",
+                        "fields": [
+                            {"name": "headline", "type": "text", "required": True, "label": "Headline"},
+                            {"name": "image", "type": "upload", "required": False, "label": "Background Image"}
+                        ]
+                    },
+                    {
+                        "slug": "cta",
+                        "label": "Call To Action",
+                        "fields": [
+                            {"name": "buttonText", "type": "text", "required": True, "label": "Button Text"},
+                            {"name": "link", "type": "text", "required": True, "label": "Button Link"}
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+    # Should validate without raising exceptions
+    validate_content_schema(valid_schema)
+
+
+def test_validator_rejects_invalid_array_structure():
+    """Verify that array fields with missing or empty subfields list are strictly rejected."""
+    # 1. Missing fields key
+    missing_fields_schema = {
+        "name": "Invalid Array",
+        "fields": [
+            {"name": "features", "type": "array", "label": "Features"}
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="must contain a 'fields' list of subfields"):
+        validate_content_schema(missing_fields_schema)
+
+    # 2. Empty fields list
+    empty_fields_schema = {
+        "name": "Invalid Array",
+        "fields": [
+            {"name": "features", "type": "array", "label": "Features", "fields": []}
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="must contain a non-empty list of fields"):
+        validate_content_schema(empty_fields_schema)
+
+
+def test_validator_rejects_invalid_blocks_structure():
+    """Verify that blocks fields with invalid structural configurations are strictly rejected."""
+    # 1. Missing blocks key
+    missing_blocks_schema = {
+        "name": "Invalid Blocks",
+        "fields": [
+            {"name": "layout", "type": "blocks", "label": "Layout Blocks"}
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="must contain a 'blocks' list"):
+        validate_content_schema(missing_blocks_schema)
+
+    # 2. Empty blocks list
+    empty_blocks_schema = {
+        "name": "Invalid Blocks",
+        "fields": [
+            {"name": "layout", "type": "blocks", "label": "Layout Blocks", "blocks": []}
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="must contain a non-empty list of blocks"):
+        validate_content_schema(empty_blocks_schema)
+
+    # 3. Block missing fields
+    missing_block_fields_schema = {
+        "name": "Invalid Blocks",
+        "fields": [
+            {
+                "name": "layout",
+                "type": "blocks",
+                "label": "Layout Blocks",
+                "blocks": [
+                    {"slug": "hero", "label": "Hero Section"}
+                ]
+            }
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="is missing required attribute 'fields'"):
+        validate_content_schema(missing_block_fields_schema)
+
+    # 4. Duplicate block slugs
+    duplicate_block_slugs_schema = {
+        "name": "Invalid Blocks",
+        "fields": [
+            {
+                "name": "layout",
+                "type": "blocks",
+                "label": "Layout Blocks",
+                "blocks": [
+                    {"slug": "hero", "label": "Hero 1", "fields": [{"name": "title", "type": "text", "label": "Title"}]},
+                    {"slug": "hero", "label": "Hero 2", "fields": [{"name": "headline", "type": "text", "label": "Headline"}]}
+                ]
+            }
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="Duplicate block slug 'hero'"):
+        validate_content_schema(duplicate_block_slugs_schema)
+
+
+def test_validator_accepts_unique_and_localized_attributes():
+    """Verify that fields containing unique and localized boolean properties pass validation."""
+    valid_schema = {
+        "name": "Editorial Article",
+        "fields": [
+            {"name": "slug", "type": "text", "required": True, "unique": True, "label": "Slug"},
+            {"name": "body", "type": "richText", "required": True, "localized": True, "label": "Localized Body"},
+            {"name": "tagline", "type": "text", "required": False, "unique": False, "localized": False, "label": "Tagline"}
+        ]
+    }
+    # Should validate without raising exceptions
+    validate_content_schema(valid_schema)
+
+
+def test_validator_rejects_invalid_unique_or_localized_types():
+    """Verify that non-boolean unique or localized attributes are strictly rejected."""
+    # 1. Invalid unique type
+    invalid_unique_schema = {
+        "name": "Invalid Attributes",
+        "fields": [
+            {"name": "slug", "type": "text", "required": True, "unique": "yes", "label": "Slug"}
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="attribute 'unique' must be a boolean"):
+        validate_content_schema(invalid_unique_schema)
+
+    # 2. Invalid localized type
+    invalid_localized_schema = {
+        "name": "Invalid Attributes",
+        "fields": [
+            {"name": "body", "type": "richText", "required": True, "localized": 1, "label": "Body"}
+        ]
+    }
+    with pytest.raises(InvalidSchemaError, match="attribute 'localized' must be a boolean"):
+        validate_content_schema(invalid_localized_schema)
+
+
 # ── 2. Corrective Feedback Loop Unit Tests ──────────────────────────────────
 
 @pytest.mark.asyncio

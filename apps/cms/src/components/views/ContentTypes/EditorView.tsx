@@ -15,9 +15,10 @@ import { FormField } from '@/components/ui/molecules/FormField'
 interface FieldDefinition {
   name: string
   label: string
-  type: 'text' | 'number' | 'boolean' | 'select' | 'richText' | 'relationship'
+  type: 'text' | 'number' | 'boolean' | 'select' | 'richText' | 'relationship' | 'array' | 'blocks'
   required?: boolean
   unique?: boolean
+  localized?: boolean
   defaultValue?: any
   options?: string[]
   relationTo?: string
@@ -34,6 +35,7 @@ export const EditorView: React.FC = () => {
   const [slug, setSlug] = useState('')
   const [status, setStatus] = useState<'draft' | 'published'>('draft')
   const [fields, setFields] = useState<FieldDefinition[]>([])
+  const [originalSchema, setOriginalSchema] = useState<any | null>(null)
   const [hasContentItems, setHasContentItems] = useState(false)
   const [version, setVersion] = useState<string>('') // Optimistic concurrency tracking
 
@@ -65,6 +67,7 @@ export const EditorView: React.FC = () => {
           setSlug(data.slug || '')
           setStatus(data.status || 'draft')
           setFields(data.schema?.fields || [])
+          setOriginalSchema(data.originalSchema || null)
           setVersion(data.updatedAt || '')
 
           // Query check if ContentItems exist for this content type to guard destructive editing
@@ -95,7 +98,7 @@ export const EditorView: React.FC = () => {
 
     const updatedStatus = targetStatus || status
 
-    const payloadData = {
+    const payloadData: any = {
       name,
       slug,
       status: updatedStatus,
@@ -103,6 +106,10 @@ export const EditorView: React.FC = () => {
         name,
         fields,
       },
+    }
+
+    if (originalSchema) {
+      payloadData.originalSchema = originalSchema
     }
 
     try {
@@ -211,6 +218,41 @@ export const EditorView: React.FC = () => {
     } else if (expandedIndex === swapWithIndex) {
       setExpandedIndex(index)
     }
+  }
+
+  // Helper to determine visual diff status
+  const getFieldDiffStatus = (field: FieldDefinition) => {
+    if (!originalSchema?.fields || !Array.isArray(originalSchema.fields)) return null
+
+    const origField = originalSchema.fields.find((f: any) => f.name === field.name)
+    if (!origField) {
+      return 'added'
+    }
+
+    // Compare properties to see if modified
+    const isModified =
+      origField.type !== field.type ||
+      origField.label !== field.label ||
+      !!origField.required !== !!field.required ||
+      !!origField.unique !== !!field.unique ||
+      !!origField.localized !== !!field.localized ||
+      origField.defaultValue !== field.defaultValue ||
+      JSON.stringify(origField.options) !== JSON.stringify(field.options) ||
+      origField.relationTo !== field.relationTo
+
+    if (isModified) {
+      return 'modified'
+    }
+
+    return 'unchanged'
+  }
+
+  // Calculate deleted AI suggested fields
+  const getDeletedAIFields = () => {
+    if (!originalSchema?.fields || !Array.isArray(originalSchema.fields)) return []
+    return originalSchema.fields.filter(
+      (origField: any) => !fields.some((f) => f.name === origField.name)
+    )
   }
 
   if (isLoading) {
@@ -391,6 +433,19 @@ export const EditorView: React.FC = () => {
                       <div className="flex gap-1 flex-wrap">
                         {field.required && <Badge size="sm" variant="subtle" color="danger">Req</Badge>}
                         {field.unique && <Badge size="sm" variant="subtle" color="primary">Uniq</Badge>}
+                        {field.localized && <Badge size="sm" variant="subtle" color="success">Loc</Badge>}
+                        
+                        {/* Visual Diff Badges */}
+                        {getFieldDiffStatus(field) === 'added' && (
+                          <span className="visual-diff-badge text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-600 border border-teal-500/20">
+                            Added
+                          </span>
+                        )}
+                        {getFieldDiffStatus(field) === 'modified' && (
+                          <span className="visual-diff-badge text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                            Modified
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -430,7 +485,7 @@ export const EditorView: React.FC = () => {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                        <div className="space-y-1.5">
+                         <div className="space-y-1.5">
                           <Label htmlFor={`type-${idx}`}>Field Type</Label>
                           <select
                             id={`type-${idx}`}
@@ -444,6 +499,8 @@ export const EditorView: React.FC = () => {
                             <option value="select">Select Dropdown</option>
                             <option value="richText">Rich Text</option>
                             <option value="relationship">Relationship</option>
+                            <option value="array">Array</option>
+                            <option value="blocks">Blocks</option>
                           </select>
                         </div>
 
@@ -467,6 +524,16 @@ export const EditorView: React.FC = () => {
                               className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
                             />
                             Unique
+                          </label>
+
+                          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none text-on-surface">
+                            <input
+                              type="checkbox"
+                              checked={!!field.localized}
+                              onChange={(e) => handleUpdateField(idx, { localized: e.target.checked })}
+                              className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
+                            />
+                            Localized
                           </label>
                         </div>
                       </div>
@@ -527,6 +594,37 @@ export const EditorView: React.FC = () => {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Collapsible Audit Log for Removed AI-Suggested Fields */}
+          {getDeletedAIFields().length > 0 && (
+            <div className="removed-ai-fields-panel mt-6 p-5 rounded-2xl border border-dashed border-red-500/20 bg-red-500/[0.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <Icon name="history_toggle_off" size={16} />
+                  <span className="font-label text-xs font-bold uppercase tracking-widest">Removed AI Suggestions</span>
+                </div>
+                <Badge color="danger" size="sm">
+                  {getDeletedAIFields().length} deleted
+                </Badge>
+              </div>
+              <p className="text-xs text-outline mb-3 leading-relaxed">
+                The dynamic schema was modified from its original AI suggestion. The following fields were deleted:
+              </p>
+              <div className="space-y-2">
+                {getDeletedAIFields().map((delField: any, delIdx: number) => (
+                  <div key={delIdx} className="flex justify-between items-center bg-red-500/[0.04] px-3.5 py-2 rounded-xl border border-red-500/10 font-mono text-[10px]">
+                    <div className="space-y-0.5">
+                      <span className="font-semibold text-red-600 dark:text-red-400">{delField.label}</span>
+                      <span className="block text-[8px] text-outline">({delField.name})</span>
+                    </div>
+                    <span className="bg-red-500/10 text-red-700 dark:text-red-300 font-label font-bold text-[8px] uppercase tracking-widest px-2 py-0.5 rounded border border-red-500/10">
+                      {delField.type}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
