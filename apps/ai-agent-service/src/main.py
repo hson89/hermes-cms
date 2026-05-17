@@ -25,20 +25,8 @@ from src.infrastructure.config import settings
 
 # ── Security ──────────────────────────────────────────────────────────────────
 
-INTERNAL_SECRET = settings.INTERNAL_SERVICE_SECRET
-_api_key_header = APIKeyHeader(name="X-Internal-Secret", auto_error=False)
+from src.infrastructure.auth import require_internal_secret as _require_internal_secret
 
-
-def _require_internal_secret(key: str | None = Security(_api_key_header)) -> None:
-    """Validate the internal service-to-service secret header."""
-    if not INTERNAL_SECRET:
-        # If no secret is configured, allow all (development mode)
-        return
-    if key != INTERNAL_SECRET:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid internal service secret.",
-        )
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
@@ -176,6 +164,27 @@ async def get_session(session_id: str, request: Request) -> dict:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Session '{session_id}' not found.",
         )
+    
+    schema_data = None
+    if session.status == "completed":
+        import json
+        for msg in reversed(session.context):
+            if msg.role == "assistant":
+                try:
+                    content = msg.content.strip()
+                    if content.startswith("```"):
+                        lines = content.splitlines()
+                        if lines[0].startswith("```"):
+                            lines = lines[1:]
+                        if lines and lines[-1].startswith("```"):
+                            lines = lines[:-1]
+                        content = "\n".join(lines).strip()
+                    schema_data = json.loads(content)
+                    break
+                except Exception as e:
+                    print(f"Error parsing schema from context: {e}")
+                    pass
+
     return {
         "id": str(session.id),
         "status": session.status,
@@ -184,6 +193,7 @@ async def get_session(session_id: str, request: Request) -> dict:
         "message_count": len(session.context),
         "created_at": session.created_at.isoformat(),
         "updated_at": session.updated_at.isoformat(),
+        "schema": schema_data,
     }
 
 

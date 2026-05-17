@@ -1,6 +1,17 @@
 import type { CollectionConfig } from 'payload'
-import { generateSchemaEndpoint } from './endpoints'
+import { generateSchemaEndpoint, getSessionStatusEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint } from './endpoints'
 import { getTenantIds } from '../Users/utils'
+import { beforeChangeHook } from './hooks'
+
+const slugify = (text: string): string => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+}
 
 /**
  * ContentTypes collection.
@@ -17,6 +28,15 @@ export const ContentTypes: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     description: 'Dynamic content schemas, possibly AI-generated.',
+    components: {
+      views: {
+        edit: {
+          default: {
+            Component: '/src/components/views/ContentTypes/GeneratorView#GeneratorView',
+          },
+        },
+      },
+    },
   },
   access: {
     read: ({ req: { user } }) => {
@@ -65,6 +85,33 @@ export const ContentTypes: CollectionConfig = {
       required: true,
       label: 'Name',
     },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      label: 'Slug',
+      defaultValue: '',
+    },
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
+      ],
+      defaultValue: 'draft',
+      label: 'Status',
+    },
+    {
+      name: 'originalSchema',
+      type: 'json',
+      required: false,
+      label: 'Original JSON Schema',
+      admin: {
+        description: 'The originally suggested AI schema before any visual refinement.',
+      },
+    },
 
     {
       name: 'schema',
@@ -97,7 +144,18 @@ export const ContentTypes: CollectionConfig = {
       },
     },
   ],
+  hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        if (data && !data.slug && data.name) {
+          data.slug = slugify(data.name)
+        }
+        return data
+      },
+    ],
+    beforeChange: [beforeChangeHook],
+  },
   // T017: Custom AI endpoint for schema generation
-  endpoints: [generateSchemaEndpoint],
+  endpoints: [generateSchemaEndpoint, getSessionStatusEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint],
   timestamps: true,
 }

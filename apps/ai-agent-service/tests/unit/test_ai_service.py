@@ -105,7 +105,7 @@ async def test_generate_schema_handles_json_error(ai_service: AIService):
         mock_llm.ainvoke = AsyncMock(return_value=invalid_response)
         mock_init.return_value = mock_llm
 
-        with pytest.raises(ValueError, match="LLM returned non-JSON output"):
+        with pytest.raises(ValueError, match="Failed to generate a valid schema after 3 retries"):
             await ai_service.generate_schema(
                 prompt="test",
                 tenant_id=tenant_id,

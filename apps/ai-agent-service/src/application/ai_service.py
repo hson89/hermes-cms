@@ -14,9 +14,10 @@ import json
 from uuid import UUID
 
 from langchain.chat_models import init_chat_model
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from src.domain.ai_agent_session.models import AIAgentSession, SessionStatus
+from src.domain.schema_validator import validate_content_schema, InvalidSchemaError
 from src.infrastructure.config import settings
 
 # In-memory session store (replaced by a proper repository in Phase 2 / DB task)
@@ -34,7 +35,7 @@ following structure:
   "fields": [
     {
       "name": "<field name>",
-      "type": "<text|number|boolean|date|richText|json|relationship>",
+      "type": "<text|number|boolean|date|richText|json|relationship|select|upload>",
       "required": true|false,
       "label": "<UI label>",
       "description": "<optional description>"
@@ -54,9 +55,9 @@ class AIService:
     Application-layer service for AI-powered content operations.
 
     Responsibilities:
-      - Create and manage AIAgentSession aggregates.
-      - Invoke the LLM via LangChain to generate content schemas.
-      - Return structured results back to the CMS endpoint layer.
+       - Create and manage AIAgentSession aggregates.
+       - Invoke the LLM via LangChain to generate content schemas.
+       - Return structured results back to the CMS endpoint layer.
     """
 
     def __init__(self) -> None:
@@ -103,7 +104,7 @@ class AIService:
         session = AIAgentSession(user_id=user_id, tenant_id=tenant_id)
         _sessions[str(session.id)] = session
 
-        # Build messages
+        # Build initial messages context
         session.add_message("system", _SCHEMA_GENERATION_SYSTEM_PROMPT)
         session.add_message("user", prompt)
 
@@ -112,32 +113,73 @@ class AIService:
             HumanMessage(content=prompt),
         ]
 
-        try:
-            response = await self._llm.ainvoke(messages)
-            raw_content = (
-                response.content
-                if isinstance(response.content, str)
-                else str(response.content)
-            )
-            schema = json.loads(raw_content)
-            session.add_message("assistant", raw_content)
-            session.complete()
+        max_retries = 3
+        retry_count = 0
+        last_error_message = ""
 
-            return {
-                "sessionId": str(session.id),
-                "schema": schema,
-                "status": SessionStatus.COMPLETED,
-            }
-        except json.JSONDecodeError as exc:
-            session.fail()
-            raise ValueError(
-                f"LLM returned non-JSON output: {exc}"
-            ) from exc
-        except Exception as exc:
-            session.fail()
-            raise RuntimeError(
-                f"Schema generation failed: {exc}"
-            ) from exc
+        while retry_count <= max_retries:
+            try:
+                response = await self._llm.ainvoke(messages)
+                raw_content = (
+                    response.content
+                    if isinstance(response.content, str)
+                    else str(response.content)
+                )
+
+                # Append assistant's raw attempt to aggregate session
+                session.add_message("assistant", raw_content)
+
+                # Clean prompt formatting details from markdown blocks if present
+                clean_content = raw_content.strip()
+                if clean_content.startswith("```"):
+                    lines = clean_content.splitlines()
+                    if lines[0].startswith("```"):
+                        lines = lines[1:]
+                    if lines and lines[-1].startswith("```"):
+                        lines = lines[:-1]
+                    clean_content = "\n".join(lines).strip()
+
+                schema = json.loads(clean_content)
+                validate_content_schema(schema)
+
+                # If successful parsing and validation, mark completed and return
+                session.complete()
+                return {
+                    "sessionId": str(session.id),
+                    "schema": schema,
+                    "status": SessionStatus.COMPLETED,
+                }
+            except (json.JSONDecodeError, InvalidSchemaError, ValueError) as exc:
+                last_error_message = str(exc)
+                retry_count += 1
+
+                if retry_count > max_retries:
+                    break
+
+                feedback_message = (
+                    f"The schema you generated is invalid. Please correct the following errors and "
+                    f"return the complete, corrected JSON schema as valid JSON conforming strictly to the original schema structure:\n\n"
+                    f"{exc}\n\n"
+                    f"Do NOT include any markdown code fencing or conversational prose in your response. Raw JSON only."
+                )
+
+                session.add_message("user", feedback_message)
+
+                # Append standard conversation turn history to the LangChain prompt thread
+                messages.append(AIMessage(content=raw_content))
+                messages.append(HumanMessage(content=feedback_message))
+
+            except Exception as exc:
+                session.fail()
+                raise RuntimeError(
+                    f"Schema generation failed due to unexpected error: {exc}"
+                ) from exc
+
+        # If loop exhausts all retries without a valid schema
+        session.fail()
+        raise ValueError(
+            f"Failed to generate a valid schema after {max_retries} retries. Last error: {last_error_message}"
+        )
 
     # ── Session Retrieval ──────────────────────────────────────────────────
 

@@ -13,6 +13,7 @@ import { ContentItems } from './collections/ContentItems'
 import { HostedSites } from './collections/HostedSites'
 import { AuditLogs } from './collections/AuditLogs'
 import { Media } from './collections/Media'
+import { AIPromptHistory } from './collections/AIPromptHistory'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -39,7 +40,7 @@ export default buildConfig({
       header: ['/src/components/admin/Header#Header'] as any,
     },
   },
-  collections: [Tenants, Users, ContentTypes, ContentItems, HostedSites, Media, AuditLogs, APIKeys],
+  collections: [Tenants, Users, ContentTypes, ContentItems, HostedSites, Media, AuditLogs, APIKeys, AIPromptHistory],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || 'YOUR_SECRET_HERE',
   db: postgresAdapter({
@@ -57,7 +58,8 @@ export default buildConfig({
         'media': { customTenantField: true },
         'audit-logs': { customTenantField: true },
         'hosted-sites': {},
-      },
+        'ai-prompt-history': {},
+      } as any,
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => {
         if (!user) return false
