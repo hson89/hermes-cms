@@ -184,13 +184,27 @@ body {
 .template-default__wrap:has(.custom-tenant-view) [class*="doc-header"],
 .template-default__wrap:has(.custom-tenant-view) [class*="collection-edit"],
 .template-default__wrap:has(.custom-tenant-view) [class*="collection-list"],
+.template-default__wrap:has(.custom-user-view) .doc-header,
+.template-default__wrap:has(.custom-user-view) .collection-edit__header,
+.template-default__wrap:has(.custom-user-view) .collection-list__header,
+.template-default__wrap:has(.custom-user-view) .gutter,
+.template-default__wrap:has(.custom-user-view) [class*="doc-header"],
+.template-default__wrap:has(.custom-user-view) [class*="collection-edit"],
+.template-default__wrap:has(.custom-user-view) [class*="collection-list"],
 div:has(> .custom-tenant-view) > .doc-header,
 div:has(> .custom-tenant-view) > .collection-edit__header,
 div:has(> .custom-tenant-view) > .collection-list__header,
 div:has(> .custom-tenant-view) > .gutter,
 div:has(> .custom-tenant-view) > [class*="doc-header"],
 div:has(> .custom-tenant-view) > [class*="collection-edit"],
-div:has(> .custom-tenant-view) > [class*="collection-list"] {
+div:has(> .custom-tenant-view) > [class*="collection-list"],
+div:has(> .custom-user-view) > .doc-header,
+div:has(> .custom-user-view) > .collection-edit__header,
+div:has(> .custom-user-view) > .collection-list__header,
+div:has(> .custom-user-view) > .gutter,
+div:has(> .custom-user-view) > [class*="doc-header"],
+div:has(> .custom-user-view) > [class*="collection-edit"],
+div:has(> .custom-user-view) > [class*="collection-list"] {
   display: none !important;
   visibility: hidden !important;
   height: 0 !important;

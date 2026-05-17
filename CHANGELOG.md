@@ -57,7 +57,7 @@ This feature track implements the core multi-tenancy management foundation for H
   - Integrated interactive step navigation (Identity -> Domains -> White-Labeling).
   - Added live domain-limit meters, real-time slug format validation, and high-fidelity, real-time branded sidebar preview cards.
 - **[MODIFY] Global Custom Layout Reset (`globals.css`)** ([globals.css](file:///home/itlight/dev/hermes-cms/apps/cms/src/app/globals.css)):
-  - Registered `.custom-tenant-view` reset styles using modern CSS `:has()` pseudo-class rules. Hides default Payload CMS gutters, headers, and title bars cleanly while retaining the `18rem` responsive desktop sidebar offset.
+  - Registered `.custom-tenant-view` and `.custom-user-view` layout reset styles using modern CSS `:has()` relational selectors. Hides redundant Payload CMS headers, gutters, title cards, and navigation controls cleanly, ensuring our bespoke Alexandria editorial dashboards render perfectly with the proper `18rem` sidebar offset.
 
 ---
 
