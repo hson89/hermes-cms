@@ -4,6 +4,13 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
+import { Heading } from '@/components/ui/atoms/Heading'
+import { Text } from '@/components/ui/atoms/Text'
+import { Button } from '@/components/ui/atoms/Button'
+import { Label } from '@/components/ui/atoms/Label'
+import { Card } from '@/components/ui/molecules/Card'
+import { FormField } from '@/components/ui/molecules/FormField'
+import { FormSelect } from '@/components/ui/molecules/FormSelect'
 
 export const CreateTenantPage: React.FC = () => {
   const router = useRouter()
@@ -239,7 +246,7 @@ export const CreateTenantPage: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] py-12">
         <span className="size-12 rounded-full border-4 border-primary border-t-transparent animate-spin mb-4" />
-        <p className="font-body text-outline font-medium">Fetching workspace settings from registry...</p>
+        <Text variant="body" className="text-outline font-medium">Fetching workspace settings from registry...</Text>
       </div>
     )
   }
@@ -251,24 +258,25 @@ export const CreateTenantPage: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-outline-variant/15 pb-6 mb-8 gap-4">
         <div>
           <span className="font-label text-[10px] uppercase tracking-widest text-outline font-bold">Workspace Console</span>
-          <h1 className="font-headline font-bold text-3xl text-on-surface mt-1">
+          <Heading level={2} className="mt-1">
             {isEditMode ? `Manage Workspace: ${name}` : 'Initialize New Tenant'}
-          </h1>
-          <p className="text-sm text-outline mt-1 max-w-xl">
+          </Heading>
+          <Text variant="small" className="mt-1 max-w-xl">
             {isEditMode 
               ? 'Configure branded entryways, resource limits, and appearance presets for this organizational boundary.'
               : 'Create an isolated workspace organizational unit governed by multi-tenant security policies.'}
-          </p>
+          </Text>
         </div>
         
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => router.push('/admin/collections/tenants')}
-          className="flex items-center gap-2 border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low px-4 py-2.5 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent"
+          className="uppercase tracking-widest text-xs"
         >
           <Icon name="arrow_back" size={16} />
           Return to Registry
-        </button>
+        </Button>
       </div>
 
       {/* Success Notification Banner */}
@@ -366,69 +374,55 @@ export const CreateTenantPage: React.FC = () => {
               {step === 1 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="font-headline font-semibold text-xl mb-1 text-on-surface">Workspace Identity</h2>
-                    <p className="text-xs text-outline">Enter the structural metadata representing this unique client partition.</p>
+                    <Heading level={4} className="mb-1 text-xl">Workspace Identity</Heading>
+                    <Text variant="small">Enter the structural metadata representing this unique client partition.</Text>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Workspace Name</label>
-                    <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                      <Icon name="business" size={20} className="text-outline ml-4 mr-1" />
-                      <input 
-                        type="text"
-                        value={name}
-                        onChange={(e) => handleNameChange(e.target.value)}
-                        className="w-full bg-transparent border-none rounded-xl py-4 px-3 font-body text-on-surface placeholder:text-outline/70 focus:outline-none focus:ring-0" 
-                        placeholder="e.g. Editorial Ops" 
-                        required
-                      />
-                    </div>
-                  </div>
+                  <FormField 
+                    label="Workspace Name"
+                    id="name"
+                    inputProps={{
+                      value: name,
+                      onChange: (e) => handleNameChange((e.target as HTMLInputElement).value)
+                    }}
+                    placeholder="e.g. Editorial Ops"
+                    required
+                  />
 
-                  <div className="space-y-2">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Workspace Slug</label>
-                    <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                      <Icon name="link" size={20} className="text-outline ml-4 mr-1" />
-                      <input 
-                        type="text"
-                        value={slug}
-                        onChange={(e) => handleSlugChange(e.target.value)}
-                        className="w-full bg-transparent border-none rounded-xl py-4 px-3 font-mono text-sm text-on-surface placeholder:text-outline/70 focus:outline-none focus:ring-0" 
-                        placeholder="e.g. editorial-ops" 
-                        required
-                      />
-                    </div>
-                    <p className="text-[10px] text-outline px-1">
-                      URL-safe identifier. Generated automatically, lowercase letters, numbers, and hyphens only.
-                    </p>
-                  </div>
+                  <FormField 
+                    label="Workspace Slug"
+                    id="slug"
+                    inputProps={{
+                      value: slug,
+                      onChange: (e) => handleSlugChange((e.target as HTMLInputElement).value)
+                    }}
+                    placeholder="e.g. editorial-ops"
+                    required
+                  />
 
-                  <div className="space-y-2">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Default Locale</label>
-                    <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                      <Icon name="g_translate" size={20} className="text-outline ml-4 mr-1" />
-                      <select 
-                        value={defaultLocale}
-                        onChange={(e) => setDefaultLocale(e.target.value)}
-                        className="w-full bg-transparent border-none rounded-xl py-4 px-3 font-body text-on-surface focus:outline-none focus:ring-0 cursor-pointer"
-                      >
-                        <option value="en">English (en)</option>
-                        <option value="es">Spanish (es)</option>
-                        <option value="fr">French (fr)</option>
-                        <option value="de">German (de)</option>
-                      </select>
-                    </div>
-                  </div>
+                  <FormSelect
+                    label="Default Locale"
+                    id="defaultLocale"
+                    selectProps={{
+                      value: defaultLocale,
+                      onChange: (e) => setDefaultLocale((e.target as HTMLSelectElement).value)
+                    }}
+                  >
+                    <option value="en">English (en)</option>
+                    <option value="es">Spanish (es)</option>
+                    <option value="fr">French (fr)</option>
+                    <option value="de">German (de)</option>
+                  </FormSelect>
 
                   <div className="pt-6 border-t border-outline-variant/10 flex justify-end">
-                    <button
+                    <Button
                       type="button"
                       onClick={handleNextStep1}
-                      className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-label font-bold text-xs uppercase tracking-widest py-3 px-6 rounded-xl transition-all cursor-pointer border-none"
+                      className="uppercase tracking-widest text-xs"
                     >
                       Proceed to Settings
                       <Icon name="arrow_forward" size={16} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -437,13 +431,13 @@ export const CreateTenantPage: React.FC = () => {
               {step === 2 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="font-headline font-semibold text-xl mb-1 text-on-surface">Service Settings</h2>
-                    <p className="text-xs text-outline">Select the performance limits and active system status for this tenant workspace.</p>
+                    <Heading level={4} className="mb-1 text-xl">Service Settings</Heading>
+                    <Text variant="small">Select the performance limits and active system status for this tenant workspace.</Text>
                   </div>
 
                   {/* Visual Premium Tier Card Selectors */}
                   <div className="space-y-3">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1 block mb-2">Service Tier</label>
+                    <Label className="block mb-2">Service Tier</Label>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Standard Card */}
@@ -457,7 +451,7 @@ export const CreateTenantPage: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-headline font-bold text-base text-on-surface">Standard</span>
+                          <Heading level={5} className="text-base">Standard</Heading>
                           <Icon name="verified" size={18} className={tier === 'standard' ? 'text-primary' : 'text-outline-variant'} />
                         </div>
                         <span className="font-headline font-bold text-xl block text-primary mb-3">$99<span className="text-xs font-normal text-outline">/mo</span></span>
@@ -479,7 +473,7 @@ export const CreateTenantPage: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-headline font-bold text-base text-on-surface">Premium</span>
+                          <Heading level={5} className="text-base">Premium</Heading>
                           <Icon name="stars" size={18} className={tier === 'premium' ? 'text-primary' : 'text-outline-variant'} />
                         </div>
                         <span className="font-headline font-bold text-xl block text-primary mb-3">$299<span className="text-xs font-normal text-outline">/mo</span></span>
@@ -501,7 +495,7 @@ export const CreateTenantPage: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-headline font-bold text-base text-on-surface">Enterprise</span>
+                          <Heading level={5} className="text-base">Enterprise</Heading>
                           <Icon name="corporate_fare" size={18} className={tier === 'enterprise' ? 'text-primary' : 'text-outline-variant'} />
                         </div>
                         <span className="font-headline font-bold text-xl block text-primary mb-3">Custom<span className="text-xs font-normal text-outline">/pricing</span></span>
@@ -514,40 +508,38 @@ export const CreateTenantPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">System Status</label>
-                    <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                      <Icon name="toggle_on" size={20} className="text-outline ml-4 mr-1" />
-                      <select 
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className="w-full bg-transparent border-none rounded-xl py-4 px-3 font-body text-on-surface focus:outline-none focus:ring-0 cursor-pointer"
-                      >
-                        <option value="active">Active (Standard operational status)</option>
-                        <option value="suspended">Suspended (Block all tenant traffic)</option>
-                        <option value="archived">Archived (Read-only historical freeze)</option>
-                      </select>
-                    </div>
-                  </div>
+                  <FormSelect
+                    label="System Status"
+                    id="status"
+                    selectProps={{
+                      value: status,
+                      onChange: (e) => setStatus((e.target as HTMLSelectElement).value)
+                    }}
+                  >
+                    <option value="active">Active (Standard operational status)</option>
+                    <option value="suspended">Suspended (Block all tenant traffic)</option>
+                    <option value="archived">Archived (Read-only historical freeze)</option>
+                  </FormSelect>
 
                   <div className="pt-6 border-t border-outline-variant/10 flex justify-between items-center">
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
                       onClick={() => setStep(1)}
-                      className="flex items-center gap-2 border border-outline-variant/30 text-on-surface hover:bg-surface-container-low py-3 px-6 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent"
+                      className="uppercase tracking-widest text-xs"
                     >
                       <Icon name="arrow_back" size={16} />
                       Back to Identity
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={handleNextStep2}
-                      className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-label font-bold text-xs uppercase tracking-widest py-3 px-6 rounded-xl transition-all cursor-pointer border-none"
+                      className="uppercase tracking-widest text-xs"
                     >
                       Proceed to Branding
                       <Icon name="arrow_forward" size={16} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -556,14 +548,14 @@ export const CreateTenantPage: React.FC = () => {
               {step === 3 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="font-headline font-semibold text-xl mb-1 text-on-surface">Domains &amp; Visual Customization</h2>
-                    <p className="text-xs text-outline">Configure custom access urls and core brand color values mapping to this tenant workspace.</p>
+                    <Heading level={4} className="mb-1 text-xl">Domains &amp; Visual Customization</Heading>
+                    <Text variant="small">Configure custom access urls and core brand color values mapping to this tenant workspace.</Text>
                   </div>
 
                   {/* Interactive Domain Mapping */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center px-1">
-                      <label className="font-label text-xs font-bold uppercase tracking-widest text-outline">Mapped Access Domains</label>
+                      <Label>Mapped Access Domains</Label>
                       <span className="font-mono text-[10px] text-outline">
                         Tier Limit: {domains.length} / {domainLimit === Infinity ? '∞' : domainLimit}
                       </span>
@@ -573,7 +565,7 @@ export const CreateTenantPage: React.FC = () => {
                     {isDomainOverLimit && (
                       <div className="p-3.5 bg-error-container text-on-error-container rounded-xl flex items-center gap-3 border border-error/20 animate-fade-slide-up mb-2">
                         <Icon name="warning" className="text-error" />
-                        <span className="font-body text-xs font-medium">Mapped domains exceed the {tier} tier limit of {domainLimit}. Delete domains to proceed.</span>
+                        <Text variant="small" className="text-error font-medium">Mapped domains exceed the {tier} tier limit of {domainLimit}. Delete domains to proceed.</Text>
                       </div>
                     )}
 
@@ -622,43 +614,43 @@ export const CreateTenantPage: React.FC = () => {
 
                     {/* Add domain input combo box */}
                     <div className="flex gap-2">
-                      <div className="relative flex-1 flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                        <Icon name="dns" size={18} className="text-outline ml-4 mr-1" />
-                        <input 
-                          type="text"
-                          value={newDomain}
-                          onChange={(e) => setNewDomain(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddDomain() } }}
-                          className="w-full bg-transparent border-none rounded-xl py-3 px-3 font-mono text-xs text-on-surface placeholder:text-outline/70 focus:outline-none focus:ring-0" 
-                          placeholder="e.g. cms.editorial.org" 
-                        />
-                      </div>
-                      <button
+                      <FormField 
+                        label=""
+                        id="newDomain"
+                        inputProps={{
+                          value: newDomain,
+                          onChange: (e) => setNewDomain((e.target as HTMLInputElement).value),
+                          onKeyDown: (e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddDomain() } }
+                        }}
+                        placeholder="e.g. cms.editorial.org"
+                        className="flex-1 space-y-0"
+                      />
+                      <Button
                         type="button"
+                        variant="secondary"
                         onClick={handleAddDomain}
-                        className="bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20 font-label font-bold text-xs uppercase tracking-widest px-5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                        className="font-label font-bold text-xs uppercase tracking-widest px-5 rounded-xl transition-all flex items-center gap-1.5 py-3.5"
                       >
                         <Icon name="add" size={16} />
                         Add Domain
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
                   {/* Primary Color hex picker */}
                   <div className="space-y-2">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Brand Styling Tones</label>
+                    <Label>Brand Styling Tones</Label>
                     <div className="flex gap-4">
-                      {/* Hex text input */}
-                      <div className="flex-1 relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                        <Icon name="palette" size={20} className="text-outline ml-4 mr-1" />
-                        <input 
-                          type="text"
-                          value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="w-full bg-transparent border-none rounded-xl py-4 px-3 font-mono text-sm text-on-surface focus:outline-none focus:ring-0" 
-                          placeholder="#094cb2" 
-                        />
-                      </div>
+                      <FormField
+                        label=""
+                        id="primaryColor"
+                        inputProps={{
+                          value: primaryColor,
+                          onChange: (e) => setPrimaryColor((e.target as HTMLInputElement).value)
+                        }}
+                        placeholder="#094cb2"
+                        className="flex-1 space-y-0"
+                      />
 
                       {/* Visual Color block preview & Native picker connector */}
                       <div className="relative size-14 rounded-xl shadow-lg border border-outline-variant/20 flex-shrink-0 overflow-hidden">
@@ -674,13 +666,13 @@ export const CreateTenantPage: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <p className="text-[10px] text-outline px-1">
+                    <Text variant="small" className="text-[10px] px-1">
                       Visual brand accents (buttons, navigation selection highlight) used across this tenant's administration environment.
-                    </p>
+                    </Text>
                   </div>
 
                   {/* High-Fidelity Glassmorphic Preview Card */}
-                  <div className="bg-surface-container-low/50 rounded-2xl p-5 border border-outline-variant/15 space-y-4">
+                  <Card variant="low" className="space-y-4">
                     <div className="flex items-center gap-2 border-b border-outline-variant/10 pb-2.5">
                       <Icon name="summarize" size={16} className="text-primary" />
                       <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Workspace Manifest Preview</span>
@@ -716,37 +708,26 @@ export const CreateTenantPage: React.FC = () => {
                         </span>
                       </div>
                     )}
-                  </div>
+                  </Card>
 
                   <div className="pt-6 border-t border-outline-variant/10 flex justify-between items-center">
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
                       onClick={() => setStep(2)}
-                      className="flex items-center gap-2 border border-outline-variant/30 text-on-surface hover:bg-surface-container-low py-3 px-6 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent"
+                      className="uppercase tracking-widest text-xs"
                     >
                       <Icon name="arrow_back" size={16} />
                       Back to Settings
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="submit"
                       disabled={isSubmitting || isDomainOverLimit}
-                      className={`flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-label font-bold text-xs uppercase tracking-widest py-3.5 px-8 rounded-xl transition-all cursor-pointer border-none ${
-                        isSubmitting || isDomainOverLimit ? 'opacity-60 cursor-not-allowed' : ''
-                      }`}
+                      className="uppercase tracking-widest text-xs"
                     >
-                      {isSubmitting ? (
-                        <>
-                          Initializing...
-                          <span className="size-4 rounded-full border-2 border-on-primary border-t-transparent animate-spin ml-1" />
-                        </>
-                      ) : (
-                        <>
-                          Initialize Workspace
-                          <Icon name="arrow_forward" size={16} />
-                        </>
-                      )}
-                    </button>
+                      {isSubmitting ? 'Initializing...' : 'Initialize Workspace'}
+                    </Button>
                   </div>
                 </div>
               )}
@@ -756,7 +737,7 @@ export const CreateTenantPage: React.FC = () => {
         </div>
       ) : (
         /* EDIT MODE: Tabbed Settings Console */
-        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 p-6 lg:p-8 shadow-xl shadow-on-surface/5">
+        <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8 shadow-xl shadow-on-surface/5">
           <form onSubmit={handleSubmit} className="space-y-8">
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -764,38 +745,34 @@ export const CreateTenantPage: React.FC = () => {
               {/* Left Column Fields */}
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-headline font-semibold text-lg mb-1 text-on-surface">Branding &amp; Colors</h3>
-                  <p className="text-xs text-outline">Manage brand styling variables used inside the workspace.</p>
+                  <Heading level={4} className="mb-1 text-lg">Branding &amp; Colors</Heading>
+                  <Text variant="small">Manage brand styling variables used inside the workspace.</Text>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Workspace Name</label>
-                  <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                    <Icon name="business" size={20} className="text-outline ml-4 mr-1" />
-                    <input 
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-transparent border-none rounded-xl py-3 px-3 font-body text-on-surface focus:outline-none focus:ring-0" 
-                      placeholder="e.g. Editorial Ops" 
-                      required
-                    />
-                  </div>
-                </div>
+                <FormField 
+                  label="Workspace Name"
+                  id="name"
+                  inputProps={{
+                    value: name,
+                    onChange: (e) => setName((e.target as HTMLInputElement).value)
+                  }}
+                  placeholder="e.g. Editorial Ops"
+                  required
+                />
 
                 <div className="space-y-2">
-                  <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Brand Accent Color</label>
+                  <Label>Brand Accent Color</Label>
                   <div className="flex gap-4">
-                    <div className="flex-1 relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                      <Icon name="palette" size={20} className="text-outline ml-4 mr-1" />
-                      <input 
-                        type="text"
-                        value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
-                        className="w-full bg-transparent border-none rounded-xl py-3 px-3 font-mono text-sm text-on-surface focus:outline-none focus:ring-0" 
-                        placeholder="#094cb2" 
-                      />
-                    </div>
+                    <FormField
+                      label=""
+                      id="primaryColor"
+                      inputProps={{
+                        value: primaryColor,
+                        onChange: (e) => setPrimaryColor((e.target as HTMLInputElement).value)
+                      }}
+                      placeholder="#094cb2"
+                      className="flex-1 space-y-0"
+                    />
                     <div className="relative size-12 rounded-xl border border-outline-variant/20 flex-shrink-0 overflow-hidden">
                       <div 
                         className="absolute inset-0"
@@ -812,66 +789,60 @@ export const CreateTenantPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Service Tier</label>
-                    <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                      <select 
-                        value={tier}
-                        onChange={(e) => setTier(e.target.value)}
-                        className="w-full bg-transparent border-none rounded-xl py-3 px-3 font-body text-on-surface focus:outline-none focus:ring-0 cursor-pointer"
-                      >
-                        <option value="standard">Standard Tier</option>
-                        <option value="premium">Premium Tier</option>
-                        <option value="enterprise">Enterprise Tier</option>
-                      </select>
-                    </div>
-                  </div>
+                  <FormSelect
+                    label="Service Tier"
+                    id="tier"
+                    selectProps={{
+                      value: tier,
+                      onChange: (e) => setTier((e.target as HTMLSelectElement).value)
+                    }}
+                  >
+                    <option value="standard">Standard Tier</option>
+                    <option value="premium">Premium Tier</option>
+                    <option value="enterprise">Enterprise Tier</option>
+                  </FormSelect>
 
-                  <div className="space-y-2">
-                    <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Default Locale</label>
-                    <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                      <select 
-                        value={defaultLocale}
-                        onChange={(e) => setDefaultLocale(e.target.value)}
-                        className="w-full bg-transparent border-none rounded-xl py-3 px-3 font-body text-on-surface focus:outline-none focus:ring-0 cursor-pointer"
-                      >
-                        <option value="en">English (en)</option>
-                        <option value="es">Spanish (es)</option>
-                        <option value="fr">French (fr)</option>
-                        <option value="de">German (de)</option>
-                      </select>
-                    </div>
-                  </div>
+                  <FormSelect
+                    label="Default Locale"
+                    id="defaultLocale"
+                    selectProps={{
+                      value: defaultLocale,
+                      onChange: (e) => setDefaultLocale((e.target as HTMLSelectElement).value)
+                    }}
+                  >
+                    <option value="en">English (en)</option>
+                    <option value="es">Spanish (es)</option>
+                    <option value="fr">French (fr)</option>
+                    <option value="de">German (de)</option>
+                  </FormSelect>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="font-label text-xs font-bold uppercase tracking-widest text-outline px-1">Tenant Status</label>
-                  <div className="relative flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                    <select 
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className="w-full bg-transparent border-none rounded-xl py-3 px-3 font-body text-on-surface focus:outline-none focus:ring-0 cursor-pointer"
-                    >
-                      <option value="active">Active</option>
-                      <option value="suspended">Suspended</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </div>
-                </div>
+                <FormSelect
+                  label="Tenant Status"
+                  id="status"
+                  selectProps={{
+                    value: status,
+                    onChange: (e) => setStatus((e.target as HTMLSelectElement).value)
+                  }}
+                >
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="archived">Archived</option>
+                </FormSelect>
 
               </div>
 
               {/* Right Column Fields */}
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-headline font-semibold text-lg mb-1 text-on-surface">Domains &amp; Entryways</h3>
-                  <p className="text-xs text-outline">Manage custom URLs resolving into this workspace organizational container.</p>
+                  <Heading level={4} className="mb-1 text-lg">Domains &amp; Entryways</Heading>
+                  <Text variant="small">Manage custom URLs resolving into this workspace organizational container.</Text>
                 </div>
 
                 {isDomainOverLimit && (
                   <div className="p-3 bg-error-container text-on-error-container rounded-xl flex items-center gap-3 border border-error/20 animate-fade-slide-up">
                     <Icon name="warning" className="text-error" />
-                    <span className="font-body text-xs font-medium">Mapped domains exceed the {tier} tier limit of {domainLimit}. Delete domains to save.</span>
+                    <Text variant="small" className="text-error font-medium">Mapped domains exceed the {tier} tier limit of {domainLimit}. Delete domains to save.</Text>
                   </div>
                 )}
 
@@ -912,25 +883,26 @@ export const CreateTenantPage: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <div className="relative flex-1 flex items-center rounded-xl bg-surface-container-low border border-outline-variant/20 focus-within:border-primary/40 focus-within:bg-surface-container-high transition-all">
-                    <Icon name="dns" size={16} className="text-outline ml-4 mr-1" />
-                    <input 
-                      type="text"
-                      value={newDomain}
-                      onChange={(e) => setNewDomain(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddDomain() } }}
-                      className="w-full bg-transparent border-none rounded-xl py-2.5 px-3 font-mono text-xs text-on-surface placeholder:text-outline/70 focus:outline-none focus:ring-0" 
-                      placeholder="e.g. site.brand.com" 
-                    />
-                  </div>
-                  <button
+                  <FormField 
+                    label=""
+                    id="newDomain"
+                    inputProps={{
+                      value: newDomain,
+                      onChange: (e) => setNewDomain((e.target as HTMLInputElement).value),
+                      onKeyDown: (e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddDomain() } }
+                    }}
+                    placeholder="e.g. site.brand.com"
+                    className="flex-1 space-y-0"
+                  />
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={handleAddDomain}
-                    className="bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20 font-label font-bold text-xs uppercase tracking-widest px-4 rounded-xl transition-all cursor-pointer flex items-center gap-1"
+                    className="font-label font-bold text-xs uppercase tracking-widest px-4 rounded-xl transition-all flex items-center gap-1 py-3"
                   >
                     <Icon name="add" size={14} />
                     Add
-                  </button>
+                  </Button>
                 </div>
 
               </div>
@@ -939,37 +911,26 @@ export const CreateTenantPage: React.FC = () => {
 
             {/* Form actions */}
             <div className="pt-6 border-t border-outline-variant/10 flex justify-end gap-4">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => router.push('/admin/collections/tenants')}
-                className="flex items-center gap-2 border border-outline-variant/30 text-on-surface hover:bg-surface-container-low py-3 px-6 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent"
+                className="uppercase tracking-widest text-xs"
               >
                 Cancel Changes
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting || isDomainOverLimit}
-                className={`flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-label font-bold text-xs uppercase tracking-widest py-3 px-6 rounded-xl transition-all cursor-pointer border-none ${
-                  isSubmitting || isDomainOverLimit ? 'opacity-60 cursor-not-allowed' : ''
-                }`}
+                className="uppercase tracking-widest text-xs"
               >
-                {isSubmitting ? (
-                  <>
-                    Saving...
-                    <span className="size-4 rounded-full border-2 border-on-primary border-t-transparent animate-spin ml-1" />
-                  </>
-                ) : (
-                  <>
-                    Save Workspace Configuration
-                    <Icon name="check" size={16} />
-                  </>
-                )}
-              </button>
+                {isSubmitting ? 'Saving...' : 'Save Workspace'}
+              </Button>
             </div>
 
           </form>
-        </div>
+        </Card>
       )}
 
     </div>

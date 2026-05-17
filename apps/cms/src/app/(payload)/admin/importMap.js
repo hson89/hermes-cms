@@ -1,6 +1,7 @@
 import { WatchTenantCollection as WatchTenantCollection_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { CreateTenantPage as CreateTenantPage_ba4d1474d25bead833c99485afbd573c } from '../../../../src/components/views/CreateTenantPage'
 import { TenantListPage as TenantListPage_c5178ba657a215cbb89ea742ddb72f1b } from '../../../../src/components/views/TenantListPage'
+import { CreateUserPage as CreateUserPage_913d5b23f33cda93261c04e0e37d4b55 } from '../../../../src/components/views/CreateUserPage'
 import { UserListPage as UserListPage_86189bd53a034cea3e66cd5c99ea1212 } from '../../../../src/components/views/UserListPage'
 import { TenantField as TenantField_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
@@ -41,6 +42,7 @@ export const importMap = {
   "@payloadcms/plugin-multi-tenant/client#WatchTenantCollection": WatchTenantCollection_1d0591e3cf4f332c83a86da13a0de59a,
   "/src/components/views/CreateTenantPage#CreateTenantPage": CreateTenantPage_ba4d1474d25bead833c99485afbd573c,
   "/src/components/views/TenantListPage#TenantListPage": TenantListPage_c5178ba657a215cbb89ea742ddb72f1b,
+  "/src/components/views/CreateUserPage#CreateUserPage": CreateUserPage_913d5b23f33cda93261c04e0e37d4b55,
   "/src/components/views/UserListPage#UserListPage": UserListPage_86189bd53a034cea3e66cd5c99ea1212,
   "@payloadcms/plugin-multi-tenant/client#TenantField": TenantField_1d0591e3cf4f332c83a86da13a0de59a,
   "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,

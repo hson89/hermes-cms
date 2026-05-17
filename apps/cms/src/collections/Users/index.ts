@@ -19,6 +19,11 @@ export const Users: CollectionConfig = {
         list: {
           Component: '/src/components/views/UserListPage#UserListPage',
         },
+        edit: {
+          default: {
+            Component: '/src/components/views/CreateUserPage#CreateUserPage',
+          },
+        },
       },
     },
   },
