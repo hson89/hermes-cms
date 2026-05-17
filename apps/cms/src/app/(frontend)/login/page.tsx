@@ -2,19 +2,16 @@
 
 import React, { useActionState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { loginAction } from './actions'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [state, formAction, isPending] = useActionState(loginAction, null)
 
   React.useEffect(() => {
     if (state?.success) {
-      router.push('/admin')
-      router.refresh()
+      window.location.href = '/admin'
     }
-  }, [state, router])
+  }, [state])
 
   return (
     <main className="bg-background text-on-surface font-body antialiased min-h-screen flex w-full overflow-hidden">

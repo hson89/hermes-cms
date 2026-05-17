@@ -96,7 +96,7 @@
 }
 
 /* Hide Payload's built-in sidebar/nav */
-.nav, aside.nav, [class*="nav"], .sidebar {
+.nav, aside.nav, .sidebar, .app-header__nav-toggler {
   display: none !important;
 }
 
@@ -112,8 +112,6 @@
 
 /* 3. Header Control */
 .app-header {
-  left: 18rem !important;
-  width: calc(100% - 18rem) !important;
   height: 5rem !important; /* h-20 */
   padding: 0 !important;
   border-bottom: none !important;
@@ -168,3 +166,70 @@ body {
   color: var(--color-on-surface);
   font-family: var(--font-body), sans-serif;
 }
+
+/* Custom ghost borders for form controls */
+.ghost-border {
+  box-shadow: inset 0 0 0 1px rgba(195, 198, 213, 0.15);
+}
+
+.ghost-border-focus:focus-within {
+  box-shadow: inset 0 0 0 2px #094cb2, 0 0 12px rgba(9, 76, 178, 0.15);
+}
+
+/* 5. Custom View Cleanups */
+.template-default__wrap:has(.custom-tenant-view) .doc-header,
+.template-default__wrap:has(.custom-tenant-view) .collection-edit__header,
+.template-default__wrap:has(.custom-tenant-view) .collection-list__header,
+.template-default__wrap:has(.custom-tenant-view) .gutter,
+.template-default__wrap:has(.custom-tenant-view) [class*="doc-header"],
+.template-default__wrap:has(.custom-tenant-view) [class*="collection-edit"],
+.template-default__wrap:has(.custom-tenant-view) [class*="collection-list"],
+.template-default__wrap:has(.custom-user-view) .doc-header,
+.template-default__wrap:has(.custom-user-view) .collection-edit__header,
+.template-default__wrap:has(.custom-user-view) .collection-list__header,
+.template-default__wrap:has(.custom-user-view) .gutter,
+.template-default__wrap:has(.custom-user-view) [class*="doc-header"],
+.template-default__wrap:has(.custom-user-view) [class*="collection-edit"],
+.template-default__wrap:has(.custom-user-view) [class*="collection-list"],
+div:has(> .custom-tenant-view) > .doc-header,
+div:has(> .custom-tenant-view) > .collection-edit__header,
+div:has(> .custom-tenant-view) > .collection-list__header,
+div:has(> .custom-tenant-view) > .gutter,
+div:has(> .custom-tenant-view) > [class*="doc-header"],
+div:has(> .custom-tenant-view) > [class*="collection-edit"],
+div:has(> .custom-tenant-view) > [class*="collection-list"],
+div:has(> .custom-user-view) > .doc-header,
+div:has(> .custom-user-view) > .collection-edit__header,
+div:has(> .custom-user-view) > .collection-list__header,
+div:has(> .custom-user-view) > .gutter,
+div:has(> .custom-user-view) > [class*="doc-header"],
+div:has(> .custom-user-view) > [class*="collection-edit"],
+div:has(> .custom-user-view) > [class*="collection-list"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Alexandria Text Animations (from animate-text skill) */
+@keyframes soft-blur-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-soft-blur-in {
+  animation: soft-blur-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+
+
+

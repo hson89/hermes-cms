@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { generateSchemaEndpoint } from './endpoints'
+import { getTenantIds } from '../Users/utils'
 
 /**
  * ContentTypes collection.
@@ -18,23 +19,44 @@ export const ContentTypes: CollectionConfig = {
     description: 'Dynamic content schemas, possibly AI-generated.',
   },
   access: {
-    read: () => true,
-    create: ({ req: { user } }) =>
-      Boolean(user) &&
-      (user?.role === 'super-admin' ||
-        user?.role === 'tenant-admin' ||
-        user?.role === 'editor'),
-    update: ({ req: { user } }) => {
+    read: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'super-admin') return true
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
       return {
-        tenantId: {
-          equals: user.tenantId,
+        tenant: {
+          in: tenantIds,
         },
       }
     },
-    delete: ({ req: { user } }) =>
-      user?.role === 'super-admin' || user?.role === 'tenant-admin',
+    create: ({ req: { user } }) =>
+      Boolean(user) &&
+      ((user as any).role === 'super-admin' ||
+        (user as any).role === 'tenant-admin' ||
+        (user as any).role === 'editor'),
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
+      return {
+        tenant: {
+          in: tenantIds,
+        },
+      }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
+      return {
+        tenant: {
+          in: tenantIds,
+        },
+      }
+    },
   },
   fields: [
     {
@@ -43,16 +65,7 @@ export const ContentTypes: CollectionConfig = {
       required: true,
       label: 'Name',
     },
-    {
-      name: 'tenantId',
-      type: 'relationship',
-      relationTo: 'tenants',
-      required: true,
-      label: 'Tenant',
-      admin: {
-        description: 'The tenant that owns this content type.',
-      },
-    },
+
     {
       name: 'schema',
       type: 'json',

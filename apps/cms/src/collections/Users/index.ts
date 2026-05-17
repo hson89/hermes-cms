@@ -14,6 +14,18 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
     description: 'CMS users managed via multi-tenant architecture.',
+    components: {
+      views: {
+        list: {
+          Component: '/src/components/views/UserListPage#UserListPage',
+        },
+        edit: {
+          default: {
+            Component: '/src/components/views/CreateUserPage#CreateUserPage',
+          },
+        },
+      },
+    },
   },
   access: {
     read: () => true,

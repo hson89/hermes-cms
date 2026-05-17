@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
 import { copilotEditEndpoint } from './endpoints'
-
 import { tenantDeliveryAccess } from './access'
+import { getTenantIds } from '../Users/utils'
 
 /**
  * ContentItems collection.
@@ -25,24 +25,28 @@ export const ContentItems: CollectionConfig = {
     read: tenantDeliveryAccess,
     create: ({ req: { user } }) =>
       Boolean(user) &&
-      (user?.role === 'super-admin' ||
-        user?.role === 'tenant-admin' ||
-        user?.role === 'editor'),
+      ((user as any).role === 'super-admin' ||
+        (user as any).role === 'tenant-admin' ||
+        (user as any).role === 'editor'),
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'super-admin') return true
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
       return {
-        tenantId: {
-          equals: user.tenantId,
+        tenant: {
+          in: tenantIds,
         },
       }
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'super-admin') return true
+      if ((user as any).role === 'super-admin') return true
+      const tenantIds = getTenantIds(user)
+      if (tenantIds.length === 0) return false
       return {
-        tenantId: {
-          equals: user.tenantId,
+        tenant: {
+          in: tenantIds,
         },
       }
     },
@@ -54,16 +58,7 @@ export const ContentItems: CollectionConfig = {
       required: true,
       label: 'Title',
     },
-    {
-      name: 'tenantId',
-      type: 'relationship',
-      relationTo: 'tenants',
-      required: true,
-      label: 'Tenant',
-      admin: {
-        description: 'The tenant that owns this content item.',
-      },
-    },
+
     {
       name: 'contentType',
       type: 'relationship',

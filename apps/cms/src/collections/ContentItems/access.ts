@@ -12,30 +12,23 @@ import type { Access } from 'payload'
  * T027 - Implement Tenant isolation checks on delivery endpoints
  * T028 - Add APIKey authentication middleware for delivery endpoints
  */
+import { getTenantIds } from '../Users/utils'
+
 export const tenantDeliveryAccess: Access = ({ req: { user } }) => {
   if (!user) {
-    // Unauthenticated – Payload will still return results here because we
-    // return `true`, but the collection-level access guard and API-key
-    // middleware (handled by the custom endpoint) restrict this further.
-    // For the standard REST /api/content-items endpoint we delegate to the
-    // collection access config where tenant filtering is enforced via query.
     return true
   }
 
-  if (user.role === 'super-admin') return true
+  if ((user as any).role === 'super-admin') return true
 
-  // Both JWT users and API-key users must be scoped to their tenant.
-  if (user.tenantId) {
-    return {
-      tenantId: {
-        equals:
-          typeof user.tenantId === 'object' ? user.tenantId.id : user.tenantId,
-      },
-    }
+  const tenantIds = getTenantIds(user)
+  if (tenantIds.length === 0) return false
+
+  return {
+    tenant: {
+      in: tenantIds,
+    },
   }
-
-  // Deny access if no tenant is found on the user.
-  return false
 }
 
 /**

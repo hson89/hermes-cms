@@ -32,3 +32,6 @@ kubeconfig*
 # Cache & Local DB
 *.sst
 *.log
+
+# Payload CMS uploaded media
+apps/cms/media/

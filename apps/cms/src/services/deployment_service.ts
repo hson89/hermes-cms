@@ -52,7 +52,7 @@ export class DeploymentService {
             id: siteId,
             data: {
               status: 'active',
-              deployedUrl: `https://${site.domain || `${site.slug || site.id}.hermes-hosted.app`}`,
+              deployedUrl: `https://${site.domain || `site-${site.id}.hermes-hosted.app`}`,
             },
           })
           console.log(`[DeploymentService] Deployment completed for site ${site.name}`)

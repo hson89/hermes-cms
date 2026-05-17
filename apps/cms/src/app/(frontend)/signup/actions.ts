@@ -11,11 +11,11 @@ export async function signupAction(prevState: any, formData: FormData): Promise<
   const config = (await import('@/payload.config')).default
   const payload = await getPayload({ config })
 
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string
+  const name = (formData.get('name') as string || '').trim()
+  const email = (formData.get('email') as string || '').trim().toLowerCase()
   const password = formData.get('password') as string
-  const workspaceName = formData.get('workspaceName') as string
-  const workspaceSlug = formData.get('workspaceSlug') as string
+  const workspaceName = (formData.get('workspaceName') as string || '').trim()
+  const workspaceSlug = (formData.get('workspaceSlug') as string || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '')
 
   try {
     // 1. Check if user already exists
@@ -61,10 +61,14 @@ export async function signupAction(prevState: any, formData: FormData): Promise<
       data: {
         name: workspaceName,
         slug: workspaceSlug,
+        status: 'active',
+        tier: 'standard',
+        defaultLocale: 'en',
+        domains: [],
       },
     })
 
-    // 5. Create the user
+    // 5. Create the user associated with the tenant
     await payload.create({
       collection: 'users',
       data: {
@@ -72,6 +76,11 @@ export async function signupAction(prevState: any, formData: FormData): Promise<
         email,
         password,
         role,
+        tenants: [
+          {
+            tenant: tenant.id,
+          },
+        ],
       },
     })
 

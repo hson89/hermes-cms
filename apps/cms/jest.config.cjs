@@ -4,6 +4,7 @@ module.exports = {
   testMatch: ["**/tests/**/*.ts", "!**/*.spec.ts"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^pino$": "<rootDir>/tests/mocks/pino.js",
     "^pino-pretty$": "<rootDir>/tests/mocks/pino-pretty.js",
   },
   transform: {

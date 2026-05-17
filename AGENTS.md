@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/plan.md
+/home/itlight/dev/hermes-cms/specs/002-tenant-management/plan.md
 <!-- SPECKIT END -->
 
 # Hermes AI — Agent Guidelines
@@ -185,6 +185,7 @@ docker-compose stop
 9. Feature specs go under `specs/<feature-id>/` with `spec.md`, `plan.md`,
    `tasks.md`, and supporting artifacts.
 10. **Payload UI Safety:** Any UI/UX modifications to the Payload admin interface *must* begin by invoking the `payload-ui` skill (located in `.agents/skills/payload-ui/SKILL.md`) to prevent layout and configuration breakages.
+11. **Payload CMS Expertise:** When working with Payload CMS backend concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) in `apps/cms/`, you MUST invoke the `payload` skill (located in `.agents/skills/payload/SKILL.md`) first.
 
 ### Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts`:
@@ -195,6 +196,6 @@ When adding custom React components to `payload.config.ts`:
 ### Payload 3.x & Next.js 15 Technical Guardrails
 1. **Dynamic Route Naming:** Always use `[...slug]` for the Payload API catch-all route (`src/app/(payload)/api/[...slug]`). Using `[...payload]` or other names may conflict with internal Payload expectations in Next.js 15+.
 2. **Lowercase View Keys:** In `payload.config.ts`, use lowercase keys for standard admin views (e.g., `dashboard`, `login`, `account`). Uppercase keys may be ignored by the Payload 3.x view resolver.
-3. **Process Management:** Stale `payload` processes (generators) can consume 100% CPU and lock files. If the system is slow or `importMap.js` fails to update, kill all `node` processes related to `payload` and `next` before retrying.
+3. **Process Management:** Stale `payload` processes (generators) can consume 100% CPU and lock files. If the system is slow or `importMap.js` fails to update, kill specific non-agent node/next processes. **CRITICAL WARNING:** NEVER use `pkill -f "node"` or other generic node killing commands, as this will terminate the current coding session and communication with the AI agent. Use targeted process termination instead (e.g., `pkill -f "next-router-worker"` or find specific PIDs).
 4. **importMap Regeneration:** Changes to custom component registrations in `payload.config.ts` often require a manual `pnpm payload generate:importmap` if the dev server fails to auto-sync.
 
