@@ -36,6 +36,7 @@ This feature track implements the core multi-tenancy management foundation for H
   - Integrated `X-Internal-Secret` header authentication for CMS-to-AI microservice communications.
 
 #### 3. Alexandria Bespoke Admin UI & Shared Registry Components (`apps/cms/src/components/`)
+- **[MODIFY] Reusable Atomic `Badge` Component** ([Badge.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/atoms/Badge.tsx)): Evolved the atomic `Badge` to be a highly versatile, generic component supporting custom sizing (`sm`, `md`), visual variants (`solid`, `subtle`, `outline`), curated semantic color states (`primary`, `tertiary`, `success`, `danger`, `warning`, `neutral`, `gold`), and embedded Google Material icons.
 - **[NEW] Reusable Shared UI Components (`apps/cms/src/components/ui/`)**:
   - **`RegistryHeader`** ([RegistryHeader.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/molecules/RegistryHeader.tsx)): An editorial-grade view header featuring Outfit/Public Sans typography and staggered soft-blur word entry animations.
   - **`RegistryTable`** ([RegistryTable.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/organisms/RegistryTable.tsx)): A borderless grid-card hybrid registry container with decorative monogram avatars, flex column layouts, and high-fidelity pulse skeleton loading state.
@@ -45,10 +46,11 @@ This feature track implements the core multi-tenancy management foundation for H
   - **`ConfirmationModal`** ([ConfirmationModal.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/ui/organisms/ConfirmationModal.tsx)): A general-purpose glassmorphism dialog for danger-level double confirmation prompts (e.g. decommissioning).
 - **[NEW] Custom User Registry View (`UserListPage.tsx`)** ([UserListPage.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/views/UserListPage.tsx)):
   - Built a customized identity admin interface displaying registered accounts with modern monogram avatars.
-  - Formatted Public Sans status tags for roles (e.g. specialized gold/archival tint for Super Admins) and custom badges for affiliated tenant mappings.
+  - Refactored user role and tenant scoping chips to utilize the evolved atomic `Badge` component, aligning them perfectly with Alexandria design tokens.
   - Integrated full role filter chips, live search inputs, and deletion workflows protected by self-deletion safeguards.
 - **[MODIFY] Tenant List View (`TenantListPage.tsx`)** ([TenantListPage.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/views/TenantListPage.tsx)):
   - Completely refactored to utilize the newly created shared visual registry components, eliminating over 250 lines of duplicate UI layout structure.
+  - Migrated service tier and status indicators to use the evolved generic atomic `Badge` component, ensuring typography and roundness consistency.
 - **[MODIFY] Users Collection Configuration (`index.ts`)** ([Users/index.ts](file:///home/itlight/dev/hermes-cms/apps/cms/src/collections/Users/index.ts)):
   - Registered `UserListPage` custom React component inside `admin.components.views.list` to substitute default list grids.
 - **[MODIFY] Global Stylesheet (`globals.css`)** ([globals.css](file:///home/itlight/dev/hermes-cms/apps/cms/src/app/globals.css)):
