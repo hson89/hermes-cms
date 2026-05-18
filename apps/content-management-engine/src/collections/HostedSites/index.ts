@@ -65,14 +65,13 @@ export const HostedSites: CollectionConfig = {
   },
   hooks: {
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create') {
           // Dynamically import to avoid circular dependencies if any
-          import('../../services/deployment_service').then(({ DeploymentService }) => {
-            const service = new DeploymentService(req.payload)
-            // Trigger asynchronously
-            service.triggerDeployment(doc.id).catch(console.error)
-          })
+          const { DeploymentService } = await import('../../services/deployment_service')
+          const service = new DeploymentService(req.payload)
+          // Pass the doc and req to participate in the transaction and avoid redundant lookups
+          await service.triggerDeployment(doc.id, doc, req)
         }
         return doc
       },
