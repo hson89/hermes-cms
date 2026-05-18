@@ -51,7 +51,7 @@ specs/002-tenant-management/
 ### Source Code (repository root)
 
 ```text
-apps/cms/
+apps/content-management-engine/
 ├── src/
 │   ├── collections/
 │   │   ├── Tenants.ts          # Core tenant model
@@ -62,7 +62,7 @@ apps/cms/
 │   └── payload.config.ts       # Multi-tenant plugin configuration
 ```
 
-**Structure Decision**: The feature is implemented within the `apps/cms` monolith as it leverages Payload CMS's native multi-tenancy and collection systems.
+**Structure Decision**: The feature is implemented within the `apps/content-management-engine` monolith as it leverages Payload CMS's native multi-tenancy and collection systems.
 
 ## Complexity Tracking
 

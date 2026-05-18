@@ -19,9 +19,9 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **CMS app**: `apps/cms/`
-- **AI Microservice**: `apps/ai-agent-service/`
-- **Frontend Starters**: `apps/frontend-starters/`
+- **CMS app**: `apps/content-management-engine/`
+- **Content Authoring Service**: `apps/content-authoring-service/`
+- **Frontend Starters**: `apps/site-templates/`
 
 ---
 
@@ -30,10 +30,10 @@ description: "Task list template for feature implementation"
 **Purpose**: Project initialization and basic structure
 
 - [x] T001 Create project structure per implementation plan
-- [x] T002 Initialize Payload CMS project (Node.js 24+, TypeScript, Payload CMS 3.84+) in apps/cms/
-- [x] T003 Initialize FastAPI Microservice project (Python 3.12+, FastAPI 0.136+) in apps/ai-agent-service/
-- [x] T004 [P] Setup Python virtual environment in apps/ai-agent-service/
-- [x] T005 [P] Configure Jest and Playwright in apps/cms/ and pytest in apps/ai-agent-service/
+- [x] T002 Initialize Payload CMS project (Node.js 24+, TypeScript, Payload CMS 3.84+) in apps/content-management-engine/
+- [x] T003 Initialize FastAPI Microservice project (Python 3.12+, FastAPI 0.136+) in apps/content-authoring-service/
+- [x] T004 [P] Setup Python virtual environment in apps/content-authoring-service/
+- [x] T005 [P] Configure Jest and Playwright in apps/content-management-engine/ and pytest in apps/content-authoring-service/
 - [x] T006 [P] Setup Docker/Kubernetes configurations in docker/ and k8s/
 - [x] T006a [P] Configure linting and formatting tools
 
@@ -46,11 +46,11 @@ description: "Task list template for feature implementation"
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [x] T007 Setup PostgreSQL database schema and migrations for Payload CMS
-- [x] T008 Setup separate database for AI Microservice
-- [x] T009 Implement multi-tenancy using @payloadcms/plugin-multi-tenant in apps/cms/src/payload.config.ts
+- [x] T008 Setup separate database for Content Authoring Service
+- [x] T009 Implement multi-tenancy using @payloadcms/plugin-multi-tenant in apps/content-management-engine/src/payload.config.ts
 - [x] T010 [P] Configure message broker (Kafka or RabbitMQ) connection in both CMS and AI service
-- [x] T011 [P] Setup base Payload Auth collections (Users & APIKeys) in apps/cms/src/collections/Users/ and apps/cms/src/collections/APIKeys/
-- [x] T012 [P] Setup base Tenant collection in apps/cms/src/collections/Tenants/
+- [x] T011 [P] Setup base Payload Auth collections (Users & APIKeys) in apps/content-management-engine/src/collections/Users/ and apps/content-management-engine/src/collections/APIKeys/
+- [x] T012 [P] Setup base Tenant collection in apps/content-management-engine/src/collections/Tenants/
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -66,15 +66,15 @@ description: "Task list template for feature implementation"
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [x] T013 [P] [US1] Integration test for AI content creation flow in apps/ai-agent-service/tests/integration/test_ai_creation.py
+- [x] T013 [P] [US1] Integration test for AI content creation flow in apps/content-authoring-service/tests/integration/test_ai_creation.py
 
 ### Implementation for User Story 1
 
-- [x] T014 [P] [US1] Create AIAgentSession model in apps/ai-agent-service/src/domain/ai_agent_session/models.py
-- [x] T015 [P] [US1] Implement Payload ContentType dynamic schema logic in apps/cms/src/collections/ContentTypes/index.ts
-- [x] T016 [US1] Implement AI Agent service with LangChain 1.2+ for schema/content generation in apps/ai-agent-service/src/application/ai_service.py
-- [x] T017 [US1] Implement POST /api/ai/generate-schema custom endpoint in apps/cms/src/collections/ContentTypes/endpoints.ts
-- [x] T018 [US1] Integrate CMS endpoint with AI Microservice via message broker or REST
+- [x] T014 [P] [US1] Create AIAgentSession model in apps/content-authoring-service/src/domain/ai_agent_session/models.py
+- [x] T015 [P] [US1] Implement Payload ContentType dynamic schema logic in apps/content-management-engine/src/collections/ContentTypes/index.ts
+- [x] T016 [US1] Implement AI Agent service with LangChain 1.2+ for schema/content generation in apps/content-authoring-service/src/application/ai_service.py
+- [x] T017 [US1] Implement POST /api/ai/generate-schema custom endpoint in apps/content-management-engine/src/collections/ContentTypes/endpoints.ts
+- [x] T018 [US1] Integrate CMS endpoint with Content Authoring Service via message broker or REST
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -86,12 +86,12 @@ description: "Task list template for feature implementation"
 
 **Independent Test**: Can be fully tested by opening an existing piece of content in the editor, making manual edits, and asking the copilot to adjust a specific section successfully.
 
-- [x] T019 [P] [US2] Integration test for AI copilot edits in apps/cms/tests/integration/test_copilot_edits.ts
-- [x] T020 [P] [US2] Create ContentItem collection in apps/cms/src/collections/ContentItems/index.ts
-- [x] T021 [US2] Implement Block-based JSON AGUI editor in Payload Admin UI in apps/cms/src/components/Editor/
-- [x] T022 [US2] Implement POST /api/ai/copilot/edit endpoint in apps/cms/src/collections/ContentItems/endpoints.ts
-- [x] T023 [US2] Implement AI service logic for localized section editing in apps/ai-agent-service/src/application/copilot_service.py
-- [x] T024 [US2] Integrate side-by-side copilot UI with traditional editor in apps/cms/src/components/Editor/CopilotSidebar.tsx
+- [x] T019 [P] [US2] Integration test for AI copilot edits in apps/content-management-engine/tests/integration/test_copilot_edits.ts
+- [x] T020 [P] [US2] Create ContentItem collection in apps/content-management-engine/src/collections/ContentItems/index.ts
+- [x] T021 [US2] Implement Block-based JSON AGUI editor in Payload Admin UI in apps/content-management-engine/src/components/Editor/
+- [x] T022 [US2] Implement POST /api/ai/copilot/edit endpoint in apps/content-management-engine/src/collections/ContentItems/endpoints.ts
+- [x] T023 [US2] Implement AI service logic for localized section editing in apps/content-authoring-service/src/application/copilot_service.py
+- [x] T024 [US2] Integrate side-by-side copilot UI with traditional editor in apps/content-management-engine/src/components/Editor/CopilotSidebar.tsx
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -103,9 +103,9 @@ description: "Task list template for feature implementation"
 
 **Independent Test**: Can be fully tested by making HTTP requests to the content delivery API and validating the response schema and data.
 
-- [x] T025 [P] [US4] Contract test for content delivery API in apps/cms/tests/contract/test_delivery_api.ts
+- [x] T025 [P] [US4] Contract test for content delivery API in apps/content-management-engine/tests/contract/test_delivery_api.ts
 - [x] T026 [US4] Configure Payload CMS default REST and GraphQL endpoints for ContentItem
-- [x] T027 [US4] Implement Tenant isolation checks on delivery endpoints in apps/cms/src/collections/ContentItems/access.ts
+- [x] T027 [US4] Implement Tenant isolation checks on delivery endpoints in apps/content-management-engine/src/collections/ContentItems/access.ts
 - [x] T028 [US4] Add APIKey authentication middleware for delivery endpoints
 
 **Checkpoint**: User stories 1, 2, and 4 should be functional.
@@ -120,10 +120,10 @@ description: "Task list template for feature implementation"
 
 ### Tests for User Story 3 ⚠️
 
-- [x] T029 [P] [US3] Integration test for template deployment in apps/cms/tests/integration/test_deployment.ts
-- [x] T030 [P] [US3] Create HostedSite collection in apps/cms/src/collections/HostedSites/index.ts
-- [x] T031 [US3] Create Next.js and Astro starter templates in apps/frontend-starters/
-- [x] T032 [US3] Implement internal deployment infrastructure orchestration service in apps/cms/src/services/deployment_service.ts
+- [x] T029 [P] [US3] Integration test for template deployment in apps/content-management-engine/tests/integration/test_deployment.ts
+- [x] T030 [P] [US3] Create HostedSite collection in apps/content-management-engine/src/collections/HostedSites/index.ts
+- [x] T031 [US3] Create Next.js and Astro starter templates in apps/site-templates/
+- [x] T032 [US3] Implement internal deployment infrastructure orchestration service in apps/content-management-engine/src/services/deployment_service.ts
 - [x] T033 [US3] Build deployment UI inside Payload Admin for tenant users
 
 **Checkpoint**: All user stories should now be independently functional

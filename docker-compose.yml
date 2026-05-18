@@ -12,17 +12,17 @@ services:
     volumes:
       - postgres_cms_data:/var/lib/postgresql
 
-  # Separate AI Service Database (T008)
-  postgres_ai:
+  # Separate Content Authoring Service Database (T008)
+  postgres_authoring:
     image: postgres:18-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: hermes_ai
+      POSTGRES_DB: hermes_authoring
     ports:
       - "5433:5432"
     volumes:
-      - postgres_ai_data:/var/lib/postgresql
+      - postgres_authoring_data:/var/lib/postgresql
 
   # Message Broker (T010)
   zookeeper:
@@ -44,21 +44,21 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  ai_agent_service:
+  content_authoring_service:
     build:
       context: .
-      dockerfile: ./docker/Dockerfile.ai
+      dockerfile: ./docker/Dockerfile.authoring
     ports:
       - "8000:8000"
     env_file:
-      - ./apps/ai-agent-service/.env
+      - ./apps/content-authoring-service/.env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres_ai:5432/hermes_ai
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres_authoring:5432/hermes_authoring
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     depends_on:
-      - postgres_ai
+      - postgres_authoring
       - kafka
 
 volumes:
   postgres_cms_data:
-  postgres_ai_data:
+  postgres_authoring_data:

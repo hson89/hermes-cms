@@ -70,10 +70,12 @@ export const generateSchemaEndpoint: Endpoint = {
     }
 
     try {
-      // Dispatch to AI Microservice
-      const aiServiceUrl =
-        process.env.AI_SERVICE_URL ?? 'http://localhost:8000'
-      const response = await fetch(`${aiServiceUrl}/api/ai/generate-schema`, {
+      // Dispatch to Content Authoring Microservice
+      const contentAuthoringServiceUrl =
+        process.env.CONTENT_AUTHORING_SERVICE_URL ??
+        process.env.AI_SERVICE_URL ??
+        'http://localhost:8000'
+      const response = await fetch(`${contentAuthoringServiceUrl}/api/ai/generate-schema`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,8 +173,11 @@ export const getSessionStatusEndpoint: Endpoint = {
     }
 
     try {
-      const aiServiceUrl = process.env.AI_SERVICE_URL ?? 'http://localhost:8000'
-      const response = await fetch(`${aiServiceUrl}/api/ai/sessions/${sessionId}`, {
+      const contentAuthoringServiceUrl =
+        process.env.CONTENT_AUTHORING_SERVICE_URL ??
+        process.env.AI_SERVICE_URL ??
+        'http://localhost:8000'
+      const response = await fetch(`${contentAuthoringServiceUrl}/api/ai/sessions/${sessionId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -254,8 +259,11 @@ export const postSessionMessageEndpoint: Endpoint = {
     }
 
     try {
-      const aiServiceUrl = process.env.AI_SERVICE_URL ?? 'http://localhost:8000'
-      const response = await fetch(`${aiServiceUrl}/api/ai/sessions/${sessionId}/message`, {
+      const contentAuthoringServiceUrl =
+        process.env.CONTENT_AUTHORING_SERVICE_URL ??
+        process.env.AI_SERVICE_URL ??
+        'http://localhost:8000'
+      const response = await fetch(`${contentAuthoringServiceUrl}/api/ai/sessions/${sessionId}/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

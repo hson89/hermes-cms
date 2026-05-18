@@ -48,9 +48,9 @@ async def lifespan(app: FastAPI):  # noqa: ANN001
 # ── App ───────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="Hermes AI Agent Service",
+    title="Hermes Content Authoring Service",
     description=(
-        "Conversational AI microservice for schema generation and content copilot. "
+        "FastAPI Content Authoring microservice for schema generation and content copilot. "
         "Part of the Hermes AI platform."
     ),
     version="0.1.0",
@@ -137,7 +137,7 @@ class SessionMessageRequest(BaseModel):
 @app.get("/health", tags=["Meta"])
 async def health() -> dict:
     """Health check endpoint."""
-    return {"status": "ok", "service": "ai-agent-service"}
+    return {"status": "ok", "service": "content-authoring-service"}
 
 
 @app.post(

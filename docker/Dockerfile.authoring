@@ -2,12 +2,12 @@ FROM python:3.14-slim
 
 WORKDIR /app
 # Install dependencies
-COPY apps/ai-agent-service/requirements.txt .
+COPY apps/content-authoring-service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy config and source code
-COPY apps/ai-agent-service/alembic.ini .
-COPY apps/ai-agent-service/src/ ./src/
+COPY apps/content-authoring-service/alembic.ini .
+COPY apps/content-authoring-service/src/ ./src/
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

@@ -18,12 +18,12 @@ pkill -f "tsx" || true
 
 # 2. Clean temporary build artifacts
 echo "🗑️ Removing build caches and temporary files..."
-rm -rf apps/cms/.next
-rm -rf apps/cms/node_modules/.cache
+rm -rf apps/content-management-engine/.next
+rm -rf apps/content-management-engine/node_modules/.cache
 
 # 3. Regenerate Payload Import Map
 echo "🗺️ Regenerating Payload importMap..."
-cd apps/cms
+cd apps/content-management-engine
 # Explicitly set PAYLOAD_CONFIG_PATH to avoid hanging on auto-discovery
 PAYLOAD_CONFIG_PATH=src/payload.config.ts pnpm payload generate:importmap
 

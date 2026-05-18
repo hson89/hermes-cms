@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ai-agent-deployment
+  name: content-authoring-deployment
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: ai-agent
+      app: content-authoring
   template:
     metadata:
       labels:
-        app: ai-agent
+        app: content-authoring
     spec:
       containers:
-      - name: ai-agent
-        image: hermes-ai-agent:latest
+      - name: content-authoring
+        image: hermes-content-authoring:latest
         ports:
         - containerPort: 8000

@@ -9,9 +9,9 @@ Build a multi-tenant headless CMS using a hybrid architecture. Payload CMS will 
 
 ## Technical Context
 
-**Language/Version**: TypeScript (Node.js 26+) for CMS, Python (3.14+) for AI Microservices
-**Primary Dependencies**: Payload CMS 3.84+, Next.js 16+, Postgres 18+ (CMS DB), FastAPI 0.136+ (AI Microservice), LangChain 1.2+ (Python), Agnostic LLMs (OpenAI, Anthropic, Google), Kafka/RabbitMQ
-**Storage**: PostgreSQL (Logical Isolation via `@payloadcms/plugin-multi-tenant` for CMS, separate DB for AI Microservice)
+**Language/Version**: TypeScript (Node.js 26+) for CMS, Python (3.14+) for Content Authoring Services
+**Primary Dependencies**: Payload CMS 3.84+, Next.js 16+, Postgres 18+ (CMS DB), FastAPI 0.136+ (Content Authoring Service), LangChain 1.2+ (Python), Agnostic LLMs (OpenAI, Anthropic, Google), Kafka/RabbitMQ
+**Storage**: PostgreSQL (Logical Isolation via `@payloadcms/plugin-multi-tenant` for CMS, separate DB for Content Authoring Service)
 **Testing**: Jest, Playwright
 **Target Platform**: Docker/Kubernetes (Linux)
 **Project Type**: Hybrid (Modular Monolith CMS + Microservices)
@@ -28,7 +28,7 @@ Build a multi-tenant headless CMS using a hybrid architecture. Payload CMS will 
 - **API-First Content Delivery**: PASSED. Payload CMS natively exposes REST/GraphQL APIs.
 - **Test-First**: PASSED. Testing strategy defined.
 - **Developer Experience (DX)**: PASSED. Payload admin UI + clear API contracts.
-- **Strict Domain-Driven Design (DDD)**: PASSED. Enforced heavily in the AI Microservice.
+- **Strict Domain-Driven Design (DDD)**: PASSED. Enforced heavily in the Content Authoring Service.
 - **Hybrid Architecture**: PASSED. Separation of concerns between Content (Payload) and AI processing (FastAPI/Python).
 
 ## Project Structure
@@ -58,7 +58,7 @@ apps/
 │   │   │   └── ContentItems/
 │   │   ├── payload.config.ts
 │   │   └── ...
-├── ai-agent-service/ (Python/FastAPI Microservice)
+├── content-authoring-service/ (Python/FastAPI Microservice)
 │   ├── src/
 │   │   ├── domain/
 │   │   │   └── ai_agent_session/
@@ -66,7 +66,7 @@ apps/
 │   │   ├── infrastructure/
 │   │   └── main.py
 │   └── tests/
-├── frontend-starters/
+├── site-templates/
 │   └── ...
 ```
 

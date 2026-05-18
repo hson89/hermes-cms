@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: content-management-engine-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: content-management-engine
+  template:
+    metadata:
+      labels:
+        app: content-management-engine
+    spec:
+      containers:
+      - name: content-management-engine
+        image: hermes-content-management-engine:latest
+        ports:
+        - containerPort: 3000

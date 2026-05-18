@@ -23,7 +23,7 @@
 - **Rationale**: Satisfies FR-012. Prevents last-write-wins collisions when multiple editors are refining schemas concurrently. If a mismatch is detected, returns a `409 Conflict` error and forces the user to reload the draft.
 
 ## Decision 5: Exporting Formats
-- **Decision**: Build an export helper under `apps/cms/src/services/export-service.ts` exposing two formats:
+- **Decision**: Build an export helper under `apps/content-management-engine/src/services/export-service.ts` exposing two formats:
   - `JSON`: Standard JSON schema representation.
   - `TypeScript`: A transpiler that outputs a string of valid Payload CMS 3.x `CollectionConfig` code with properly typed fields (e.g. `import type { CollectionConfig } from 'payload'`).
 - **Rationale**: Provides developers with a flawless bridge from AI design to code integration, improving DX (Principle V).

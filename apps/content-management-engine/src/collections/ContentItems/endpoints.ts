@@ -26,11 +26,14 @@ export const copilotEditEndpoint: Endpoint = {
         )
       }
 
-      // Proxy request to the AI microservice
-      const aiServiceUrl = process.env.AI_SERVICE_URL ?? 'http://localhost:8000'
+      // Proxy request to the Content Authoring microservice
+      const contentAuthoringServiceUrl =
+        process.env.CONTENT_AUTHORING_SERVICE_URL ??
+        process.env.AI_SERVICE_URL ??
+        'http://localhost:8000'
       const internalSecret = process.env.INTERNAL_SERVICE_SECRET ?? ''
 
-      const response = await fetch(`${aiServiceUrl}/api/ai/copilot/edit`, {
+      const response = await fetch(`${contentAuthoringServiceUrl}/api/ai/copilot/edit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

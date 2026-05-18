@@ -7,8 +7,8 @@
 
 **Purpose**: Project initialization and basic structure verification
 
-- [X] T001 Verify `apps/cms` project structure and access to core collections
-- [X] T002 [P] Verify `@payloadcms/plugin-multi-tenant` is configured in `apps/cms/src/payload.config.ts`
+- [X] T001 Verify `apps/content-management-engine` project structure and access to core collections
+- [X] T002 [P] Verify `@payloadcms/plugin-multi-tenant` is configured in `apps/content-management-engine/src/payload.config.ts`
 
 ---
 
@@ -16,11 +16,11 @@
 
 **Purpose**: Core infrastructure for logging and base models
 
-- [X] T003 Create `AuditLogs` collection in `apps/cms/src/collections/AuditLogs/index.ts` per `data-model.md`
-- [X] T004 [P] Unit test for `AuditLogs` access control in `apps/cms/src/collections/AuditLogs/access.test.ts`
-- [X] T005 Register `AuditLogs` in `apps/cms/src/payload.config.ts`
-- [X] T006 Create `tenant-service.ts` skeleton in `apps/cms/src/services/tenant-service.ts`
-- [X] T007 [P] Unit test for domain resolution logic in `apps/cms/src/services/tenant-service.test.ts`
+- [X] T003 Create `AuditLogs` collection in `apps/content-management-engine/src/collections/AuditLogs/index.ts` per `data-model.md`
+- [X] T004 [P] Unit test for `AuditLogs` access control in `apps/content-management-engine/src/collections/AuditLogs/access.test.ts`
+- [X] T005 Register `AuditLogs` in `apps/content-management-engine/src/payload.config.ts`
+- [X] T006 Create `tenant-service.ts` skeleton in `apps/content-management-engine/src/services/tenant-service.ts`
+- [X] T007 [P] Unit test for domain resolution logic in `apps/content-management-engine/src/services/tenant-service.test.ts`
 - [X] T008 Configure `AuditLogs` access control (Super Admin read only, no public create)
 
 **Checkpoint**: Foundation ready - User Story implementation can begin
@@ -35,12 +35,12 @@
 
 ### Implementation for User Story 1
 
-- [X] T009 [US1] Update `Tenants` collection in `apps/cms/src/collections/Tenants/index.ts` with `status`, `tier`, and `defaultLocale` fields
-- [X] T010 [US1] Implement Super Admin only access control for `Tenants` mutation in `apps/cms/src/collections/Tenants/index.ts`
+- [X] T009 [US1] Update `Tenants` collection in `apps/content-management-engine/src/collections/Tenants/index.ts` with `status`, `tier`, and `defaultLocale` fields
+- [X] T010 [US1] Implement Super Admin only access control for `Tenants` mutation in `apps/content-management-engine/src/collections/Tenants/index.ts`
 - [X] T011 [US1] Add validation for `slug` uniqueness and format in `Tenants` collection
 - [X] T012 [US1] Implement `Archived` soft-delete logic by updating `delete` access in `Tenants` collection
-- [X] T013 [P] Unit test for `Tenants` collection schema and validation in `apps/cms/src/collections/Tenants/schema.test.ts`
-- [X] T014 [P] Unit test for `Tenants` access control (Super Admin isolation) in `apps/cms/src/collections/Tenants/access.test.ts`
+- [X] T013 [P] Unit test for `Tenants` collection schema and validation in `apps/content-management-engine/src/collections/Tenants/schema.test.ts`
+- [X] T014 [P] Unit test for `Tenants` access control (Super Admin isolation) in `apps/content-management-engine/src/collections/Tenants/access.test.ts`
 - [X] T015 [P] Integration test for tenant soft-delete (`Archived` status)
 
 ---
@@ -53,10 +53,10 @@
 
 ### Implementation for User Story 2
 
-- [X] T016 [US2] Add `domains` array field to `Tenants` collection in `apps/cms/src/collections/Tenants/index.ts` (hostname, isPrimary)
+- [X] T016 [US2] Add `domains` array field to `Tenants` collection in `apps/content-management-engine/src/collections/Tenants/index.ts` (hostname, isPrimary)
 - [X] T017 [US2] Implement custom validation for domain format and tier-based uniqueness/limits in `Tenants` collection
-- [X] T018 [US2] Implement `resolveTenantByHostname` with `slug` fallback in `apps/cms/src/services/tenant-service.ts`
-- [X] T019 [US2] Create resolution API endpoint in `apps/cms/src/app/(payload)/api/tenants/resolve/route.ts` per `contracts/tenant-resolution.md`
+- [X] T018 [US2] Implement `resolveTenantByHostname` with `slug` fallback in `apps/content-management-engine/src/services/tenant-service.ts`
+- [X] T019 [US2] Create resolution API endpoint in `apps/content-management-engine/src/app/(payload)/api/tenants/resolve/route.ts` per `contracts/tenant-resolution.md`
 - [X] T020 [US2] Add `X-Internal-Secret` validation to the resolution endpoint
 - [X] T021 [P] Integration test for domain resolution and slug fallback in `tests/integration/tenant-resolution.test.ts`
 
@@ -71,7 +71,7 @@
 ### Implementation for User Story 3
 
 - [X] T022 [US3] Add `branding` group field (logo relationship to `media`, primaryColor hex) to `Tenants` collection
-- [X] T023 [US3] Implement status-based access gate in `apps/cms/src/services/tenant-service.ts` to block `suspended`/`archived` tenants
+- [X] T023 [US3] Implement status-based access gate in `apps/content-management-engine/src/services/tenant-service.ts` to block `suspended`/`archived` tenants
 - [X] T024 [US3] Update resolution API to return branding metadata as per contract
 
 ---

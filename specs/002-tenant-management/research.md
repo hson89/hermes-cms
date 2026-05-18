@@ -11,7 +11,7 @@
 - **Implementation**: Update `access` rules in `Tenants` and all tenant-aware collections to filter out `archived` or `suspended` tenants for non-super-admins.
 
 ## Decision 3: Audit Logging
-- **Decision**: Create a new `AuditLogs` collection in `apps/cms`.
+- **Decision**: Create a new `AuditLogs` collection in `apps/content-management-engine`.
 - **Rationale**: Centralized store for resolution failures (FR-008) and impersonation logs (FR-010).
 - **Metadata**: Include `ip`, `hostname`, `tenantId`, `userId`, `action`, `severity`, and `timestamp`.
 

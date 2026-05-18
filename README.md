@@ -5,9 +5,9 @@ Hermes AI is an AI-powered, multi-tenant headless CMS designed to accelerate con
 ## Architecture
 
 The project follows a hybrid architecture:
-- **Core CMS (`apps/cms`)**: A Payload CMS (Node.js/Next.js) instance that handles structured data storage, multi-tenancy, user roles, API Key authentication, and the admin interface.
-- **AI Microservice (`apps/ai-agent-service`)**: A FastAPI Python application leveraging LangChain and OpenAI to provide AI-driven content and schema generation.
-- **Frontend Starters (`apps/frontend-starters`)**: Managed Next.js and Astro templates that can be automatically deployed from the CMS.
+- **Content Management Engine (`apps/content-management-engine`)**: A Payload CMS (Node.js/Next.js) instance that handles structured data storage, multi-tenancy, user roles, API Key authentication, and the admin interface.
+- **Content Authoring Service (`apps/content-authoring-service`)**: A FastAPI Python application leveraging LangChain and OpenAI to provide AI-driven content and schema generation.
+- **Site Templates (`apps/site-templates`)**: Managed Next.js and Astro templates that can be automatically deployed from the CMS.
 
 See `docs/architecture.md` for more details.
 
@@ -19,4 +19,4 @@ See `docs/architecture.md` for more details.
 - **API Delivery**: Built-in REST and GraphQL delivery endpoints secured via API keys.
 
 ## Getting Started
-See the individual application directories (`apps/cms` and `apps/ai-agent-service`) for specific setup and running instructions.
+See the individual application directories (`apps/content-management-engine` and `apps/content-authoring-service`) for specific setup and running instructions.

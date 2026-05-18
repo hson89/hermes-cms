@@ -51,7 +51,7 @@ specs/003-define-content-types/
 ### Source Code (repository root)
 
 ```text
-apps/cms/
+apps/content-management-engine/
 ├── src/
 │   ├── collections/
 │   │   ├── ContentTypes/
@@ -64,7 +64,7 @@ apps/cms/
 │   └── services/
 │       └── export-service.ts   # Export generator for JSON/TypeScript definitions
 
-apps/ai-agent-service/
+apps/content-authoring-service/
 ├── src/
 │   ├── application/
 │   │   └── ai_service.py       # Handles LangChain orchestration & self-correction retry loop

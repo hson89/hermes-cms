@@ -36,8 +36,8 @@ comply with these seven non-negotiable principles:
 
 ```
 ┌──────────────────────────────────┐    ┌──────────────────────────────────┐
-│  Payload CMS Monolith            │    │  AI Agent Microservice           │
-│  (Node.js / Next.js 16+)        │◄──►│  (Python 3.14+ / FastAPI 0.136+) │
+│  Payload CMS Monolith            │    │  Content Authoring Service       │
+│  (Python 3.14+ / FastAPI 0.136+) │◄──►│  (Python 3.14+ / FastAPI 0.136+) │
 │                                  │REST│                                  │
 │  • PostgreSQL 18+ (port 5432)    │    │  • PostgreSQL 18+ (port 5433)    │
 │  • Payload 3.84+ w/ multi-tenant │    │  • LangChain 1.2+ / multi-LLM   │
@@ -55,7 +55,7 @@ comply with these seven non-negotiable principles:
 hermes-cms/
 ├── .specify/memory/          # Project constitution & memory
 ├── apps/
-│   ├── cms/                  # Payload CMS (Next.js App Router)
+│   ├── content-management-engine/ # Content Management Engine (Next.js App Router)
 │   │   ├── src/
 │   │   │   ├── app/          # Next.js routes ((frontend) & (payload) groups)
 │   │   │   ├── collections/  # Tenants, Users, APIKeys, ContentTypes,
@@ -65,15 +65,15 @@ hermes-cms/
 │   │   │   ├── payload.config.ts
 │   │   │   └── payload-types.ts  # Auto-generated types
 │   │   └── tests/
-│   ├── ai-agent-service/     # FastAPI AI microservice
+│   ├── content-authoring-service/ # FastAPI Content Authoring microservice
 │   │   ├── src/
 │   │   │   ├── domain/       # DDD domain layer
 │   │   │   ├── application/  # Application services
 │   │   │   ├── infrastructure/ # Adapters & persistence
 │   │   │   └── main.py       # FastAPI entrypoint
 │   │   └── tests/
-│   └── frontend-starters/    # Managed deploy templates (Next.js, Astro)
-├── docker/                   # Dockerfiles (Dockerfile.cms, Dockerfile.ai)
+│   └── site-templates/       # Managed deploy templates (Next.js, Astro)
+├── docker/                   # Dockerfiles (Dockerfile.engine, Dockerfile.authoring)
 ├── docker-compose.yml        # Local dev infra (2× Postgres, Kafka, Zookeeper)
 ├── docs/architecture.md      # High-level architecture doc
 ├── k8s/                      # Kubernetes manifests
@@ -85,7 +85,7 @@ hermes-cms/
 
 ## Technology Stack
 
-### CMS (apps/cms)
+### Content Management Engine (apps/content-management-engine)
 | Concern        | Technology                             |
 | -------------- | -------------------------------------- |
 | Framework      | Payload CMS 3.84+ on Next.js 16.2+    |
@@ -97,7 +97,7 @@ hermes-cms/
 | Package mgr    | pnpm 11+                               |
 | Testing        | Jest 30, Playwright 1.59               |
 
-### AI Microservice (apps/ai-agent-service)
+### Content Authoring Service (apps/content-authoring-service)
 | Concern        | Technology                             |
 | -------------- | -------------------------------------- |
 | Framework      | FastAPI 0.136+                         |
@@ -130,11 +130,11 @@ Refer to `DESIGN.md` at the project root for full token definitions:
 # Start everything (Docker infra + CMS + AI service)
 ./scripts/start-dev.sh
 
-# CMS only (from apps/cms/)
+# Content Management Engine only (from apps/content-management-engine/)
 pnpm dev           # Next.js dev server on :3000
 pnpm test          # Jest unit tests
 
-# AI service only (from apps/ai-agent-service/)
+# Content Authoring service only (from apps/content-authoring-service/)
 ./venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 pytest              # Python tests
 
@@ -147,11 +147,11 @@ docker-compose stop
 
 | Service         | URL / Port                        |
 | --------------- | --------------------------------- |
-| CMS Admin       | http://localhost:3000/admin        |
-| CMS Login       | http://localhost:3000/admin/login  |
-| AI Health       | http://localhost:8000/health       |
-| CMS Postgres    | localhost:5432 (hermes_cms)        |
-| AI Postgres     | localhost:5433 (hermes_ai)         |
+| Engine Admin    | http://localhost:3000/admin        |
+| Engine Login    | http://localhost:3000/admin/login  |
+| Authoring Health| http://localhost:8000/health       |
+| Engine Postgres | localhost:5432 (hermes_cms)        |
+| Authoring Postgres | localhost:5433 (hermes_authoring) |
 | Kafka broker    | localhost:9092                     |
 
 ## Key Collections (Payload CMS)
@@ -185,13 +185,13 @@ docker-compose stop
 9. Feature specs go under `specs/<feature-id>/` with `spec.md`, `plan.md`,
    `tasks.md`, and supporting artifacts.
 10. **Payload UI Safety:** Any UI/UX modifications to the Payload admin interface *must* begin by invoking the `payload-ui` skill (located in `.agents/skills/payload-ui/SKILL.md`) to prevent layout and configuration breakages.
-11. **Payload CMS Expertise:** When working with Payload CMS backend concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) in `apps/cms/`, you MUST invoke the `payload` skill (located in `.agents/skills/payload/SKILL.md`) first.
+11. **Payload CMS Expertise:** When working with Payload CMS backend concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) in `apps/content-management-engine/`, you MUST invoke the `payload` skill (located in `.agents/skills/payload/SKILL.md`) first.
 
 ### Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts`:
 - **Named Exports Only:** Never use `export default`.
 - **Explicit Paths:** Use absolute-style paths starting with `/src/` and append the named export (e.g., `'/src/components/views/Dashboard#Dashboard'`).
-- **importMap Verification:** If the build fails with `Module not found` in `importMap.js`, manually patch the relative paths in `apps/cms/src/app/(payload)/admin/importMap.js` to include the `src/` directory.
+- **importMap Verification:** If the build fails with `Module not found` in `importMap.js`, manually patch the relative paths in `apps/content-management-engine/src/app/(payload)/admin/importMap.js` to include the `src/` directory.
 
 ### Payload 3.x & Next.js 15 Technical Guardrails
 1. **Dynamic Route Naming:** Always use `[...slug]` for the Payload API catch-all route (`src/app/(payload)/api/[...slug]`). Using `[...payload]` or other names may conflict with internal Payload expectations in Next.js 15+.

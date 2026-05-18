@@ -36,19 +36,19 @@ pkill -f "uvicorn" || true
 
 # Setup Environment Variables if missing
 echo "📝 Checking environment variables..."
-if [ ! -f apps/cms/.env ]; then
-    echo "Creating apps/cms/.env from example..."
-    cp apps/cms/.env.example apps/cms/.env
-    echo "⚠️  Please update apps/cms/.env with your OPENAI_API_KEY"
+if [ ! -f apps/content-management-engine/.env ]; then
+    echo "Creating apps/content-management-engine/.env from example..."
+    cp apps/content-management-engine/.env.example apps/content-management-engine/.env
+    echo "⚠️  Please update apps/content-management-engine/.env with your OPENAI_API_KEY"
 fi
 
-if [ ! -f apps/ai-agent-service/.env ]; then
-    echo "Creating apps/ai-agent-service/.env from example..."
-    cp apps/ai-agent-service/.env.example apps/ai-agent-service/.env
-    echo "⚠️  Please update apps/ai-agent-service/.env with your OPENAI_API_KEY"
+if [ ! -f apps/content-authoring-service/.env ]; then
+    echo "Creating apps/content-authoring-service/.env from example..."
+    cp apps/content-authoring-service/.env.example apps/content-authoring-service/.env
+    echo "⚠️  Please update apps/content-authoring-service/.env with your API keys"
 fi
 
-echo "🚀 Starting infrastructure (Postgres, Kafka, AI Service)..."
+echo "🚀 Starting infrastructure (Postgres, Kafka, Content Authoring Service)..."
 docker-compose up -d --build
 
 # Wait for Postgres to be ready
@@ -56,8 +56,8 @@ echo "⏳ Waiting for database to be ready..."
 sleep 5
 
 # Start CMS
-echo "📦 Starting Payload CMS..."
-cd apps/cms
+echo "📦 Starting Content Management Engine..."
+cd apps/content-management-engine
 if [ ! -d node_modules ]; then
     echo "Installing Node.js dependencies..."
     pnpm install
@@ -69,11 +69,11 @@ cd ../..
 echo ""
 echo "✨ All services are starting up!"
 echo "--------------------------------------------------"
-echo "💻 CMS Admin:       http://localhost:3000/admin"
-echo "🤖 AI Service:      http://localhost:8000/health"
+echo "💻 Engine Admin:    http://localhost:3000/admin"
+echo "✍️  Authoring:       http://localhost:8000/health"
 echo "📊 Kafka UI:        http://localhost:9092 (broker)"
-echo "🗄️  CMS Postgres:   localhost:5432"
-echo "🗄️  AI Postgres:    localhost:5433"
+echo "🗄️  Engine DB:      localhost:5432"
+echo "🗄️  Authoring DB:   localhost:5433"
 echo "--------------------------------------------------"
 echo "Press Ctrl+C to stop all services."
 echo "💡 UI broken? Run ./scripts/cleanup-payload.sh to reset mapping."

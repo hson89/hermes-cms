@@ -18,12 +18,12 @@ shell commands, and other important information, read the current plan:
 
 | Layer             | Tech                                          | Location                    |
 | ----------------- | --------------------------------------------- | --------------------------- |
-| CMS Monolith      | Payload CMS 3.84+ / Next.js 16.2+ / TS 6.0+  | `apps/cms/`                 |
-| AI Microservice   | FastAPI 0.136+ / Python 3.14+ / LangChain 1.2+| `apps/ai-agent-service/`    |
+| CMS Monolith      | Payload CMS 3.84+ / Next.js 16.2+ / TS 6.0+  | `apps/content-management-engine/` |
+| Content Authoring Service | FastAPI 0.136+ / Python 3.14+ / LangChain 1.2+| `apps/content-authoring-service/` |
 | CMS Database      | PostgreSQL 18 (logical multi-tenancy)          | port 5432 (`hermes_cms`)    |
-| AI Database       | PostgreSQL 18 (separate)                       | port 5433 (`hermes_ai`)     |
+| Authoring Database| PostgreSQL 18 (separate)                       | port 5433 (`hermes_authoring`) |
 | Message Broker    | Kafka (Confluent) + Zookeeper                  | port 9092                   |
-| Frontend Starters | Next.js / Astro templates                      | `apps/frontend-starters/`   |
+| Frontend Starters | Next.js / Astro templates                      | `apps/site-templates/`      |
 
 ## Non-Negotiable Principles (from Constitution)
 
@@ -41,14 +41,14 @@ shell commands, and other important information, read the current plan:
 ```
 hermes-cms/
 ├── .specify/memory/constitution.md   # Project constitution v2.1.0
-├── apps/cms/src/
+├── apps/content-management-engine/src/
 │   ├── payload.config.ts             # Central Payload config
 │   ├── collections/                  # Tenants, Users, APIKeys, ContentTypes,
 │   │                                 #   ContentItems, HostedSites
 │   ├── components/views/             # LoginPage.tsx, InitPage.tsx (custom admin)
 │   ├── components/Editor/            # Rich-text editor components
 │   └── app/                          # Next.js routes ((frontend)/(payload))
-├── apps/ai-agent-service/src/
+├── apps/content-authoring-service/src/
 │   ├── domain/                       # DDD domain layer
 │   ├── application/                  # Application services
 │   ├── infrastructure/               # Adapters, persistence
@@ -67,11 +67,11 @@ hermes-cms/
 ./scripts/start-dev.sh
 
 # CMS only
-cd apps/cms && pnpm dev          # :3000
-cd apps/cms && pnpm test         # Jest
+cd apps/content-management-engine && pnpm dev          # :3000
+cd apps/content-management-engine && pnpm test         # Jest
 
 # AI service only
-cd apps/ai-agent-service
+cd apps/content-authoring-service
 ./venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 pytest
 
@@ -117,21 +117,21 @@ Super-admin bypass: users with `role === 'super-admin'`.
 1. Read `.specify/memory/constitution.md` before architectural work.
 2. Never bypass tenant isolation — every query must be tenant-scoped.
 3. TDD is mandatory — write tests before implementation.
-4. Respect DDD layers in `apps/ai-agent-service/` (domain → application → infrastructure).
+4. Respect DDD layers in `apps/content-authoring-service/` (domain → application → infrastructure).
 5. Use SpecKit workflow for features: specify → plan → tasks → implement.
 6. Keep branding consistent: product is "Hermes AI", design is "Alexandria".
 7. AI service is provider-agnostic — use LangChain `init_chat_model`, never
    hardcode a specific LLM.
 8. CMS ↔ AI auth: `X-Internal-Secret` header.
 9. Feature specs live under `specs/<feature-id>/`.
-10. **Payload Expertise:** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control) in `apps/cms/`, you MUST invoke the `payload` skill first.
+10. **Payload Expertise:** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control) in `apps/content-management-engine/`, you MUST invoke the `payload` skill first.
 
 ## Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts` (e.g., Dashboards, Graphics, Custom Fields):
 1. **Always use Named Exports:** Never use `export default`. Example: `export const MyComponent: React.FC = ...`
 2. **Pathing in Config:** Use absolute-style paths starting with `/src/` and append the named export. Example: `'/src/components/views/Dashboard#Dashboard'`.
 3. **Manual Import Map Validation:** If the Next.js dev server crashes with a 500 error or `Module not found` related to Payload components, **do not blindly restart the server**. 
-   - Inspect `apps/cms/src/app/(payload)/admin/importMap.js`.
+   - Inspect `apps/content-management-engine/src/app/(payload)/admin/importMap.js`.
    - If the paths are miscalculated (e.g., missing `src/` in the relative path), manually correct the `importMap.js` file to bypass the generator deadlock.
    - Example manual correction: `import { Dashboard as Dashboard_Dashboard } from '../../../../src/components/views/Dashboard'`.
 

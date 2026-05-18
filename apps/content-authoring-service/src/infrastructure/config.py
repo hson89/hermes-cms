@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     """
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/hermes_ai"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/hermes_authoring"
 
     # Kafka
     KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
