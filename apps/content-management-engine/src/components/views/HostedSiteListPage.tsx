@@ -74,7 +74,7 @@ export const HostedSiteListPage: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      let url = `/api/hosted-sites?limit=${limit}&page=${page}&sort=-createdAt`
+      let url = `/api/hosted-sites?limit=${limit}&page=${page}&sort=-createdAt&depth=1`
 
       const filterParts: string[] = []
 

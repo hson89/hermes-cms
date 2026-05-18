@@ -127,6 +127,16 @@ export const HostedSites: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      required: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
   ],
   timestamps: true,
 }
