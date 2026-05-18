@@ -26,7 +26,12 @@ async def test_edit_section_invokes_llm(copilot_service: CopilotService):
     section_id = "block-456"
     prompt = "Make it more professional"
 
-    with patch("src.application.copilot_service.init_chat_model") as mock_init:
+    with patch("src.application.copilot_service.init_chat_model") as mock_init, \
+         patch("src.application.copilot_service.settings") as mock_settings:
+        mock_settings.LANGCHAIN_MODEL = "test-model"
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "openai"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = None
+        
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = "Professional version of the text."
@@ -59,7 +64,12 @@ async def test_edit_section_handles_runtime_error(copilot_service: CopilotServic
     tenant_id = uuid4()
     user_id = uuid4()
 
-    with patch("src.application.copilot_service.init_chat_model") as mock_init:
+    with patch("src.application.copilot_service.init_chat_model") as mock_init, \
+         patch("src.application.copilot_service.settings") as mock_settings:
+        mock_settings.LANGCHAIN_MODEL = "test-model"
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "openai"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = None
+        
         mock_llm = MagicMock()
         mock_llm.ainvoke = AsyncMock(side_effect=Exception("LLM Down"))
         mock_init.return_value = mock_llm

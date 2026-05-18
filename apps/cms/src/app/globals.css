@@ -8,62 +8,171 @@
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/container-queries";
 
+:root {
+  --primary: #094cb2;
+  --on-primary: #ffffff;
+  --primary-container: #3366cc;
+  --on-primary-container: #e7ebff;
+  --primary-fixed: #d9e2ff;
+  --on-primary-fixed: #001946;
+  --primary-fixed-dim: #b1c5ff;
+  --on-primary-fixed-variant: #00419d;
+  
+  --secondary: #5a5f63;
+  --on-secondary: #ffffff;
+  --secondary-container: #dfe3e8;
+  --on-secondary-container: #606569;
+  --secondary-fixed: #dfe3e8;
+  --on-secondary-fixed: #171c20;
+  --secondary-fixed-dim: #c2c7cc;
+  --on-secondary-fixed-variant: #42474b;
+  
+  --tertiary: #6d5e00;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #bfab49;
+  --on-tertiary-container: #4a3f00;
+  --tertiary-fixed: #f9e37a;
+  --on-tertiary-fixed: #211b00;
+  --tertiary-fixed-dim: #dcc661;
+  --on-tertiary-fixed-variant: #524600;
+  
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+  
+  --background: #faf9fa;
+  --on-background: #1b1c1d;
+  
+  --surface: #faf9fa;
+  --on-surface: #1b1c1d;
+  --surface-variant: #e3e2e3;
+  --on-surface-variant: #434653;
+  --surface-dim: #dbdadb;
+  --surface-bright: #faf9fa;
+  --surface-tint: #2259bf;
+  
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f5f3f4;
+  --surface-container: #efedee;
+  --surface-container-high: #e9e8e9;
+  --surface-container-highest: #e3e2e3;
+  
+  --outline: #737784;
+  --outline-variant: #c3c6d5;
+  
+  --inverse-surface: #303031;
+  --inverse-on-surface: #f2f0f1;
+  --inverse-primary: #b1c5ff;
+}
+
+.dark {
+  --primary: #4782ff;
+  --on-primary: #00287a;
+  --primary-container: #003db3;
+  --on-primary-container: #d9e2ff;
+  --primary-fixed: #d9e2ff;
+  --on-primary-fixed: #001946;
+  --primary-fixed-dim: #b1c5ff;
+  --on-primary-fixed-variant: #00419d;
+  
+  --secondary: #a6abb0;
+  --on-secondary: #171c20;
+  --secondary-container: #2c3135;
+  --on-secondary-container: #c2c7cc;
+  
+  --tertiary: #dcc661;
+  --on-tertiary: #211b00;
+  --tertiary-container: #524600;
+  --on-tertiary-container: #f9e37a;
+  --tertiary-fixed-dim: #dcc661;
+  
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+  
+  --background: #0b0e14;
+  --on-background: #e1e3e6;
+  
+  --surface: #10141f;
+  --on-surface: #e1e3e6;
+  --surface-variant: #232835;
+  --on-surface-variant: #c1c5d4;
+  --surface-dim: #090b10;
+  --surface-bright: #1b212f;
+  --surface-tint: #4782ff;
+  
+  --surface-container-lowest: #0c0f14;
+  --surface-container-low: #111520;
+  --surface-container: #161b29;
+  --surface-container-high: #1c2234;
+  --surface-container-highest: #232a3e;
+  
+  --outline: #8b92a5;
+  --outline-variant: #2d3345;
+  
+  --inverse-surface: #e1e3e6;
+  --inverse-on-surface: #1b1c1d;
+  --inverse-primary: #094cb2;
+}
+
 @theme {
-  --color-primary: #094cb2;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #3366cc;
-  --color-on-primary-container: #e7ebff;
-  --color-primary-fixed: #d9e2ff;
-  --color-on-primary-fixed: #001946;
-  --color-primary-fixed-dim: #b1c5ff;
-  --color-on-primary-fixed-variant: #00419d;
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-on-primary-fixed: var(--on-primary-fixed);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-on-primary-fixed-variant: var(--on-primary-fixed-variant);
   
-  --color-secondary: #5a5f63;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #dfe3e8;
-  --color-on-secondary-container: #606569;
-  --color-secondary-fixed: #dfe3e8;
-  --color-on-secondary-fixed: #171c20;
-  --color-secondary-fixed-dim: #c2c7cc;
-  --color-on-secondary-fixed-variant: #42474b;
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-secondary-fixed: var(--secondary-fixed);
+  --color-on-secondary-fixed: var(--on-secondary-fixed);
+  --color-secondary-fixed-dim: var(--secondary-fixed-dim);
+  --color-on-secondary-fixed-variant: var(--on-secondary-fixed-variant);
   
-  --color-tertiary: #6d5e00;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #bfab49;
-  --color-on-tertiary-container: #4a3f00;
-  --color-tertiary-fixed: #f9e37a;
-  --color-on-tertiary-fixed: #211b00;
-  --color-tertiary-fixed-dim: #dcc661;
-  --color-on-tertiary-fixed-variant: #524600;
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-on-tertiary-fixed: var(--on-tertiary-fixed);
+  --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+  --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
   
-  --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
+  --color-error: var(--error);
+  --color-on-error: var(--on-error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
   
-  --color-background: #faf9fa;
-  --color-on-background: #1b1c1d;
+  --color-background: var(--background);
+  --color-on-background: var(--on-background);
   
-  --color-surface: #faf9fa;
-  --color-on-surface: #1b1c1d;
-  --color-surface-variant: #e3e2e3;
-  --color-on-surface-variant: #434653;
-  --color-surface-dim: #dbdadb;
-  --color-surface-bright: #faf9fa;
-  --color-surface-tint: #2259bf;
+  --color-surface: var(--surface);
+  --color-on-surface: var(--on-surface);
+  --color-surface-variant: var(--surface-variant);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-tint: var(--surface-tint);
   
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f5f3f4;
-  --color-surface-container: #efedee;
-  --color-surface-container-high: #e9e8e9;
-  --color-surface-container-highest: #e3e2e3;
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
   
-  --color-outline: #737784;
-  --color-outline-variant: #c3c6d5;
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
   
-  --color-inverse-surface: #303031;
-  --color-inverse-on-surface: #f2f0f1;
-  --color-inverse-primary: #b1c5ff;
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
 
   --font-display: "Noto Serif", serif;
   --font-headline: "Noto Serif", serif;
@@ -191,6 +300,27 @@ body {
 .template-default__wrap:has(.custom-user-view) [class*="doc-header"],
 .template-default__wrap:has(.custom-user-view) [class*="collection-edit"],
 .template-default__wrap:has(.custom-user-view) [class*="collection-list"],
+.template-default__wrap:has(.custom-generator-view) .doc-header,
+.template-default__wrap:has(.custom-generator-view) .collection-edit__header,
+.template-default__wrap:has(.custom-generator-view) .collection-list__header,
+.template-default__wrap:has(.custom-generator-view) .gutter,
+.template-default__wrap:has(.custom-generator-view) [class*="doc-header"],
+.template-default__wrap:has(.custom-generator-view) [class*="collection-edit"],
+.template-default__wrap:has(.custom-generator-view) [class*="collection-list"],
+.template-default__wrap:has(.custom-editor-view) .doc-header,
+.template-default__wrap:has(.custom-editor-view) .collection-edit__header,
+.template-default__wrap:has(.custom-editor-view) .collection-list__header,
+.template-default__wrap:has(.custom-editor-view) .gutter,
+.template-default__wrap:has(.custom-editor-view) [class*="doc-header"],
+.template-default__wrap:has(.custom-editor-view) [class*="collection-edit"],
+.template-default__wrap:has(.custom-editor-view) [class*="collection-list"],
+.template-default__wrap:has(.custom-content-type-view) .doc-header,
+.template-default__wrap:has(.custom-content-type-view) .collection-edit__header,
+.template-default__wrap:has(.custom-content-type-view) .collection-list__header,
+.template-default__wrap:has(.custom-content-type-view) .gutter,
+.template-default__wrap:has(.custom-content-type-view) [class*="doc-header"],
+.template-default__wrap:has(.custom-content-type-view) [class*="collection-edit"],
+.template-default__wrap:has(.custom-content-type-view) [class*="collection-list"],
 div:has(> .custom-tenant-view) > .doc-header,
 div:has(> .custom-tenant-view) > .collection-edit__header,
 div:has(> .custom-tenant-view) > .collection-list__header,
@@ -204,7 +334,28 @@ div:has(> .custom-user-view) > .collection-list__header,
 div:has(> .custom-user-view) > .gutter,
 div:has(> .custom-user-view) > [class*="doc-header"],
 div:has(> .custom-user-view) > [class*="collection-edit"],
-div:has(> .custom-user-view) > [class*="collection-list"] {
+div:has(> .custom-user-view) > [class*="collection-list"],
+div:has(> .custom-generator-view) > .doc-header,
+div:has(> .custom-generator-view) > .collection-edit__header,
+div:has(> .custom-generator-view) > .collection-list__header,
+div:has(> .custom-generator-view) > .gutter,
+div:has(> .custom-generator-view) > [class*="doc-header"],
+div:has(> .custom-generator-view) > [class*="collection-edit"],
+div:has(> .custom-generator-view) > [class*="collection-list"],
+div:has(> .custom-editor-view) > .doc-header,
+div:has(> .custom-editor-view) > .collection-edit__header,
+div:has(> .custom-editor-view) > .collection-list__header,
+div:has(> .custom-editor-view) > .gutter,
+div:has(> .custom-editor-view) > [class*="doc-header"],
+div:has(> .custom-editor-view) > [class*="collection-edit"],
+div:has(> .custom-editor-view) > [class*="collection-list"],
+div:has(> .custom-content-type-view) > .doc-header,
+div:has(> .custom-content-type-view) > .collection-edit__header,
+div:has(> .custom-content-type-view) > .collection-list__header,
+div:has(> .custom-content-type-view) > .gutter,
+div:has(> .custom-content-type-view) > [class*="doc-header"],
+div:has(> .custom-content-type-view) > [class*="collection-edit"],
+div:has(> .custom-content-type-view) > [class*="collection-list"] {
   display: none !important;
   visibility: hidden !important;
   height: 0 !important;

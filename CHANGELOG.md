@@ -5,6 +5,56 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.3.0] - 2026-05-17
+### Define Content Types Feature Track (`003-define-content-types`)
+
+This feature track implements AI-assisted and visual schema modeling for Hermes AI Content Types. It allows Content Architects to describe schemas in natural language, proxies requests via Next.js monolith endpoints, processes them using LangChain 1.2+ in the FastAPI AI Microservice with a corrective self-healing retry loop, stores draft schemas, protects published schemas against destructive edits, implements optimistic concurrency control, and supports static exports to Payload 3.x-compliant TypeScript definitions.
+
+> [!NOTE]
+> All changes are fully covered by a Test-Driven Development (TDD) cycle with **40/40 passing unit and integration tests** under Jest and pytest, verifying schema validation, concurrency limits, and corrective loop generation.
+
+---
+
+### Added
+
+#### 1. Core Data Models & Schema Extensions (`apps/cms/src/collections/`)
+- **[NEW] `AIPromptHistory` Collection** ([AIPromptHistory](file:///home/itlight/dev/hermes-cms/apps/cms/src/collections/AIPromptHistory/index.ts)): Logs natural language prompts used and the corresponding generation outcomes.
+- **[MODIFY] `ContentTypes` Collection** ([ContentTypes](file:///home/itlight/dev/hermes-cms/apps/cms/src/collections/ContentTypes/index.ts)): Extended to support:
+  - `status`: Lifecycle mapping (`draft`, `published`) allowing draft schema refinement.
+  - `originalSchema`: JSON field capturing the initial AI suggestions.
+  - `schema`: JSON field capturing the active model configuration.
+  - `generatedByAI` and `aiSessionId`: Tracing flags linking back to the Python service session.
+- **[MODIFY] `ContentItems` Collection** ([ContentItems](file:///home/itlight/dev/hermes-cms/apps/cms/src/collections/ContentItems/index.ts)): Enhanced to run a dynamic `beforeValidate` hook that retrieves the related Content Type schema and enforces required, type, select options, and tenant-scoped uniqueness validations.
+
+#### 2. Services, APIs & Validation Endpoints (`apps/cms/src/` & `apps/ai-agent-service/src/`)
+- **[NEW] AI Integration Custom Endpoints (`endpoints.ts`)** ([endpoints.ts](file:///home/itlight/dev/hermes-cms/apps/cms/src/collections/ContentTypes/endpoints.ts)):
+  - `POST /api/content-types/generate-schema`: Proxies user prompts using `X-Internal-Secret` to the AI microservice.
+  - `GET /api/content-types/sessions/:id`: Polling proxy endpoint for schema generation state.
+  - `GET /api/content-types/:id/export`: Exports the dynamic schema as clean JSON.
+  - `GET /api/content-types/:id/export/ts`: Generates a static Payload 3.x CollectionConfig TypeScript file.
+- **[NEW] Dynamic Content Validator (`validation.ts`)** ([validation.ts](file:///home/itlight/dev/hermes-cms/apps/cms/src/collections/ContentItems/validation.ts)): Parses dynamic JSON schemas and runs data type check filters scoped to the tenant context.
+- **[NEW] Dynamic TS Generator (`export-service.ts`)** ([export-service.ts](file:///home/itlight/dev/hermes-cms/apps/cms/src/services/export-service.ts)): Generates static code configurations from custom schemas.
+- **[NEW] FastAPI AI Session & Validation Services (`apps/ai-agent-service/src/`)**:
+  - **`AIService`** ([ai_service.py](file:///home/itlight/dev/hermes-cms/apps/ai-agent-service/src/application/ai_service.py)): Implements LangChain `init_chat_model` integration and recursive correction loops (up to 3 retries) on invalid fields.
+  - **`SchemaValidator`** ([schema_validator.py](file:///home/itlight/dev/hermes-cms/apps/ai-agent-service/src/domain/schema_validator.py)): Enforces alphanumeric field slugs and verifies allowed types (`text`, `number`, `boolean`, `date`, `richText`, `json`, `relationship`, `select`, `upload`).
+  - **`SQLSessionRepository`** ([session_repository.py](file:///home/itlight/dev/hermes-cms/apps/ai-agent-service/src/infrastructure/repositories/session_repository.py)): SQLAlchemy implementation for CRUD tracking of AI sessions in `hermes_ai` database.
+
+#### 3. Alexandria Content Architect Admin views (`apps/cms/src/components/`)
+- **[NEW] Content Type Generator Panel (`GeneratorView.tsx`)** ([GeneratorView.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/views/ContentTypes/GeneratorView.tsx)): Branded prompt workspace where Content Architects enter descriptions and watch real-time generation previews.
+- **[NEW] Content Type Editor Refinement (`EditorView.tsx`)** ([EditorView.tsx](file:///home/itlight/dev/hermes-cms/apps/cms/src/components/views/ContentTypes/EditorView.tsx)): High-end editor utilizing glassmorphism panels, customized fields, relationships, and download triggers for static code files.
+
+---
+
+### Technical Guardrails & Security Enforcement
+
+| Principle / Area | Technical Enforcer | Constitutional Rule |
+| :--- | :--- | :--- |
+| **Optimistic Concurrency** | Hook verifying incoming `if-unmodified-since` header matches db `updatedAt` | Spec-003: Drafting Safety |
+| **Destructive Modification Lock** | Hook rejecting deleting fields or adding required fields without defaults once entries exist | Spec-003: Operational Stability |
+| **Recursive AI Correction** | App service self-correcting retry loop (max 3) feeding error details back to LLM | Principle VII: Self-Healing Architecture |
+
+---
+
 ## [0.2.0] - 2026-05-17
 ### Multi-Tenant Management Feature Track (`002-tenant-management`)
 

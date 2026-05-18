@@ -27,11 +27,19 @@ class Settings(BaseSettings):
     LANGCHAIN_MODEL: str = "gpt-4o-mini"
     LANGCHAIN_ENDPOINT_URL: str | None = None
 
+    # NVIDIA Configuration
+    NVIDIA_TEMPERATURE: float = 0.6
+    NVIDIA_TOP_P: float = 0.95
+    NVIDIA_MAX_TOKENS: int = 65536
+    NVIDIA_REASONING_BUDGET: int = 16384
+    NVIDIA_ENABLE_THINKING: bool = True
+
     # API Keys (optional at startup, validated by providers on use)
     OPENAI_API_KEY: str | None = None
     ANTHROPIC_API_KEY: str | None = None
     GOOGLE_API_KEY: str | None = None
     MISTRAL_API_KEY: str | None = None
+    NVIDIA_API_KEY: str | None = None
 
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000"

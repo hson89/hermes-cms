@@ -44,6 +44,21 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
+  ai_agent_service:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.ai
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./apps/ai-agent-service/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres_ai:5432/hermes_ai
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - postgres_ai
+      - kafka
+
 volumes:
   postgres_cms_data:
   postgres_ai_data:

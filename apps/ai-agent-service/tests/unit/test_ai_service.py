@@ -71,7 +71,13 @@ async def test_generate_schema_session_lifecycle(ai_service: AIService, mock_llm
     tenant_id = uuid4()
     user_id = uuid4()
     
-    with patch("src.application.ai_service.init_chat_model") as mock_init:
+    with patch("src.application.ai_service.init_chat_model") as mock_init, \
+         patch("src.application.ai_service.settings") as mock_settings:
+        
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "mock-provider"
+        mock_settings.LANGCHAIN_MODEL = "mock-model"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = ""
+        
         mock_llm = MagicMock()
         mock_llm.ainvoke = AsyncMock(return_value=mock_llm_response)
         mock_init.return_value = mock_llm
@@ -83,13 +89,13 @@ async def test_generate_schema_session_lifecycle(ai_service: AIService, mock_llm
         )
 
         session_id = result["sessionId"]
-        session = ai_service.get_session(session_id)
+        session = await ai_service.get_session(session_id)
         
         assert session is not None
         assert session.status == SessionStatus.COMPLETED
         assert len(session.context) == 3 # System, User, Assistant
-        assert session.tenant_id == tenant_id
-        assert session.user_id == user_id
+        assert session.tenant_id == str(tenant_id)
+        assert session.user_id == str(user_id)
 
 
 @pytest.mark.asyncio
@@ -98,14 +104,20 @@ async def test_generate_schema_handles_json_error(ai_service: AIService):
     tenant_id = uuid4()
     user_id = uuid4()
     
-    with patch("src.application.ai_service.init_chat_model") as mock_init:
+    with patch("src.application.ai_service.init_chat_model") as mock_init, \
+         patch("src.application.ai_service.settings") as mock_settings:
+        
+        mock_settings.LANGCHAIN_MODEL = "test-model"
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "openai"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = None
+        
         mock_llm = MagicMock()
         invalid_response = MagicMock()
         invalid_response.content = "NOT JSON"
         mock_llm.ainvoke = AsyncMock(return_value=invalid_response)
         mock_init.return_value = mock_llm
 
-        with pytest.raises(ValueError, match="LLM returned non-JSON output"):
+        with pytest.raises(ValueError, match="Failed to generate a valid schema after 3 retries"):
             await ai_service.generate_schema(
                 prompt="test",
                 tenant_id=tenant_id,
@@ -118,3 +130,51 @@ async def test_generate_schema_handles_json_error(ai_service: AIService):
         from src.application.ai_service import _sessions
         session = list(_sessions.values())[-1]
         assert session.status == SessionStatus.FAILED
+
+
+@pytest.mark.asyncio
+async def test_generate_schema_uses_nvidia_provider(ai_service: AIService, mock_llm_response: MagicMock):
+    """Verify that AIService correctly initialises the NVIDIA provider when set."""
+    tenant_id = uuid4()
+    user_id = uuid4()
+    prompt = "A simple blog post"
+
+    with patch("src.application.ai_service.settings") as mock_settings, \
+         patch("langchain_nvidia_ai_endpoints.ChatNVIDIA") as mock_chat_nvidia:
+        
+        mock_settings.LANGCHAIN_MODEL = "test-nvidia-model"
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "nvidia"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = "http://test-nvidia-url"
+        
+        mock_settings.NVIDIA_API_KEY = "test-nvapi-key"
+        mock_settings.NVIDIA_TEMPERATURE = 0.6
+        mock_settings.NVIDIA_TOP_P = 0.95
+        mock_settings.NVIDIA_MAX_TOKENS = 65536
+        mock_settings.NVIDIA_REASONING_BUDGET = 16384
+        mock_settings.NVIDIA_ENABLE_THINKING = True
+        
+        mock_llm = MagicMock()
+        mock_llm.ainvoke = AsyncMock(return_value=mock_llm_response)
+        mock_chat_nvidia.return_value = mock_llm
+
+        result = await ai_service.generate_schema(
+            prompt=prompt,
+            tenant_id=tenant_id,
+            user_id=user_id
+        )
+
+        # Check ChatNVIDIA constructor call
+        mock_chat_nvidia.assert_called_once_with(
+            model="test-nvidia-model",
+            api_key="test-nvapi-key",
+            temperature=0.6,
+            top_p=0.95,
+            max_tokens=65536,
+            model_kwargs={
+                "reasoning_budget": 16384,
+                "chat_template_kwargs": {"enable_thinking": True},
+            },
+            base_url="http://test-nvidia-url",
+        )
+        
+        assert result["status"] == SessionStatus.COMPLETED

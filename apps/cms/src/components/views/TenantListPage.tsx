@@ -270,7 +270,7 @@ export const TenantListPage: React.FC = () => {
                 {primaryDomain.isPrimary && (
                   <span 
                     title="Primary Hostname"
-                    className="inline-flex size-4 rounded-full bg-[#6d5e00]/10 text-[#6d5e00] items-center justify-center text-[10px] flex-shrink-0"
+                    className="inline-flex size-4 rounded-full bg-tertiary/10 text-tertiary dark:text-tertiary-fixed-dim items-center justify-center text-[10px] flex-shrink-0"
                   >
                     <Icon name="check" size={10} weight={700} />
                   </span>

@@ -24,6 +24,7 @@ describe('Audit Logging', () => {
       where: {
         action: { equals: 'TENANT_RESOLUTION_FAILURE' }
       },
+      sort: '-createdAt',
       overrideAccess: true,
     })
 

@@ -35,3 +35,7 @@ kubeconfig*
 
 # Payload CMS uploaded media
 apps/cms/media/
+
+# Playwright test results and reports
+apps/cms/test-results/
+apps/cms/playwright-report/

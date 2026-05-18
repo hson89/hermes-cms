@@ -12,33 +12,26 @@ T003 - Initialize FastAPI Microservice project
 
 from __future__ import annotations
 
+import json
 from contextlib import asynccontextmanager
+from typing import Any
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Request, Security, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, field_validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.ai_service import AIService
 from src.infrastructure.config import settings
+from src.infrastructure.database import get_db
 
 # ── Security ──────────────────────────────────────────────────────────────────
 
-INTERNAL_SECRET = settings.INTERNAL_SERVICE_SECRET
-_api_key_header = APIKeyHeader(name="X-Internal-Secret", auto_error=False)
+from src.infrastructure.auth import require_internal_secret as _require_internal_secret
 
-
-def _require_internal_secret(key: str | None = Security(_api_key_header)) -> None:
-    """Validate the internal service-to-service secret header."""
-    if not INTERNAL_SECRET:
-        # If no secret is configured, allow all (development mode)
-        return
-    if key != INTERNAL_SECRET:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid internal service secret.",
-        )
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
@@ -80,8 +73,16 @@ class GenerateSchemaRequest(BaseModel):
     """Payload for POST /api/ai/generate-schema."""
 
     prompt: str
-    tenant_id: UUID
-    user_id: UUID
+    tenant_id: str
+    user_id: str
+    current_schema: dict | None = None
+
+    @field_validator("tenant_id", "user_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
 
     @field_validator("prompt")
     @classmethod
@@ -105,8 +106,29 @@ class CopilotEditRequest(BaseModel):
     content_item_id: str
     section_id: str
     prompt: str
-    tenant_id: UUID
-    user_id: UUID
+    tenant_id: str
+    user_id: str
+
+    @field_validator("content_item_id", "section_id", "tenant_id", "user_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
+
+
+class SessionMessageRequest(BaseModel):
+    """Payload for POST /api/ai/sessions/{session_id}/message."""
+
+    prompt: str
+    current_schema: dict | None = None
+
+    @field_validator("prompt")
+    @classmethod
+    def prompt_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("prompt must not be empty.")
+        return v.strip()
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -129,6 +151,7 @@ async def health() -> dict:
 async def generate_schema(
     body: GenerateSchemaRequest,
     request: Request,
+    db: AsyncSession = Depends(get_db),
 ) -> GenerateSchemaResponse:
     """
     Accepts a natural-language prompt and returns a structured content schema
@@ -143,6 +166,8 @@ async def generate_schema(
             prompt=body.prompt,
             tenant_id=body.tenant_id,
             user_id=body.user_id,
+            current_schema=body.current_schema,
+            db=db,
         )
         return GenerateSchemaResponse(
             session_id=result["sessionId"],
@@ -167,15 +192,37 @@ async def generate_schema(
     summary="Get AI session status",
     dependencies=[Security(_require_internal_secret)],
 )
-async def get_session(session_id: str, request: Request) -> dict:
+async def get_session(
+    session_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
     """Return the current status and context of an AIAgentSession."""
     ai_service: AIService = request.app.state.ai_service
-    session = ai_service.get_session(session_id)
+    session = await ai_service.get_session(session_id, db=db)
     if session is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Session '{session_id}' not found.",
         )
+    
+    schema_data = None
+    if session.status == "completed":
+        import json
+        import re
+        for msg in reversed(session.context):
+            if msg.role == "assistant":
+                try:
+                    raw_content = msg.content.strip()
+                    # Clean prompt formatting details from markdown blocks if present
+                    match = re.search(r"```(?:json)?\s*(.*?)\s*```", raw_content, re.DOTALL)
+                    clean_content = match.group(1).strip() if match else raw_content
+                    schema_data = json.loads(clean_content)
+                    break
+                except Exception as e:
+                    print(f"Error parsing schema from context: {e}")
+                    pass
+
     return {
         "id": str(session.id),
         "status": session.status,
@@ -184,6 +231,7 @@ async def get_session(session_id: str, request: Request) -> dict:
         "message_count": len(session.context),
         "created_at": session.created_at.isoformat(),
         "updated_at": session.updated_at.isoformat(),
+        "schema": schema_data,
     }
 
 
@@ -217,3 +265,40 @@ async def copilot_edit(body: CopilotEditRequest, request: Request) -> dict:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
         ) from exc
+
+
+@app.post(
+    "/api/ai/sessions/{session_id}/message",
+    tags=["AI"],
+    summary="Continue a schema co-creation session using Server-Sent Events (SSE)",
+    dependencies=[Security(_require_internal_secret)],
+)
+async def post_session_message(
+    session_id: str,
+    body: SessionMessageRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """
+    Continues a schema co-creation session, returning a real-time SSE stream
+    of explanation tokens and final schema updates.
+    """
+    ai_service: AIService = request.app.state.ai_service
+
+    async def event_generator():
+        try:
+            async for event in ai_service.continue_generation_session_stream(
+                session_id=session_id,
+                prompt=body.prompt,
+                current_schema=body.current_schema,
+                db=db,
+            ):
+                yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        except ValueError as exc:
+            yield f"event: STATUS_UPDATE\ndata: \"failed\"\n\n"
+            yield f"event: ERROR\ndata: {json.dumps({'detail': str(exc)})}\n\n"
+        except Exception as exc:
+            yield f"event: STATUS_UPDATE\ndata: \"failed\"\n\n"
+            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error: {exc}'})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

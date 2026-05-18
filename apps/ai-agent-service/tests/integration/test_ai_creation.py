@@ -151,6 +151,7 @@ class TestGenerateSchemaEndpoint:
             },
         ), patch(
             "src.application.ai_service.AIService.get_session",
+            new_callable=AsyncMock,
             return_value=MagicMock(
                 id=session_id,
                 status="completed",
@@ -198,6 +199,38 @@ class TestGenerateSchemaEndpoint:
             )
         assert response.status_code == 422
 
+    def test_generate_schema_accepts_numeric_ids(
+        self,
+        client: TestClient,
+    ) -> None:
+        """Numeric user_id and tenant_id should be accepted and coerced to string."""
+        with patch(
+            "src.application.ai_service.AIService.__init__",
+            return_value=None,
+        ), patch(
+            "src.application.ai_service.AIService.generate_schema",
+            new_callable=AsyncMock,
+            return_value={
+                "sessionId": "test-session-id",
+                "schema": MOCK_SCHEMA,
+                "status": "completed",
+            },
+        ) as mock_gen:
+            response = client.post(
+                "/api/ai/generate-schema",
+                json={
+                    "prompt": "Create a blog post schema",
+                    "tenant_id": 415,
+                    "user_id": 30,
+                },
+            )
+        assert response.status_code == 200
+        # Verify arguments passed to the service layer were coerced to strings
+        kwargs = mock_gen.call_args[1]
+        assert kwargs["prompt"] == "Create a blog post schema"
+        assert kwargs["tenant_id"] == "415"
+        assert kwargs["user_id"] == "30"
+
 
 class TestCopilotEditEndpoint:
     """Integration tests for POST /api/ai/copilot/edit."""
@@ -227,6 +260,35 @@ class TestCopilotEditEndpoint:
         assert "content" in data
         assert "section_id" in data
 
+    def test_copilot_edit_accepts_numeric_ids(
+        self,
+        client: TestClient,
+    ) -> None:
+        """Numeric IDs in copilot edit request should be accepted and coerced to string."""
+        with patch(
+            "src.application.copilot_service.CopilotService.edit_section",
+            new_callable=AsyncMock,
+            return_value="This is the edited paragraph.",
+        ) as mock_edit:
+            response = client.post(
+                "/api/ai/copilot/edit",
+                json={
+                    "content_item_id": 12345,
+                    "section_id": 67890,
+                    "prompt": "Make this paragraph more formal.",
+                    "tenant_id": 415,
+                    "user_id": 30,
+                },
+            )
+        assert response.status_code == 200
+        mock_edit.assert_called_once_with(
+            content_item_id="12345",
+            section_id="67890",
+            prompt="Make this paragraph more formal.",
+            tenant_id="415",
+            user_id="30",
+        )
+
 
 class TestSessionEndpoint:
     """Tests for GET /api/ai/sessions/{session_id}."""
@@ -238,3 +300,58 @@ class TestSessionEndpoint:
         """Requesting an unknown session ID should return 404."""
         response = client.get("/api/ai/sessions/does-not-exist")
         assert response.status_code == 404
+
+
+class TestSessionStreamingEndpoint:
+    """Integration tests for POST /api/ai/sessions/{session_id}/message (US2)."""
+
+    def test_session_message_streams_events(
+        self,
+        client: TestClient,
+    ) -> None:
+        """Verify that sending a message returns a 200 SSE stream yielding AG-UI events."""
+        session_id = str(uuid4())
+
+        async def mock_generator(*args, **kwargs):
+            yield {"event": "STATUS_UPDATE", "data": "generating"}
+            yield {"event": "TEXT_DELTA", "data": "Adding field"}
+            yield {"event": "STATE_DELTA", "data": {"name": "Watch", "fields": []}}
+            yield {"event": "STATUS_UPDATE", "data": "completed"}
+
+        with patch(
+            "src.application.ai_service.AIService.continue_generation_session_stream",
+            return_value=mock_generator(),
+        ):
+            response = client.post(
+                f"/api/ai/sessions/{session_id}/message",
+                json={
+                    "prompt": "add price field",
+                    "current_schema": {"name": "Watch", "fields": []}
+                },
+            )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
+        
+        lines = response.text.strip().split("\n")
+        lines = [line for line in lines if line]
+        
+        assert "event: STATUS_UPDATE" in lines[0]
+        assert 'data: "generating"' in lines[1]
+        assert "event: TEXT_DELTA" in lines[2]
+        assert 'data: "Adding field"' in lines[3]
+        assert "event: STATE_DELTA" in lines[4]
+        assert 'data: {"name": "Watch", "fields": []}' in lines[5]
+        assert "event: STATUS_UPDATE" in lines[6]
+        assert 'data: "completed"' in lines[7]
+
+    def test_session_message_rejects_empty_prompt(
+        self,
+        client: TestClient,
+    ) -> None:
+        """Reject empty prompts with 422 validation error."""
+        response = client.post(
+            f"/api/ai/sessions/some-id/message",
+            json={"prompt": ""},
+        )
+        assert response.status_code == 422

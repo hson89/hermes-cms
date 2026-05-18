@@ -17,7 +17,7 @@ const colorClassMap: Record<string, { bg: string; text: string; border: string }
   },
   tertiary: {
     bg: 'bg-tertiary/10',
-    text: 'text-tertiary',
+    text: 'text-tertiary dark:text-tertiary-fixed-dim',
     border: 'border-tertiary/10'
   },
   success: {
@@ -41,9 +41,9 @@ const colorClassMap: Record<string, { bg: string; text: string; border: string }
     border: 'border-neutral-500/10'
   },
   gold: {
-    bg: 'bg-[#6d5e00]/10',
-    text: 'text-[#6d5e00] dark:text-[#efe080]',
-    border: 'border-[#6d5e00]/15'
+    bg: 'bg-tertiary/10',
+    text: 'text-tertiary dark:text-tertiary-fixed-dim',
+    border: 'border-tertiary/15'
   }
 }
 
@@ -55,7 +55,7 @@ const getVariantClasses = (variant: 'solid' | 'subtle' | 'outline', colorKey: st
     if (colorKey === 'success') return 'bg-green-600 text-white border border-transparent'
     if (colorKey === 'danger') return 'bg-red-600 text-white border border-transparent'
     if (colorKey === 'warning') return 'bg-amber-600 text-black border border-transparent'
-    if (colorKey === 'gold') return 'bg-[#6d5e00] text-white border border-transparent'
+    if (colorKey === 'gold') return 'bg-tertiary text-on-tertiary border border-transparent'
     return 'bg-neutral-500 text-white border border-transparent'
   }
   if (variant === 'outline') {

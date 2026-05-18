@@ -1,8 +1,56 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, CollectionBeforeValidateHook } from 'payload'
 
 import { copilotEditEndpoint } from './endpoints'
 import { tenantDeliveryAccess } from './access'
 import { getTenantIds } from '../Users/utils'
+import { validateContentItem } from './validation'
+
+/**
+ * Hook to dynamically validate field data against its ContentType schema before saving.
+ */
+const beforeValidateHook: CollectionBeforeValidateHook = async ({
+  data,
+  req,
+  originalDoc,
+}) => {
+  const { payload } = req
+
+  const contentTypeId = data?.contentType || originalDoc?.contentType
+  const fieldsData = data?.fieldsData || originalDoc?.fieldsData || {}
+  const tenantId = data?.tenant || originalDoc?.tenant
+
+  if (!contentTypeId || !tenantId) {
+    return data
+  }
+
+  // 1. Fetch the ContentType schema
+  const contentType = await payload.findByID({
+    collection: 'content-types' as any,
+    id: contentTypeId,
+    overrideAccess: true,
+  })
+
+  if (!contentType || !contentType.schema) {
+    return data
+  }
+
+  // 2. Perform dynamic validation
+  const errors = await validateContentItem(
+    fieldsData,
+    contentType.schema,
+    tenantId,
+    payload,
+    originalDoc?.id
+  )
+
+  // 3. If errors exist, throw a validation error
+  if (errors.length > 0) {
+    const errorDetails = errors.map((e) => `${e.field}: ${e.message}`).join('; ')
+    throw new Error(`Validation Error: ${errorDetails}`)
+  }
+
+  return data
+}
 
 /**
  * ContentItems collection.
@@ -51,6 +99,9 @@ export const ContentItems: CollectionConfig = {
       }
     },
   },
+  hooks: {
+    beforeValidate: [beforeValidateHook],
+  },
   fields: [
     {
       name: 'title',
@@ -67,6 +118,16 @@ export const ContentItems: CollectionConfig = {
       label: 'Content Type',
     },
     {
+      name: 'fieldsData',
+      type: 'json',
+      required: true,
+      label: 'Fields Data',
+      defaultValue: {},
+      admin: {
+        description: 'Structured JSON data holding actual field values matching the selected Content Type schema.',
+      },
+    },
+    {
       name: 'content',
       type: 'richText',
       label: 'Content',
@@ -75,17 +136,6 @@ export const ContentItems: CollectionConfig = {
           'Rich text / block-based content. Supports lexical editor blocks.',
       },
     },
-    /*
-    {
-      name: 'copilotUI',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: './src/components/Editor#CustomEditorWithCopilot',
-        },
-      },
-    },
-    */
     {
       name: 'status',
       type: 'select',
