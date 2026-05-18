@@ -12,6 +12,18 @@ export const HostedSites: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     description: 'Managed deployments of front-end templates for your tenant.',
+    components: {
+      views: {
+        list: {
+          Component: '/src/components/views/HostedSiteListPage#HostedSiteListPage',
+        },
+        edit: {
+          default: {
+            Component: '/src/components/views/CreateHostedSitePage#CreateHostedSitePage',
+          },
+        },
+      },
+    },
   },
   access: {
     read: ({ req: { user } }) => {
