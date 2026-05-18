@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/atoms/Badge'
 import { Label } from '@/components/ui/atoms/Label'
 import { Card } from '@/components/ui/molecules/Card'
 import { FormField } from '@/components/ui/molecules/FormField'
+import { CoCreationChat } from './CoCreationChat'
 
 interface FieldDefinition {
   name: string
@@ -40,9 +41,15 @@ export const EditorView: React.FC = () => {
   const [version, setVersion] = useState<string>('') // Optimistic concurrency tracking
   const [docVersion, setDocVersion] = useState<number>(1) // Optimistic integer version tracking
   const [availableCollections, setAvailableCollections] = useState<{ slug: string; label: string }[]>([])
+  const [sessionId, setSessionId] = useState<string | null>(null)
 
-  // Active expanded field index for customization drawer
+  // Interactive UI state
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+  const [viewMode, setViewMode] = useState<'preview' | 'json'>('preview')
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  // Dynamic Field Highlights for AI modifications
+  const [highlightedFields, setHighlightedFields] = useState<Record<string, 'added' | 'modified'>>({})
 
   // Status/feedback
   const [isLoading, setIsLoading] = useState(true)
@@ -72,6 +79,7 @@ export const EditorView: React.FC = () => {
           setOriginalSchema(data.originalSchema || null)
           setVersion(data.updatedAt || '')
           setDocVersion(data.version || 1)
+          setSessionId(data.aiSessionId || null)
 
           // Query check if ContentItems exist for this content type to guard destructive editing
           try {
@@ -110,6 +118,47 @@ export const EditorView: React.FC = () => {
       })
   }, [])
 
+  // Callback when AI generates or updates schema
+  const handleSchemaGenerated = (newSchema: any) => {
+    if (!newSchema) return
+
+    if (newSchema.name && !name) {
+      setName(newSchema.name)
+    }
+
+    const incomingFields = newSchema.fields || []
+
+    // Calculate AI modifications (added vs modified)
+    const newHighlights: Record<string, 'added' | 'modified'> = {}
+    incomingFields.forEach((newField: any) => {
+      const oldField = fields.find((f) => f.name === newField.name)
+      if (!oldField) {
+        newHighlights[newField.name] = 'added'
+      } else {
+        const isModified =
+          oldField.type !== newField.type ||
+          oldField.label !== newField.label ||
+          !!oldField.required !== !!newField.required ||
+          !!oldField.unique !== !!newField.unique ||
+          !!oldField.localized !== !!newField.localized ||
+          JSON.stringify(oldField.options) !== JSON.stringify(newField.options) ||
+          oldField.relationTo !== newField.relationTo
+
+        if (isModified) {
+          newHighlights[newField.name] = 'modified'
+        }
+      }
+    })
+
+    setHighlightedFields(newHighlights)
+    setFields(incomingFields)
+
+    // Clear highlights after 4 seconds
+    setTimeout(() => {
+      setHighlightedFields({})
+    }, 4000)
+  }
+
   // Save layout modification draft or publish
   const handleSaveSchema = async (targetStatus?: 'draft' | 'published') => {
     setIsSaving(true)
@@ -126,10 +175,11 @@ export const EditorView: React.FC = () => {
         name,
         fields,
       },
-    }
-
-    if (originalSchema) {
-      payloadData.originalSchema = originalSchema
+      originalSchema: {
+        name,
+        fields,
+      },
+      aiSessionId: sessionId || undefined,
     }
 
     try {
@@ -165,6 +215,14 @@ export const EditorView: React.FC = () => {
       if (data.doc?.version) {
         setDocVersion(data.doc.version)
       }
+
+      // Update originalSchema baseline to match the newly accepted/saved state
+      if (data.doc?.schema) {
+        setOriginalSchema(data.doc.schema)
+      } else {
+        setOriginalSchema(payloadData.schema)
+      }
+      setHighlightedFields({})
 
       setSuccessMsg(
         targetStatus === 'published'
@@ -227,7 +285,7 @@ export const EditorView: React.FC = () => {
     setFields(updated)
   }
 
-  // Move field order up or down (T025 re-ordering logic)
+  // Move field order up or down
   const handleMoveField = (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index === 0) return
     if (direction === 'down' && index === fields.length - 1) return
@@ -255,7 +313,6 @@ export const EditorView: React.FC = () => {
       return 'added'
     }
 
-    // Compare properties to see if modified
     const isModified =
       origField.type !== field.type ||
       origField.label !== field.label ||
@@ -312,7 +369,7 @@ export const EditorView: React.FC = () => {
           </Text>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 select-none">
           <Button
             type="button"
             variant="secondary"
@@ -349,22 +406,20 @@ export const EditorView: React.FC = () => {
                 type="button"
                 variant="secondary"
                 onClick={() => window.open(`/api/content-types/${id}/export`)}
-                className="uppercase tracking-widest text-xs"
+                className="uppercase tracking-widest text-xs px-2.5"
                 title="Export schema config as a standard JSON file"
               >
                 <Icon name="download" size={16} />
-                JSON
               </Button>
 
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => window.open(`/api/content-types/${id}/export/ts`)}
-                className="uppercase tracking-widest text-xs"
+                className="uppercase tracking-widest text-xs px-2.5"
                 title="Export static Payload CMS TypeScript collection configuration definition"
               >
                 <Icon name="code" size={16} />
-                TypeScript
               </Button>
             </>
           )}
@@ -389,7 +444,7 @@ export const EditorView: React.FC = () => {
       {hasContentItems && (
         <div className="mb-6 p-4 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-xl flex items-center gap-3 border border-amber-500/20">
           <Icon name="warning" className="text-amber-600" />
-          <span className="text-xs font-medium">
+          <span className="text-xs font-medium leading-relaxed">
             <strong>Destructive Lock Active:</strong> Existing Content Items are stored for this Content Type. Field deletions are blocked, and new required fields must specify fallbacks to preserve relational stability.
           </span>
         </div>
@@ -397,236 +452,313 @@ export const EditorView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Left Workspace: Fields Canvas List */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="flex justify-between items-center mb-4">
-            <span className="font-label text-xs uppercase tracking-wider text-outline font-bold">Fields Blueprint</span>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleAddField}
-              className="text-xs uppercase tracking-widest px-3 py-1 flex items-center gap-1.5 border border-outline-variant/30 hover:border-primary/50"
-            >
-              <Icon name="add" size={14} /> Add Field
-            </Button>
-          </div>
-
-          {fields.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-outline-variant/30 bg-surface-container-lowest/30 flex flex-col items-center">
-              <Icon name="layers_clear" className="text-outline/50 mb-3" size={32} />
-              <p className="text-sm text-outline font-medium">No fields configured. Click Add Field above to begin visual creation.</p>
+        {/* Left Workspace (7 cols): Fields Canvas List */}
+        <div className="lg:col-span-7 space-y-6">
+          <Card variant="low" className="border border-outline-variant/15 p-6 shadow-xl shadow-on-surface/5 space-y-4">
+            <div className="flex items-center gap-2 border-b border-outline-variant/10 pb-3">
+              <Icon name="settings" className="text-primary" />
+              <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">General Configurations</span>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {fields.map((field, idx) => (
-                <div
-                  key={idx}
-                  className={`rounded-xl border transition-all duration-300 overflow-hidden ${
-                    expandedIndex === idx
-                      ? 'border-primary/50 bg-surface-container-low shadow-md'
-                      : 'border-outline-variant/15 bg-surface-container-lowest/40 hover:border-outline-variant/40 hover:bg-surface-container-low/20'
-                  }`}
-                >
-                  {/* Field item row header */}
-                  <div
-                    onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
-                    className="p-4 flex items-center justify-between gap-4 cursor-pointer select-none"
+
+            <FormField
+              label="Content Type Name"
+              id="ct-name"
+              inputProps={{
+                value: name,
+                onChange: (e) => setName((e.target as HTMLInputElement).value),
+              }}
+              required
+            />
+
+            <FormField
+              label="Content Type Slug"
+              id="ct-slug"
+              inputProps={{
+                value: slug,
+                onChange: (e) => setSlug((e.target as HTMLInputElement).value.toLowerCase().replace(/[^a-z0-9-]/g, '')),
+                disabled: true, // Slugs should remain stable once generated
+              }}
+              required
+            />
+          </Card>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-label text-xs uppercase tracking-wider text-outline font-bold">Fields Blueprint</span>
+              
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1 bg-surface-container-low/50 p-1 rounded-lg border border-outline-variant/10 select-none">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('preview')}
+                    className={`text-[9px] font-label font-bold uppercase tracking-widest px-2.5 py-1 rounded border-none cursor-pointer ${
+                      viewMode === 'preview' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'bg-transparent text-outline'
+                    }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex flex-col gap-0.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          disabled={idx === 0}
-                          onClick={() => handleMoveField(idx, 'up')}
-                          className="size-5 rounded hover:bg-surface-container-high flex items-center justify-center text-outline/60 hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                        >
-                          <span className="material-symbols-outlined text-[10px] font-bold">arrow_upward</span>
-                        </button>
-                        <button
-                          type="button"
-                          disabled={idx === fields.length - 1}
-                          onClick={() => handleMoveField(idx, 'down')}
-                          className="size-5 rounded hover:bg-surface-container-high flex items-center justify-center text-outline/60 hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                        >
-                          <span className="material-symbols-outlined text-[10px] font-bold">arrow_downward</span>
-                        </button>
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="text-sm font-semibold text-on-surface truncate">{field.label || 'Unnamed Field'}</span>
-                        <span className="block font-mono text-[9px] text-outline font-medium tracking-wide">({field.name})</span>
-                      </div>
-                      
-                      <div className="flex gap-1 flex-wrap">
-                        {field.required && <Badge size="sm" variant="subtle" color="danger">Req</Badge>}
-                        {field.unique && <Badge size="sm" variant="subtle" color="primary">Uniq</Badge>}
-                        {field.localized && <Badge size="sm" variant="subtle" color="success">Loc</Badge>}
-                        
-                        {/* Visual Diff Badges */}
-                        {getFieldDiffStatus(field) === 'added' && (
-                          <span className="visual-diff-badge text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-600 border border-teal-500/20">
-                            Added
-                          </span>
-                        )}
-                        {getFieldDiffStatus(field) === 'modified' && (
-                          <span className="visual-diff-badge text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                            Modified
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="bg-primary/5 text-primary font-label font-bold text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-md border border-primary/10">
-                        {field.type}
-                      </span>
-                      <span className="material-symbols-outlined text-outline/60 text-lg transition-transform duration-300" style={{
-                        transform: expandedIndex === idx ? 'rotate(180deg)' : 'rotate(0)'
-                      }}>
-                        expand_more
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Field customizer drawer */}
-                  {expandedIndex === idx && (
-                    <div className="p-5 border-t border-outline-variant/15 bg-surface-container-lowest space-y-4 animate-fade-slide-up">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          label="Field Label"
-                          id={`label-${idx}`}
-                          inputProps={{
-                            value: field.label,
-                            onChange: (e) => handleUpdateField(idx, { label: (e.target as HTMLInputElement).value })
-                          }}
-                        />
-
-                        <FormField
-                          label="Field Name (slug)"
-                          id={`name-${idx}`}
-                          inputProps={{
-                            value: field.name,
-                            onChange: (e) => handleUpdateField(idx, { name: (e.target as HTMLInputElement).value.toLowerCase().replace(/[^a-z0-9_]/g, '') })
-                          }}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                         <div className="space-y-1.5">
-                          <Label htmlFor={`type-${idx}`}>Field Type</Label>
-                          <select
-                            id={`type-${idx}`}
-                            value={field.type}
-                            onChange={(e) => handleUpdateField(idx, { type: e.target.value as any })}
-                            className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 outline-none p-3 font-body text-xs text-on-surface transition-all focus:border-primary/50"
-                          >
-                            <option value="text">Text</option>
-                            <option value="number">Number</option>
-                            <option value="boolean">Boolean</option>
-                            <option value="select">Select Dropdown</option>
-                            <option value="richText">Rich Text</option>
-                            <option value="relationship">Relationship</option>
-                            <option value="array">Array</option>
-                            <option value="blocks">Blocks</option>
-                          </select>
-                        </div>
-
-                        {/* Overrides options */}
-                        <div className="flex gap-6 pb-2.5">
-                          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none text-on-surface">
-                            <input
-                              type="checkbox"
-                              checked={!!field.required}
-                              onChange={(e) => handleUpdateField(idx, { required: e.target.checked })}
-                              className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
-                            />
-                            Required
-                          </label>
-
-                          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none text-on-surface">
-                            <input
-                              type="checkbox"
-                              checked={!!field.unique}
-                              onChange={(e) => handleUpdateField(idx, { unique: e.target.checked })}
-                              className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
-                            />
-                            Unique
-                          </label>
-
-                          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none text-on-surface">
-                            <input
-                              type="checkbox"
-                              checked={!!field.localized}
-                              onChange={(e) => handleUpdateField(idx, { localized: e.target.checked })}
-                              className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
-                            />
-                            Localized
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Select Dropdown options lists */}
-                      {field.type === 'select' && (
-                        <div className="space-y-1.5 animate-fade-slide-up">
-                          <Label htmlFor={`options-${idx}`}>Dropdown Options (Comma separated list)</Label>
-                          <input
-                            type="text"
-                            id={`options-${idx}`}
-                            value={field.options?.join(', ') || ''}
-                            onChange={(e) => handleUpdateField(idx, { options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-                            placeholder="e.g. rolex, omega, patek"
-                            className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 focus:border-primary/60 outline-none p-3 font-body text-xs text-on-surface placeholder-outline/40"
-                          />
-                        </div>
-                      )}
-
-                      {/* Relationship selection bounds */}
-                      {field.type === 'relationship' && (
-                        <div className="space-y-1.5 animate-fade-slide-up">
-                          <Label htmlFor={`relation-${idx}`}>Relational Target</Label>
-                          <select
-                            id={`relation-${idx}`}
-                            value={field.relationTo || ''}
-                            onChange={(e) => handleUpdateField(idx, { relationTo: e.target.value })}
-                            className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 outline-none p-3 font-body text-xs text-on-surface transition-all focus:border-primary/50"
-                          >
-                            <option value="">-- Select Target Collection --</option>
-                            {availableCollections.map((col) => (
-                              <option key={col.slug} value={col.slug}>
-                                {col.label} ({col.slug})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor={`desc-${idx}`}>Description</Label>
-                        <input
-                          type="text"
-                          id={`desc-${idx}`}
-                          value={field.description || ''}
-                          onChange={(e) => handleUpdateField(idx, { description: e.target.value })}
-                          placeholder="e.g. Unique serial designation engraved..."
-                          className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 focus:border-primary/60 outline-none p-3 font-body text-xs text-on-surface placeholder-outline/40"
-                        />
-                      </div>
-
-                      <div className="pt-3 border-t border-outline-variant/10 flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => handleDeleteField(idx)}
-                          className="text-xs uppercase tracking-widest px-3 py-1.5 text-error hover:bg-error-container/10 flex items-center gap-1"
-                        >
-                          <Icon name="delete" size={14} /> Remove Field
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                    Builder
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('json')}
+                    className={`text-[9px] font-label font-bold uppercase tracking-widest px-2.5 py-1 rounded border-none cursor-pointer ${
+                      viewMode === 'json' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'bg-transparent text-outline'
+                    }`}
+                  >
+                    JSON
+                  </button>
                 </div>
-              ))}
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleAddField}
+                  className="text-xs uppercase tracking-widest px-3 py-1 flex items-center gap-1.5 border border-outline-variant/30 hover:border-primary/50"
+                >
+                  <Icon name="add" size={14} /> Add Field
+                </Button>
+              </div>
             </div>
-          )}
+
+            {viewMode === 'json' ? (
+              <div className="bg-neutral-900 text-neutral-200 rounded-xl p-4 font-mono text-xs overflow-auto max-h-[450px] shadow-inner select-all leading-relaxed whitespace-pre">
+                {JSON.stringify({ name, fields }, null, 2)}
+              </div>
+            ) : fields.length === 0 ? (
+              <div className="p-12 text-center rounded-2xl border border-dashed border-outline-variant/30 bg-surface-container-lowest/30 flex flex-col items-center">
+                <Icon name="layers_clear" className="text-outline/50 mb-3" size={32} />
+                <p className="text-sm text-outline font-medium">No fields configured. Click Add Field above to begin visual creation.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {fields.map((field, idx) => {
+                  const highlightType = highlightedFields[field.name]
+                  const highlightClass = highlightType === 'added'
+                    ? 'ring-2 ring-emerald-500/50 bg-emerald-500/[0.03] animate-pulse'
+                    : highlightType === 'modified'
+                    ? 'ring-2 ring-amber-500/50 bg-amber-500/[0.03] animate-pulse'
+                    : ''
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`rounded-xl border transition-all duration-300 overflow-hidden ${highlightClass} ${
+                        expandedIndex === idx
+                          ? 'border-primary/50 bg-surface-container-low shadow-md'
+                          : 'border-outline-variant/15 bg-surface-container-lowest/40 hover:border-outline-variant/40 hover:bg-surface-container-low/20'
+                      }`}
+                    >
+                      {/* Field item row header */}
+                      <div
+                        onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
+                        className="p-4 flex items-center justify-between gap-4 cursor-pointer select-none"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex flex-col gap-0.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => handleMoveField(idx, 'up')}
+                              className="size-5 rounded hover:bg-surface-container-high flex items-center justify-center text-outline/60 hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                              <span className="material-symbols-outlined text-[10px] font-bold">arrow_upward</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === fields.length - 1}
+                              onClick={() => handleMoveField(idx, 'down')}
+                              className="size-5 rounded hover:bg-surface-container-high flex items-center justify-center text-outline/60 hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                              <span className="material-symbols-outlined text-[10px] font-bold">arrow_downward</span>
+                            </button>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-sm font-semibold text-on-surface truncate">{field.label || 'Unnamed Field'}</span>
+                            <span className="block font-mono text-[9px] text-outline font-medium tracking-wide">({field.name})</span>
+                          </div>
+                          
+                          <div className="flex gap-1 flex-wrap">
+                            {field.required && <Badge size="sm" variant="subtle" color="danger">Req</Badge>}
+                            {field.unique && <Badge size="sm" variant="subtle" color="primary">Uniq</Badge>}
+                            {field.localized && <Badge size="sm" variant="subtle" color="success">Loc</Badge>}
+                            
+                            {/* Visual Diff Badges */}
+                            {highlightType === 'added' && (
+                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                AI Added
+                              </span>
+                            )}
+                            {highlightType === 'modified' && (
+                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                AI Refined
+                              </span>
+                            )}
+                            {!highlightType && getFieldDiffStatus(field) === 'added' && (
+                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-600 border border-teal-500/20">
+                                Added
+                              </span>
+                            )}
+                            {!highlightType && getFieldDiffStatus(field) === 'modified' && (
+                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                Modified
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="bg-primary/5 text-primary font-label font-bold text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-md border border-primary/10">
+                            {field.type}
+                          </span>
+                          <span className="material-symbols-outlined text-outline/60 text-lg transition-transform duration-300" style={{
+                            transform: expandedIndex === idx ? 'rotate(180deg)' : 'rotate(0)'
+                          }}>
+                            expand_more
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Field customizer drawer */}
+                      {expandedIndex === idx && (
+                        <div className="p-5 border-t border-outline-variant/15 bg-surface-container-lowest space-y-4 animate-fade-slide-up">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              label="Field Label"
+                              id={`label-${idx}`}
+                              inputProps={{
+                                value: field.label,
+                                onChange: (e) => handleUpdateField(idx, { label: (e.target as HTMLInputElement).value })
+                              }}
+                            />
+
+                            <FormField
+                              label="Field Name (slug)"
+                              id={`name-${idx}`}
+                              inputProps={{
+                                value: field.name,
+                                onChange: (e) => handleUpdateField(idx, { name: (e.target as HTMLInputElement).value.toLowerCase().replace(/[^a-z0-9_]/g, '') })
+                              }}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                             <div className="space-y-1.5">
+                              <Label htmlFor={`type-${idx}`}>Field Type</Label>
+                              <select
+                                id={`type-${idx}`}
+                                value={field.type}
+                                onChange={(e) => handleUpdateField(idx, { type: e.target.value as any })}
+                                className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 outline-none p-3 font-body text-xs text-on-surface transition-all focus:border-primary/50"
+                              >
+                                <option value="text">Text</option>
+                                <option value="number">Number</option>
+                                <option value="boolean">Boolean</option>
+                                <option value="select">Select Dropdown</option>
+                                <option value="richText">Rich Text</option>
+                                <option value="relationship">Relationship</option>
+                                <option value="array">Array</option>
+                                <option value="blocks">Blocks</option>
+                              </select>
+                            </div>
+
+                            {/* Overrides options */}
+                            <div className="flex gap-6 pb-2.5 font-semibold text-xs text-on-surface select-none">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={!!field.required}
+                                  onChange={(e) => handleUpdateField(idx, { required: e.target.checked })}
+                                  className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
+                                />
+                                Required
+                              </label>
+
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={!!field.unique}
+                                  onChange={(e) => handleUpdateField(idx, { unique: e.target.checked })}
+                                  className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
+                                />
+                                Unique
+                              </label>
+
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={!!field.localized}
+                                  onChange={(e) => handleUpdateField(idx, { localized: e.target.checked })}
+                                  className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
+                                />
+                                Localized
+                              </label>
+                            </div>
+                          </div>
+
+                          {/* Select Dropdown options lists */}
+                          {field.type === 'select' && (
+                            <div className="space-y-1.5 animate-fade-slide-up">
+                              <Label htmlFor={`options-${idx}`}>Dropdown Options (Comma separated list)</Label>
+                              <input
+                                type="text"
+                                id={`options-${idx}`}
+                                value={field.options?.join(', ') || ''}
+                                onChange={(e) => handleUpdateField(idx, { options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                                placeholder="e.g. rolex, omega, patek"
+                                className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 focus:border-primary/60 outline-none p-3 font-body text-xs text-on-surface placeholder-outline/40"
+                              />
+                            </div>
+                          )}
+
+                          {/* Relationship selection bounds */}
+                          {field.type === 'relationship' && (
+                            <div className="space-y-1.5 animate-fade-slide-up">
+                              <Label htmlFor={`relation-${idx}`}>Relational Target</Label>
+                              <select
+                                id={`relation-${idx}`}
+                                value={field.relationTo || ''}
+                                onChange={(e) => handleUpdateField(idx, { relationTo: e.target.value })}
+                                className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 outline-none p-3 font-body text-xs text-on-surface transition-all focus:border-primary/50"
+                              >
+                                <option value="">-- Select Target Collection --</option>
+                                {availableCollections.map((col) => (
+                                  <option key={col.slug} value={col.slug}>
+                                    {col.label} ({col.slug})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+
+                          <div className="space-y-1.5">
+                            <Label htmlFor={`desc-${idx}`}>Description</Label>
+                            <input
+                              type="text"
+                              id={`desc-${idx}`}
+                              value={field.description || ''}
+                              onChange={(e) => handleUpdateField(idx, { description: e.target.value })}
+                              placeholder="e.g. Unique serial designation engraved..."
+                              className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 focus:border-primary/60 outline-none p-3 font-body text-xs text-on-surface placeholder-outline/40"
+                            />
+                          </div>
+
+                          <div className="pt-3 border-t border-outline-variant/10 flex justify-end gap-2 select-none">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={() => handleDeleteField(idx)}
+                              className="text-xs uppercase tracking-widest px-3 py-1.5 text-error hover:bg-error-container/10 flex items-center gap-1"
+                            >
+                              <Icon name="delete" size={14} /> Remove Field
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
 
           {/* Collapsible Audit Log for Removed AI-Suggested Fields */}
           {getDeletedAIFields().length > 0 && (
@@ -660,45 +792,16 @@ export const EditorView: React.FC = () => {
           )}
         </div>
 
-        {/* Right Workspace: Properties Canvas */}
-        <div className="lg:col-span-5 space-y-6">
-          <Card variant="low" className="border border-outline-variant/15 p-6 shadow-xl shadow-on-surface/5 space-y-4">
-            <div className="flex items-center gap-2 border-b border-outline-variant/10 pb-3">
-              <Icon name="settings" className="text-primary" />
-              <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">General Configurations</span>
-            </div>
-
-            <FormField
-              label="Content Type Name"
-              id="ct-name"
-              inputProps={{
-                value: name,
-                onChange: (e) => setName((e.target as HTMLInputElement).value),
-              }}
-              required
-            />
-
-            <FormField
-              label="Content Type Slug"
-              id="ct-slug"
-              inputProps={{
-                value: slug,
-                onChange: (e) => setSlug((e.target as HTMLInputElement).value.toLowerCase().replace(/[^a-z0-9-]/g, '')),
-                disabled: true, // Slugs should remain stable once generated
-              }}
-              required
-            />
-
-            <div className="pt-2">
-              <span className="block text-xs font-semibold text-outline mb-1">Database Info</span>
-              <div className="bg-surface-container-low rounded-xl p-4 space-y-2 font-mono text-[10px] text-on-surface-variant leading-relaxed">
-                <div>Collection: content-items</div>
-                <div>Storage Schema: PostgreSQL 18 JSON</div>
-                <div>Optimistic Version: {version ? `${version.substring(0, 19)}Z` : 'N/A'}</div>
-                <div>Document Edition: v{docVersion}</div>
-              </div>
-            </div>
-          </Card>
+        {/* Right Column (5 cols): AI Co-creation Companion */}
+        <div className="lg:col-span-5">
+          <CoCreationChat
+            sessionId={sessionId}
+            onSessionIdChange={setSessionId}
+            currentSchema={{ name, fields }}
+            onSchemaGenerated={handleSchemaGenerated}
+            isGenerating={isGenerating}
+            setIsGenerating={setIsGenerating}
+          />
         </div>
 
       </div>

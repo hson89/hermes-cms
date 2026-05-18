@@ -71,7 +71,13 @@ async def test_generate_schema_session_lifecycle(ai_service: AIService, mock_llm
     tenant_id = uuid4()
     user_id = uuid4()
     
-    with patch("src.application.ai_service.init_chat_model") as mock_init:
+    with patch("src.application.ai_service.init_chat_model") as mock_init, \
+         patch("src.application.ai_service.settings") as mock_settings:
+        
+        mock_settings.LANGCHAIN_MODEL_PROVIDER = "mock-provider"
+        mock_settings.LANGCHAIN_MODEL = "mock-model"
+        mock_settings.LANGCHAIN_ENDPOINT_URL = ""
+        
         mock_llm = MagicMock()
         mock_llm.ainvoke = AsyncMock(return_value=mock_llm_response)
         mock_init.return_value = mock_llm

@@ -12,12 +12,14 @@ T003 - Initialize FastAPI Microservice project
 
 from __future__ import annotations
 
+import json
 from contextlib import asynccontextmanager
 from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,6 +75,7 @@ class GenerateSchemaRequest(BaseModel):
     prompt: str
     tenant_id: str
     user_id: str
+    current_schema: dict | None = None
 
     @field_validator("tenant_id", "user_id", mode="before")
     @classmethod
@@ -114,6 +117,20 @@ class CopilotEditRequest(BaseModel):
         return str(v)
 
 
+class SessionMessageRequest(BaseModel):
+    """Payload for POST /api/ai/sessions/{session_id}/message."""
+
+    prompt: str
+    current_schema: dict | None = None
+
+    @field_validator("prompt")
+    @classmethod
+    def prompt_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("prompt must not be empty.")
+        return v.strip()
+
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 
@@ -149,6 +166,7 @@ async def generate_schema(
             prompt=body.prompt,
             tenant_id=body.tenant_id,
             user_id=body.user_id,
+            current_schema=body.current_schema,
             db=db,
         )
         return GenerateSchemaResponse(
@@ -247,3 +265,40 @@ async def copilot_edit(body: CopilotEditRequest, request: Request) -> dict:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
         ) from exc
+
+
+@app.post(
+    "/api/ai/sessions/{session_id}/message",
+    tags=["AI"],
+    summary="Continue a schema co-creation session using Server-Sent Events (SSE)",
+    dependencies=[Security(_require_internal_secret)],
+)
+async def post_session_message(
+    session_id: str,
+    body: SessionMessageRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """
+    Continues a schema co-creation session, returning a real-time SSE stream
+    of explanation tokens and final schema updates.
+    """
+    ai_service: AIService = request.app.state.ai_service
+
+    async def event_generator():
+        try:
+            async for event in ai_service.continue_generation_session_stream(
+                session_id=session_id,
+                prompt=body.prompt,
+                current_schema=body.current_schema,
+                db=db,
+            ):
+                yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        except ValueError as exc:
+            yield f"event: STATUS_UPDATE\ndata: \"failed\"\n\n"
+            yield f"event: ERROR\ndata: {json.dumps({'detail': str(exc)})}\n\n"
+        except Exception as exc:
+            yield f"event: STATUS_UPDATE\ndata: \"failed\"\n\n"
+            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error: {exc}'})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

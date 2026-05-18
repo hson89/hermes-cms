@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { generateSchemaEndpoint, getSessionStatusEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint, listCollectionsEndpoint } from './endpoints'
+import { generateSchemaEndpoint, getSessionStatusEndpoint, postSessionMessageEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint, listCollectionsEndpoint } from './endpoints'
 import { getTenantIds } from '../Users/utils'
 import { beforeChangeHook } from './hooks'
 
@@ -171,6 +171,7 @@ export const ContentTypes: CollectionConfig = {
   endpoints: [
     generateSchemaEndpoint,
     getSessionStatusEndpoint,
+    postSessionMessageEndpoint,
     exportSchemaEndpoint,
     exportSchemaTSEndpoint,
     listCollectionsEndpoint,

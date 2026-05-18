@@ -3,6 +3,33 @@ import { getPrimaryTenantId } from '../Users/utils'
 import { generatePayloadTS } from '../../services/export-service'
 
 /**
+ * Resolves the primary tenant ID for a user.
+ * For global super-admins who don't belong to any tenant, it fetches the first
+ * active tenant in the system as a fallback to isolate the AI session.
+ */
+async function resolveTenantId(user: any, payload: any): Promise<string | number | undefined> {
+  if (!user) return undefined
+  let tenantId = getPrimaryTenantId(user)
+  
+  if (!tenantId && user.role === 'super-admin') {
+    try {
+      const tenants = await payload.find({
+        collection: 'tenants',
+        limit: 1,
+        overrideAccess: true,
+      })
+      if (tenants.docs.length > 0) {
+        tenantId = tenants.docs[0].id
+      }
+    } catch (err) {
+      console.error('[endpoints] Failed to resolve fallback tenant for super-admin:', err)
+    }
+  }
+  
+  return tenantId
+}
+
+/**
  * Custom endpoint: POST /api/content-types/generate-schema
  *
  * Receives a natural-language prompt from an authenticated user, dispatches
@@ -22,7 +49,7 @@ export const generateSchemaEndpoint: Endpoint = {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const tenantId = getPrimaryTenantId(user)
+    const tenantId = await resolveTenantId(user, payload)
     if (!tenantId) {
       return Response.json(
         { error: 'User does not belong to a tenant.' },
@@ -30,14 +57,14 @@ export const generateSchemaEndpoint: Endpoint = {
       )
     }
 
-    let body: { prompt?: string }
+    let body: { prompt?: string; currentSchema?: any }
     try {
       body = await (req as unknown as Request).json()
     } catch {
       return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
     }
 
-    const { prompt } = body
+    const { prompt, currentSchema } = body
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
       return Response.json({ error: 'prompt is required.' }, { status: 400 })
     }
@@ -57,6 +84,7 @@ export const generateSchemaEndpoint: Endpoint = {
           prompt: prompt.trim(),
           tenant_id: tenantId,
           user_id: user.id,
+          current_schema: currentSchema || null,
         }),
       })
 
@@ -114,13 +142,13 @@ export const getSessionStatusEndpoint: Endpoint = {
   path: '/sessions/:id',
   method: 'get',
   handler: async (req) => {
-    const { user } = req
+    const { user, payload } = req
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const tenantId = getPrimaryTenantId(user)
+    const tenantId = await resolveTenantId(user, payload)
     if (!tenantId) {
       return Response.json(
         { error: 'User does not belong to a tenant.' },
@@ -165,6 +193,131 @@ export const getSessionStatusEndpoint: Endpoint = {
       return Response.json(result)
     } catch (err) {
       console.error('[session-status] Unexpected error:', err)
+      return Response.json(
+        { error: 'Internal server error.' },
+        { status: 500 },
+      )
+    }
+  },
+}
+
+/**
+ * Custom endpoint: POST /api/content-types/sessions/:id/message
+ *
+ * Proxies messages to the AI Agent session, streaming SSE tokens back to the user.
+ */
+export const postSessionMessageEndpoint: Endpoint = {
+  path: '/sessions/:id/message',
+  method: 'post',
+  handler: async (req) => {
+    const { user, payload } = req
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const tenantId = await resolveTenantId(user, payload)
+    if (!tenantId) {
+      return Response.json(
+        { error: 'User does not belong to a tenant.' },
+        { status: 403 },
+      )
+    }
+
+    // Extract session ID securely from the req.url (e.g. /api/content-types/sessions/:id/message)
+    let sessionId = ''
+    try {
+      const urlObj = new URL(req.url || '')
+      const parts = urlObj.pathname.split('/')
+      const sessIdx = parts.indexOf('sessions')
+      if (sessIdx !== -1 && sessIdx + 1 < parts.length) {
+        sessionId = parts[sessIdx + 1]
+      }
+    } catch (err) {
+      return Response.json({ error: 'Invalid request URL.' }, { status: 400 })
+    }
+
+    if (!sessionId) {
+      return Response.json({ error: 'Session ID is required.' }, { status: 400 })
+    }
+
+    let body: { prompt?: string; currentSchema?: any }
+    try {
+      body = await (req as unknown as Request).json()
+    } catch {
+      return Response.json({ error: 'Invalid JSON body.' }, { status: 400 })
+    }
+
+    const { prompt, currentSchema } = body
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      return Response.json({ error: 'prompt is required.' }, { status: 400 })
+    }
+
+    try {
+      const aiServiceUrl = process.env.AI_SERVICE_URL ?? 'http://localhost:8000'
+      const response = await fetch(`${aiServiceUrl}/api/ai/sessions/${sessionId}/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Internal-Secret': process.env.INTERNAL_SERVICE_SECRET ?? '',
+        },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          current_schema: currentSchema || null,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorBody = await response.text()
+        console.error('[session-message] AI service streaming error:', errorBody)
+        return Response.json(
+          { error: 'AI service failed to initiate stream.' },
+          { status: response.status },
+        )
+      }
+
+      // Proxy the streaming body using a custom ReadableStream with logging
+      console.log(`[session-message-stream] Handshake OK, starting stream proxy for session ${sessionId}`)
+
+      const reader = response.body?.getReader()
+      const stream = new ReadableStream({
+        async start(controller) {
+          if (!reader) {
+            console.warn('[session-message-stream] No reader found on AI service response body.')
+            controller.close()
+            return
+          }
+          try {
+            const decoder = new TextDecoder('utf-8')
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) {
+                console.log('[session-message-stream] Stream reached EOF.')
+                break
+              }
+              const chunkStr = decoder.decode(value, { stream: true })
+              console.log(`[session-message-stream] Received ${value.length} bytes from AI service:`, chunkStr)
+              controller.enqueue(value)
+            }
+          } catch (err) {
+            console.error('[session-message-stream] Error reading from AI service stream:', err)
+          } finally {
+            controller.close()
+          }
+        }
+      })
+
+      return new Response(stream, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'Connection': 'keep-alive',
+          'X-Accel-Buffering': 'no',
+        },
+      })
+    } catch (err) {
+      console.error('[session-message] Unexpected error:', err)
       return Response.json(
         { error: 'Internal server error.' },
         { status: 500 },
