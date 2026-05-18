@@ -5,6 +5,14 @@
 **Status**: Draft  
 **Input**: User description: "Content Drafting with AI based on mockup"
 
+## Clarifications
+
+### Session 2026-05-18
+
+- Q: How should the system handle the transition from an AI drafting workspace to a persisted CMS entry? → A: Drafts exist only in a temporary `DraftingSession` state until the user clicks "Save" or "Publish".
+- Q: What are the acceptable latency targets for granular, field-level AI refinements? → A: Granular refinements (e.g., Title generation, paragraph simplification) must return the first token within 2 seconds.
+- Q: How should the system handle concurrent AI drafting sessions? → A: Single-User Lock: Only one user can have an active drafting session for a specific schema at a time.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Schema-Based AI Drafting (Priority: P1)
@@ -55,8 +63,10 @@ As a content author, I want to set a global style and tone modifier so that all 
 ### Edge Cases
 
 - **Schema Mismatch**: What happens when the user asks to draft using a schema that doesn't exist? (System should suggest existing schemas or ask for clarification).
-- **Network Interruptions**: How does the system handle a lost connection during a long "Drafting..." state? (System should persist partial content and allow resuming).
+- **Network Interruptions**: How does the system handle a lost connection during a long "Drafting..." state? (System should persist partial content in the `DraftingSession` and allow resuming).
 - **Tenant Isolation**: How does the AI ensure it only uses knowledge and schemas from the current tenant? (Strict tenant-scoping for all RAG and prompt context).
+- **Concurrent Session Attempt**: When a user attempts to start a drafting session for a schema already being drafted by another user, the system MUST show a "Session in progress" message and prevent entry.
+- **Stale Session**: Drafting sessions MUST have a timeout (e.g., 30 minutes of inactivity) to release the single-user lock if the user leaves without saving.
 
 ## Requirements *(mandatory)*
 
@@ -71,6 +81,8 @@ As a content author, I want to set a global style and tone modifier so that all 
 - **FR-007**: System MUST provide a floating AI action bar for the rich-text editor with "Simplify", "Expand", and "Change Tone" capabilities, alongside a section-level "REFINE ALL" action.
 - **FR-008**: System MUST support AI-driven image generation for "Main Media" fields based on content context.
 - **FR-009**: System MUST support tracking "Versions" of the draft to allow users to navigate through iteration history.
+- **FR-010**: System MUST maintain drafts exclusively within the temporary `DraftingSession` state; they are NOT persisted to formal `ContentItems` until the user explicitly clicks "Save" or "Publish".
+- **FR-011**: System MUST enforce a single-user lock per schema/drafting session; other users attempting to start a session for the same schema MUST receive a "Session in progress" notification.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -86,6 +98,7 @@ As a content author, I want to set a global style and tone modifier so that all 
 - **SC-002**: 70% of AI-generated titles are accepted by the user without manual modification.
 - **SC-003**: The floating AI bar reduces the time spent on paragraph editing by 30%.
 - **SC-004**: All AI interactions must respect tenant boundaries, with 0% cross-tenant data leakage.
+- **SC-005**: Granular field-level AI refinements (e.g., "Simplify") MUST return the first token (Time-to-First-Token) in under 2 seconds.
 
 ## Assumptions
 
