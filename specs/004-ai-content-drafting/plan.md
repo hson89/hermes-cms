@@ -19,6 +19,7 @@ AI Content Drafting transforms the Hermes AI CMS into a true "AI-First" content 
 **Project Type**: Hybrid web service (monolith + microservice)  
 **Performance Goals**: First token in <2s for field refinements (SC-005), full 500-word draft in <45s (SC-001)  
 **Constraints**: <200ms p95 for auto-save operations, 10 req/min rate limit per user  
+**Cost Calculation**: Computed server-side in `content-authoring-service` (FastAPI) per model parameters and sent in token metadata over SSE, then recorded in USD microcents inside `AIAuditLog`.  
 **Scale/Scope**: Multi-tenant SaaS, initial MVP targeting 10–100 concurrent tenants
 
 ## Constitution Check
@@ -27,7 +28,7 @@ AI Content Drafting transforms the Hermes AI CMS into a true "AI-First" content 
 
 | # | Principle | Status | Evidence |
 |---|-----------|--------|----------|
-| I | Multi-tenancy by Default | ✅ PASS | All new collections (DraftingSession, StyleModifier, AIAuditLog) are tenant-scoped via `@payloadcms/plugin-multi-tenant`. Access control enforces tenant isolation. |
+| I | Multi-tenancy by Default | ✅ PASS | DraftingSession, StyleModifier, and AIAuditLog collections are logically tenant-scoped via `@payloadcms/plugin-multi-tenant`. Access control enforces isolation. The AIRateLimits collection is globally user-scoped to guarantee sliding window rate compliance across all tenants. |
 | II | AI as First-Class Citizen | ✅ PASS | The entire feature is the primary AI content creation interface — split-view workspace, conversational drafting, streaming, and tool-based generation. |
 | III | API-First Content Delivery | ✅ PASS | All interactions go through REST API endpoints (SSE streaming, CRUD operations). No server-rendered content pages. |
 | IV | Test-First (TDD) | ✅ PASS | Plan mandates tests before implementation. Test suites defined for drafting service, refine service, collections, and UI components. |
@@ -88,6 +89,7 @@ apps/content-management-engine/src/
 │   │   ├── refine/route.ts         # NEW — Refinement proxy
 │   │   └── download-image/route.ts # NEW — Image download (streaming pipeline)
 │   └── drafting-sessions/
+│       ├── cleanup/route.ts        # NEW — Inactivity timeout & expired cleanup cron handler
 │       └── [id]/
 │           ├── lock/route.ts       # NEW — Lock release endpoint
 │           └── promote/route.ts    # NEW — Draft → ContentItem promotion

@@ -83,6 +83,36 @@ As a content author, I want to set a global style and tone modifier so that all 
 
 ---
 
+### User Story 4 - AI-Driven Image Generation (Priority: P4)
+
+As a content author, I want to ask Alexandria AI to generate relevant images for my schema's media fields so that I can automatically populate media elements within my structured draft.
+
+**Why this priority**: Enhances the completeness of the draft by co-creating rich media assets alongside text, matching the active design aesthetics.
+
+**Independent Test**: Can be tested by requesting an image for a media field, verifying the FastAPI tool generates the asset, and verifying the CMS Engine downloads and saves it to the native Payload Media collection.
+
+**Acceptance Scenarios**:
+
+1. **Given** a schema with an upload or media field, **When** the user requests the AI to "generate a hero image of a serene library in Alexandria style", **Then** the AI invokes the `generate_image` tool, generates a temporary asset URL, and the CMS Engine streams the download directly into the Payload Media collection, populating the field reference.
+2. **Given** an AI-generated image reference, **When** the user accepts the draft, **Then** the local CMS Media reference is persisted.
+
+---
+
+### User Story 5 - Draft Recovery & Version Rollback (Priority: P5)
+
+As a content author, I want to recover my unsaved drafting sessions from network failures or idle lockouts and rollback to previous version snapshots so that I never lose work.
+
+**Why this priority**: Provides essential safety and reliability guarantees against network dropouts, page closures, or idle timeouts.
+
+**Independent Test**: Can be tested by navigating away from an active session, waiting for the lock to idle expire, returning to trigger the recovery dialog, resuming the draft, and using the version selector to roll back to a prior snapshot.
+
+**Acceptance Scenarios**:
+
+1. **Given** an expired drafting session within the 24-hour recovery window, **When** the user navigates back to the drafting workspace for that schema, **Then** the system blocks the screen with a premium "Recovery Dialog" offering to resume the draft or start fresh.
+2. **Given** a session with multiple version snapshots, **When** the user selects a historical version from the sidebar version list, **Then** the structured editor rolls back all fields to the matching historical snapshot state.
+
+---
+
 ### Edge Cases
 
 - **Schema Mismatch**: What happens when the user asks to draft using a schema that doesn't exist? (System dynamically triggers schema creation inline via the `create_schema` tool in the same session, updates the Structured Editor view, and immediately proceeds to draft the content).
@@ -108,7 +138,7 @@ As a content author, I want to set a global style and tone modifier so that all 
 - **FR-004**: System MUST provide a global "Pause" control to halt active AI generation streams.
 - **FR-005**: System MUST provide an "AI SUGGESTS" indicator and per-field actions (Edit, Accept, Refresh) for every AI-populated field.
 - **FR-006**: System MUST feature a "Style & Tone" selector that loads options from the tenant-scoped `StyleModifier` collection, allowing brand tone prompts to be dynamically injected into subsequent AI generation requests.
-- **FR-007**: System MUST provide a floating AI action bar for the rich-text editor with "Simplify", "Expand", and "Change Tone" capabilities, alongside a section-level "REFINE ALL" action. These inline refinements MUST be stateless calls that replace highlighted text directly in the client-side editor, which then triggers a standard field-level auto-save to the `DraftingSession` database.
+- **FR-007**: System MUST provide a floating AI action bar for the rich-text editor with "Simplify", "Expand", and "Change Tone" capabilities, alongside a section-level "REFINE ALL" action. These inline refinements MUST be stateless calls that replace highlighted text directly in the client-side editor, which then triggers a standard field-level auto-save to the `DraftingSession` database. The client MUST explicitly pass the active editor locale and selected StyleModifier tone guidelines in the refinement request payload to preserve linguistic and tone consistency.
 - **FR-008**: System MUST support AI-driven image generation for "Main Media" fields based on content context, orchestrated via LangChain tool calling in the `content-authoring-service`, with the Content Management Engine proactively downloading and persisting the generated image directly to the Payload `Media` collection to obtain a permanent local reference.
 - **FR-009**: System MUST support tracking "Versions" of the draft to allow users to navigate through iteration history, implemented as an array of up to 10 snapshot states inside the `DraftingSession` for rollback support.
 - **FR-010**: System MUST maintain drafts exclusively within the temporary `DraftingSession` state; they are NOT persisted to formal `ContentItems` until the user explicitly clicks "Save" or "Publish". Upon successful creation or update of the `ContentItem`, the temporary `DraftingSession` and all its snapshots MUST be atomically and permanently deleted.
@@ -124,7 +154,7 @@ As a content author, I want to set a global style and tone modifier so that all 
 ### Key Entities *(include if feature involves data)*
 
 - **DraftingSession**: A Payload CMS collection representing the active state of an AI drafting interaction, linking a Tenant, User, and Schema, containing up to 10 snapshot versions for draft recovery/rollback (storing rich-text fields as Payload Lexical JSON resolved from AI-generated Markdown).
-- **AISuggestion**: Stores individual field suggestions, allowing for "refresh" and "undo" actions.
+- **AISuggestion**: A structural value object embedded directly within the `DraftingSession` snapshot array (representing field-level suggestions for refresh/undo actions), rather than a separate database collection.
 - **StyleModifier**: A tenant-scoped Payload CMS collection defining custom brand tone prompts (e.g., Academic, Punchy, Technical) and their corresponding system prompt instructions.
 - **AIAuditLog**: A tenant-scoped Payload CMS collection documenting every AI request, model parameter, token count, cost, and user/session context for compliance and billing purposes.
 

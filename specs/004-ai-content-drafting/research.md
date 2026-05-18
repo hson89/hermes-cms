@@ -111,8 +111,8 @@ async def generate_image(prompt: str, aspect_ratio: str = "16:9") -> dict:
   2. **`beforeChange` hook (advisory)**: A softer check that queries for existing active sessions and returns a user-friendly 409 error message before hitting the DB constraint. This provides a better UX error message but is NOT the sole lock mechanism.
 - **Lock release**: Three mechanisms:
   1. **Proactive release**: CMS Engine exposes `DELETE /api/drafting-sessions/:id/lock` endpoint, called on `beforeunload` and explicit navigation.
-  2. **Inactivity timeout**: Background cron job (or Payload scheduled task) queries sessions where `lastActivityAt < now() - 10min` and `status = 'active'` → sets status to `expired`.
-  3. **Cleanup purge**: Separate job deletes sessions where `status = 'expired'` and `updatedAt < now() - 24h`.
+  2. **Inactivity timeout**: A secure Next.js API route `POST /api/drafting-sessions/cleanup` (protected by `X-Internal-Secret` verification) is called by an external cron scheduler (e.g., Kubernetes CronJob) to query sessions where `lastActivityAt < now() - 10min` and `status = 'active'`, updating their status to `expired`.
+  3. **Cleanup purge**: The same secure `POST /api/drafting-sessions/cleanup` API route runs a query to permanently delete expired sessions where `status = 'expired'` and `updatedAt < now() - 24h`.
 
 **State Machine**:
 ```
