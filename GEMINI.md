@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-/home/itlight/dev/hermes-cms/specs/003-define-content-types/plan.md
+/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/plan.md
 <!-- SPECKIT END -->
 
 # Hermes AI — Gemini Agent Context
