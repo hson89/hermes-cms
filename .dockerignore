@@ -1,7 +1,10 @@
-node_modules/
-.git/
+**/node_modules/
+**/.next/
+**/.astro/
+**/.git/
 Dockerfile*
 .dockerignore
 *.log*
 .env*
 coverage/
+dist/

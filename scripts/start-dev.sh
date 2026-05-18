@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # start-dev.sh
-# Starts all services required for Hermes AI local development and testing.
+# Starts all services required for Hermes AI local development and testing in Docker.
 
 set -e
 
@@ -9,7 +9,6 @@ set -e
 cleanup() {
     echo ""
     echo "🛑 Shutting down services..."
-    [ -n "$CMS_PID" ] && kill $CMS_PID 2>/dev/null
     docker-compose stop
     echo "✅ Done."
 }
@@ -21,18 +20,16 @@ kill_port() {
     local port=$1
     local pids=$(lsof -ti :$port)
     if [ -n "$pids" ]; then
-        echo "⚠️  Port $port is in use. Cleaning up (killing PIDs: $pids)..."
+        echo "⚠️  Port $port is in use by local host processes. Cleaning up (killing PIDs: $pids)..."
         kill -9 $pids 2>/dev/null || true
     fi
 }
 
-echo "🧹 Cleaning up existing processes..."
-# Kill by port
+echo "🧹 Cleaning up any conflicting local port processes..."
 kill_port 3000
+kill_port 3001
+kill_port 3002
 kill_port 8000
-# Kill by name just in case
-pkill -f "next dev" || true
-pkill -f "uvicorn" || true
 
 # Setup Environment Variables if missing
 echo "📝 Checking environment variables..."
@@ -48,35 +45,23 @@ if [ ! -f apps/content-authoring-service/.env ]; then
     echo "⚠️  Please update apps/content-authoring-service/.env with your API keys"
 fi
 
-echo "🚀 Starting infrastructure (Postgres, Kafka, Content Authoring Service)..."
+echo "🚀 Starting Hermes AI Stack inside Docker Compose..."
 docker-compose up -d --build
 
-# Wait for Postgres to be ready
-echo "⏳ Waiting for database to be ready..."
-sleep 5
-
-# Start CMS
-echo "📦 Starting Content Management Engine..."
-cd apps/content-management-engine
-if [ ! -d node_modules ]; then
-    echo "Installing Node.js dependencies..."
-    pnpm install
-fi
-pnpm dev &
-CMS_PID=$!
-cd ../..
-
 echo ""
-echo "✨ All services are starting up!"
+echo "✨ All services are running!"
 echo "--------------------------------------------------"
 echo "💻 Engine Admin:    http://localhost:3000/admin"
 echo "✍️  Authoring:       http://localhost:8000/health"
+echo "📄 Next.js Blog:    http://localhost:3001"
+echo "🎨 Astro Portfolio: http://localhost:3002"
 echo "📊 Kafka UI:        http://localhost:9092 (broker)"
 echo "🗄️  Engine DB:      localhost:5432"
 echo "🗄️  Authoring DB:   localhost:5433"
 echo "--------------------------------------------------"
 echo "Press Ctrl+C to stop all services."
-echo "💡 UI broken? Run ./scripts/cleanup-payload.sh to reset mapping."
+echo "📋 Showing live logs from CMS engine and site templates..."
+echo ""
 
-# Wait for background processes
-wait $CMS_PID
+# Tail the logs of our web/node-based apps
+docker-compose logs -f content_management_engine nextjs_blog astro_portfolio

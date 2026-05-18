@@ -1,0 +1,20 @@
+FROM node:26-alpine AS base
+
+WORKDIR /app
+
+COPY apps/site-templates/astro-portfolio/package.json ./
+
+RUN npm install
+
+COPY apps/site-templates/astro-portfolio/ ./
+
+ENV NODE_ENV=production
+ENV PORT=3002
+ENV PAYLOAD_URL=http://content_management_engine:3000
+ENV PAYLOAD_API_KEY=dummy-key
+
+RUN npm run build
+
+EXPOSE 3002
+
+CMD ["npm", "start"]

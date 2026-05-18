@@ -22,6 +22,7 @@ export async function createMockUser(payload: any, email: string, role: string, 
   return await payload.create({
     collection: 'users',
     data: {
+      name: 'Mock User',
       email,
       password: 'test-password-123',
       role,

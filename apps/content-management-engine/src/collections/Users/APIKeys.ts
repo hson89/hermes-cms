@@ -83,7 +83,15 @@ export const APIKeys: CollectionConfig = {
         description: 'A human-readable name for this API key.',
       },
     },
-
+    {
+      name: 'email',
+      type: 'email',
+      required: true,
+      label: 'Owner Email Address',
+      admin: {
+        description: 'Identifier email address associated with this API key.',
+      },
+    },
     {
       name: 'expiresAt',
       type: 'date',

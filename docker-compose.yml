@@ -59,6 +59,45 @@ services:
       - postgres_authoring
       - kafka
 
+  content_management_engine:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.engine
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/content-management-engine/.env
+    environment:
+      - DATABASE_URI=postgresql://postgres:postgres@postgres_cms:5432/hermes_cms
+      - CONTENT_AUTHORING_SERVICE_URL=http://content_authoring_service:8000
+    depends_on:
+      - postgres_cms
+      - content_authoring_service
+
+  nextjs_blog:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.nextjs-blog
+    ports:
+      - "3001:3001"
+    environment:
+      - PAYLOAD_URL=http://content_management_engine:3000
+      - PAYLOAD_API_KEY=dummy-key
+    depends_on:
+      - content_management_engine
+
+  astro_portfolio:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.astro-portfolio
+    ports:
+      - "3002:3002"
+    environment:
+      - PAYLOAD_URL=http://content_management_engine:3000
+      - PAYLOAD_API_KEY=dummy-key
+    depends_on:
+      - content_management_engine
+
 volumes:
   postgres_cms_data:
   postgres_authoring_data:

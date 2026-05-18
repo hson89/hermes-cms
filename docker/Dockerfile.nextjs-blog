@@ -1,0 +1,21 @@
+FROM node:26-alpine AS base
+
+WORKDIR /app
+
+COPY apps/site-templates/nextjs-blog/package.json ./
+
+RUN npm install
+
+COPY apps/site-templates/nextjs-blog/ ./
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV PAYLOAD_URL=http://content_management_engine:3000
+ENV PAYLOAD_API_KEY=dummy-key
+
+RUN npm run build
+
+EXPOSE 3001
+
+CMD ["npm", "start"]

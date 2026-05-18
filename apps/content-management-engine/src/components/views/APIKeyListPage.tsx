@@ -227,13 +227,25 @@ export const APIKeyListPage: React.FC = () => {
       renderCell: (apiKey) => {
         const now = new Date()
         const isExpired = apiKey.expiresAt ? new Date(apiKey.expiresAt) < now : false
+        const isSuspended = apiKey.enableAPIKey === false
+        
+        let badgeColor: 'danger' | 'success' | 'warning' = 'success'
+        let badgeText = 'Active'
+        
+        if (isSuspended) {
+          badgeColor = 'warning'
+          badgeText = 'Suspended'
+        } else if (isExpired) {
+          badgeColor = 'danger'
+          badgeText = 'Expired'
+        }
         
         return (
           <div className="flex flex-col lg:block items-start gap-1">
             <span className="lg:hidden text-[9px] text-outline uppercase font-label font-bold tracking-wider">Status &amp; Expiration</span>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge color={isExpired ? 'danger' : 'success'} size="sm">
-                {isExpired ? 'Expired' : 'Active'}
+              <Badge color={badgeColor} size="sm" icon={isSuspended ? 'block' : isExpired ? 'error' : 'check_circle'}>
+                {badgeText}
               </Badge>
               <span className="font-body text-xs text-outline">
                 {apiKey.expiresAt 

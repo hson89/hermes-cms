@@ -1,11 +1,30 @@
-FROM node:24-alpine
+FROM node:26-alpine AS base
 
 WORKDIR /app
-COPY package*.json pnpm-lock.yaml ./
-RUN npm i -g pnpm && pnpm install
 
-COPY . .
+# Install pnpm globally
+RUN npm i -g pnpm
+
+# Copy package files
+COPY apps/content-management-engine/package.json apps/content-management-engine/pnpm-lock.yaml apps/content-management-engine/pnpm-workspace.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the engine's source code
+COPY apps/content-management-engine/ ./
+
+# Environment variables for build-time compilation of the Payload CMS Admin dashboard
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV PAYLOAD_SECRET=hermes-secret-key-123
+ENV DATABASE_URI=postgresql://postgres:postgres@postgres_cms:5432/hermes_cms
+ENV CONTENT_AUTHORING_SERVICE_URL=http://content_authoring_service:8000
+ENV INTERNAL_SERVICE_SECRET=hermes-internal-secret
+
+# Build the application
 RUN pnpm build
 
 EXPOSE 3000
+
 CMD ["pnpm", "start"]
