@@ -13,6 +13,7 @@ export const APIKeys: CollectionConfig = {
   auth: {
     // Use API key authentication strategy for this collection.
     useAPIKey: true,
+    disableLocalStrategy: true,
     depth: 0,
     tokenExpiration: 60 * 60 * 24 * 365, // 1 year
     cookies: {
@@ -23,6 +24,18 @@ export const APIKeys: CollectionConfig = {
   admin: {
     useAsTitle: 'label',
     description: 'API keys for programmatic content delivery access.',
+    components: {
+      views: {
+        list: {
+          Component: '/src/components/views/APIKeyListPage#APIKeyListPage',
+        },
+        edit: {
+          default: {
+            Component: '/src/components/views/CreateAPIKeyPage#CreateAPIKeyPage',
+          },
+        },
+      },
+    },
   },
   access: {
     read: ({ req: { user } }) => {

@@ -363,6 +363,28 @@ div:has(> .custom-content-type-view) > [class*="collection-list"] {
   margin: 0 !important;
 }
 
+/* Custom view cleanup for API Keys */
+.template-default__wrap:has(.custom-api-key-view) .doc-header,
+.template-default__wrap:has(.custom-api-key-view) .collection-edit__header,
+.template-default__wrap:has(.custom-api-key-view) .collection-list__header,
+.template-default__wrap:has(.custom-api-key-view) .gutter,
+.template-default__wrap:has(.custom-api-key-view) [class*="doc-header"],
+.template-default__wrap:has(.custom-api-key-view) [class*="collection-edit__header"],
+.template-default__wrap:has(.custom-api-key-view) [class*="collection-list__header"],
+div:has(.custom-api-key-view) .doc-header,
+div:has(.custom-api-key-view) .collection-edit__header,
+div:has(.custom-api-key-view) .collection-list__header,
+div:has(.custom-api-key-view) .gutter,
+div:has(.custom-api-key-view) [class*="doc-header"],
+div:has(.custom-api-key-view) [class*="collection-edit__header"],
+div:has(.custom-api-key-view) [class*="collection-list__header"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 /* Alexandria Text Animations (from animate-text skill) */
 @keyframes soft-blur-in {
   0% {
