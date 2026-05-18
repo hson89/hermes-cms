@@ -57,7 +57,7 @@ export default buildConfig({
         'api-keys': {},
         'media': { customTenantField: true },
         'audit-logs': { customTenantField: true },
-        'hosted-sites': {},
+        'hosted-sites': { customTenantField: true },
         'ai-prompt-history': {},
       } as any,
       tenantsSlug: 'tenants',
