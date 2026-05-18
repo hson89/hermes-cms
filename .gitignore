@@ -34,8 +34,8 @@ kubeconfig*
 *.log
 
 # Payload CMS uploaded media
-apps/cms/media/
+apps/content-management-engine/media/
 
 # Playwright test results and reports
-apps/cms/test-results/
-apps/cms/playwright-report/
+apps/content-management-engine/test-results/
+apps/content-management-engine/playwright-report/
