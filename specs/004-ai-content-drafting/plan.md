@@ -35,7 +35,7 @@ AI Content Drafting transforms the Hermes AI CMS into a true "AI-First" content 
 | IV | Test-First (TDD) | ✅ PASS | Plan mandates tests before implementation. Test suites defined for drafting service, refine service, collections, and UI components. |
 | V | Developer Experience (DX) | ✅ PASS | Quickstart guide created. Clear file references. Predictable API contracts documented. |
 | VI | Strict DDD | ✅ PASS | New `content_drafting` bounded context in AI service with proper domain/application/infrastructure layering. Value objects (ContentDraft, DraftField) defined. |
-| VII | Hybrid Architecture | ✅ PASS | CMS Engine handles UI + session persistence. AI Service handles LLM orchestration. Communication via REST/SSE with inter-service authentication using the `X-Internal-Secret` header validated via the standard `INTERNAL_SECRET` environment variable. |
+| VII | Hybrid Architecture | ✅ PASS | CMS Engine handles UI + session persistence. AI Service handles LLM orchestration. Communication via REST/SSE with inter-service authentication using the `X-Internal-Secret` header validated via the standard `INTERNAL_SERVICE_SECRET` environment variable. |
 
 **Post-Design Re-evaluation**: All gates remain ✅ PASS after Phase 1 design. No violations detected.
 
@@ -112,6 +112,7 @@ apps/content-authoring-service/src/
 │   └── content_drafting/           # NEW — Content drafting bounded context (with locale parameter)
 │       ├── __init__.py
 │       ├── models.py               # ContentDraft, DraftField value objects
+│       ├── cost_calculator.py      # NEW — Token cost estimation logic for specific providers/models
 │       └── prompts.py              # System prompts for content drafting
 ├── application/
 │   ├── ai_service.py               # EXISTING — Schema generation
@@ -153,3 +154,4 @@ k8s/                                # DEPLOYMENT INFRASTRUCTURE
 ## Complexity Tracking
 
 > No constitution violations detected. No complexity justifications required.
+ifications required.
