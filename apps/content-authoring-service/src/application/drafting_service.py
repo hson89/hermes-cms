@@ -107,6 +107,8 @@ class DraftingService:
         user_id: str,
         db: AsyncSession,
         locale: str = "en",
+        style_modifier_id: Optional[str] = None,
+        style_modifier_prompt: Optional[str] = None,
         model_override: Optional[str] = None,
         session_id: Optional[str] = None,
     ) -> AsyncGenerator[dict[str, Any], None]:
@@ -125,6 +127,9 @@ class DraftingService:
         session.add_message("user", f"Refine draft: {prompt}")
         await repo.save(session)
 
+        # Use style modifier instructions
+        style_modifier_instructions = style_modifier_prompt or ""
+
         model = self.ai_service.get_model(model_override=model_override)
         history = session.to_langchain_messages()
 
@@ -134,6 +139,7 @@ class DraftingService:
         async for chunk in chain.astream(
             {
                 "locale": locale,
+                "style_modifier_instructions": style_modifier_instructions,
                 "current_draft_json": json.dumps(current_draft_json, indent=2),
                 "refinement_input": prompt,
                 "schema_json": json.dumps(schema_json, indent=2),

@@ -114,14 +114,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T032 [P] [US3] Write integration tests in `apps/content-authoring-service/tests/test_drafting_service.py` ensuring system prompt construction incorporates StyleModifier parameters
+- [x] T032 [P] [US3] Write integration tests in `apps/content-authoring-service/tests/test_drafting_service.py` ensuring system prompt construction incorporates StyleModifier parameters
 
 ### Implementation for User Story 3
 
-- [ ] T033 [US3] Add complete admin panel CRUD capabilities and collection access control permissions for StyleModifiers in `apps/content-management-engine/src/collections/StyleModifiers/index.ts`
-- [ ] T034 [US3] Implement style tone selection chip controls in `apps/content-management-engine/src/components/Editor/ChatPanel.tsx` that load dynamic lists from the database
-- [ ] T035 [US3] Bind selected StyleModifier parameter to CMS proxy requests `/api/ai/draft` and `/api/ai/refine`
-- [ ] T036 [US3] Modify system prompt construction algorithms in `apps/content-authoring-service/src/application/drafting_service.py` and `apps/content-authoring-service/src/application/refine_service.py` to append tone definitions dynamically
+- [x] T033 [US3] Add complete admin panel CRUD capabilities and collection access control permissions for StyleModifiers in `apps/content-management-engine/src/collections/StyleModifiers/index.ts`
+- [x] T034 [US3] Implement style tone selection chip controls in `apps/content-management-engine/src/components/Editor/ChatPanel.tsx` that load dynamic lists from the database
+- [x] T035 [US3] Bind selected StyleModifier parameter to CMS proxy requests `/api/ai/draft` and `/api/ai/refine`
+- [x] T036 [US3] Modify system prompt construction algorithms in `apps/content-authoring-service/src/application/drafting_service.py` and `apps/content-authoring-service/src/application/refine_service.py` to append tone definitions dynamically
 
 **Checkpoint**: User Story 3 complete. Style and tone prompts are managed by tenant admins, toggled by authors, and correctly shape LLM output styles.
 

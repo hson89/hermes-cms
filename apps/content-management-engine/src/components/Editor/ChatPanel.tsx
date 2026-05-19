@@ -12,30 +12,24 @@ export const ChatPanel: React.FC<{
   onEvent?: (event: any) => void
   endpoint?: string
   additionalBody?: any
-}> = ({ sessionId, onEvent, endpoint = '/api/ai/draft', additionalBody = {} }) => {
+  styleModifiers?: any[]
+  selectedStyle?: string | null
+  onStyleChange?: (id: string | null) => void
+}> = ({ 
+  sessionId, 
+  onEvent, 
+  endpoint = '/api/ai/draft', 
+  additionalBody = {},
+  styleModifiers = [],
+  selectedStyle = null,
+  onStyleChange
+}) => {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [tokens, setTokens] = useState('')
-  const [styleModifiers, setStyleModifiers] = useState<any[]>([])
-  const [selectedStyle, setSelectedStyle] = useState<string | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
-
-  useEffect(() => {
-    async function fetchStyles() {
-      try {
-        const res = await fetch('/api/style-modifiers')
-        const data = await res.json()
-        setStyleModifiers(data.docs || [])
-        // Set default if any
-        const defaultStyle = data.docs?.find((s: any) => s.isDefault)
-        if (defaultStyle) setSelectedStyle(defaultStyle.id)
-      } catch (err) {
-        console.error('Failed to fetch style modifiers:', err)
-      }
-    }
-    fetchStyles()
-  }, [])
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const handleCancel = () => {
     if (abortControllerRef.current) {
@@ -137,7 +131,7 @@ export const ChatPanel: React.FC<{
             {styleModifiers.map((style) => (
               <button
                 key={style.id}
-                onClick={() => setSelectedStyle(style.id)}
+                onClick={() => onStyleChange?.(style.id === selectedStyle ? null : style.id)}
                 className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   selectedStyle === style.id
                     ? 'bg-tertiary text-on-tertiary shadow-sm'

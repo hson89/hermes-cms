@@ -24,6 +24,16 @@ export async function POST(req: NextRequest) {
   const { prompt, current_draft_json, content_schema, style_modifier_id } = await req.json()
   const tenantId = (user as any).tenants?.[0]?.tenant?.id || (user as any).tenants?.[0]?.tenant
 
+  // Load style modifier prompt if provided
+  let styleModifierPrompt = null
+  if (style_modifier_id) {
+    const styleModifier = await payload.findByID({
+      collection: 'style-modifiers',
+      id: style_modifier_id,
+    })
+    styleModifierPrompt = styleModifier?.systemPrompt
+  }
+
   // For simplicity, we'll iterate through fields and refine them concurrently
   // but since we want to return a single compiled response, we'll use Promise.all
   
@@ -46,6 +56,7 @@ export async function POST(req: NextRequest) {
           content_schema: content_schema,
           tenant_id: tenantId,
           user_id: user.id,
+          style_modifier_prompt: styleModifierPrompt,
         }),
       })
 

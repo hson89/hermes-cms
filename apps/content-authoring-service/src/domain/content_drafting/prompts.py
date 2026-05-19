@@ -51,6 +51,8 @@ GUIDELINES:
 3. LOCALE CONSISTENCY: Maintain the target locale: {locale}.
 4. STRUCTURED OUTPUT: Return raw JSON matching the draft format.
 
+{style_modifier_instructions}
+
 Current Locale: {locale}
 """
 

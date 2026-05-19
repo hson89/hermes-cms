@@ -24,6 +24,16 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const tenantId = (user as any).tenants?.[0]?.tenant?.id || (user as any).tenants?.[0]?.tenant
 
+  // Load style modifier prompt if provided
+  let styleModifierPrompt = null
+  if (body.style_modifier_id) {
+    const styleModifier = await payload.findByID({
+      collection: 'style-modifiers',
+      id: body.style_modifier_id,
+    })
+    styleModifierPrompt = styleModifier?.systemPrompt
+  }
+
   const authoringServiceUrl = process.env.CONTENT_AUTHORING_SERVICE_URL
   const internalSecret = process.env.INTERNAL_SERVICE_SECRET
 
@@ -39,6 +49,7 @@ export async function POST(req: NextRequest) {
       ...body,
       tenant_id: tenantId,
       user_id: user.id,
+      style_modifier_prompt: styleModifierPrompt,
     }),
   })
 

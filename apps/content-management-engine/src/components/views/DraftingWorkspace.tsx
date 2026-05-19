@@ -27,6 +27,8 @@ export const DraftingWorkspace: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [contentType, setContentType] = useState<any>(null)
   const [schema, setSchema] = useState<any>(null)
+  const [styleModifiers, setStyleModifiers] = useState<any[]>([])
+  const [selectedStyle, setSelectedStyle] = useState<string | null>(null)
 
   // 1. Initial Session Setup / Recovery
   useEffect(() => {
@@ -70,6 +72,22 @@ export const DraftingWorkspace: React.FC = () => {
 
     initWorkspace()
   }, [user, contentTypeId, activeTenantId])
+
+  // 1b. Fetch Style Modifiers
+  useEffect(() => {
+    async function fetchStyles() {
+      try {
+        const res = await fetch('/api/style-modifiers')
+        const data = await res.json()
+        setStyleModifiers(data.docs || [])
+        const defaultStyle = data.docs?.find((s: any) => s.isDefault)
+        if (defaultStyle) setSelectedStyle(defaultStyle.id)
+      } catch (err) {
+        console.error('Failed to fetch style modifiers:', err)
+      }
+    }
+    fetchStyles()
+  }, [])
 
   // 2. Handle AI Events (Streaming field updates)
   const handleAIEvent = useCallback((event: any) => {
@@ -129,7 +147,7 @@ export const DraftingWorkspace: React.FC = () => {
           prompt,
           current_draft_json: session.draftData,
           content_schema: schema,
-          style_modifier_id: session.selectedModel,
+          style_modifier_id: selectedStyle,
           tenantId: activeTenantId
         }),
       })
@@ -225,12 +243,16 @@ export const DraftingWorkspace: React.FC = () => {
             sessionId={session?.id} 
             onEvent={handleAIEvent} 
             endpoint={session?.draftData && Object.keys(session.draftData).length > 0 ? '/api/ai/refine' : '/api/ai/draft'}
+            styleModifiers={styleModifiers}
+            selectedStyle={selectedStyle}
+            onStyleChange={setSelectedStyle}
             additionalBody={{
               current_draft_json: session?.draftData || {},
               content_schema: schema,
               content_type_slug: contentType?.slug,
               locale: session?.activeLocale || 'en',
-              tenantId: activeTenantId
+              tenantId: activeTenantId,
+              style_modifier_id: selectedStyle
             }}
           />
         </div>
