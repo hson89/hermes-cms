@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const styleModifier = await payload.findByID({
       collection: 'style-modifiers',
       id: body.style_modifier_id,
+      req,
     })
     styleModifierPrompt = styleModifier?.systemPrompt
   }
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
         status: 'error',
         errorMessage: error,
         durationMs: Date.now() - startTime,
+        styleModifier: body.style_modifier_id,
       },
       overrideAccess: true,
     })
@@ -89,31 +91,37 @@ export async function POST(req: NextRequest) {
   }
 
   // Use TransformStream to monitor stream and log on finish
-  const [modelProvider, modelName] = (body.modelOverride || 'openai/gpt-4o').split('/')
+  const resolvedModel = body.modelOverride || (await payload.findByID({ collection: 'tenants', id: tenantId })).defaultLLMModel || 'openai/gpt-4o'
+  const [modelProvider, modelName] = resolvedModel.split('/')
   
   let promptTokens = 0
   let completionTokens = 0
   let totalTokens = 0
-
+  
+  let buffer = ''
+  const decoder = new TextDecoder()
   const loggingStream = new TransformStream({
     transform(chunk, controller) {
-      // Decode chunk to string if it's Uint8Array to inspect it
-      // Since it's a web stream from fetch, chunk is Uint8Array
-      const text = new TextDecoder().decode(chunk)
+      // Decode chunk and add to buffer
+      buffer += decoder.decode(chunk, { stream: true })
       
-      // Look for a metadata event or similar that LangChain might send
-      // Example: event: METADATA\ndata: {"usage_metadata": {"input_tokens": 10, "output_tokens": 20}}
-      if (text.includes('"usage_metadata"')) {
-        try {
-          const match = text.match(/"usage_metadata":\s*({[^}]+})/)
-          if (match) {
-            const usage = JSON.parse(match[1])
-            promptTokens = usage.input_tokens || 0
-            completionTokens = usage.output_tokens || 0
-            totalTokens = usage.total_tokens || (promptTokens + completionTokens)
+      // Split by newlines to process complete lines
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || '' // Keep last partial line in buffer
+
+      for (const line of lines) {
+        if (line.includes('"usage_metadata"')) {
+          try {
+            const match = line.match(/"usage_metadata":\s*({[^}]+})/)
+            if (match) {
+              const usage = JSON.parse(match[1])
+              promptTokens = usage.input_tokens || 0
+              completionTokens = usage.output_tokens || 0
+              totalTokens = usage.total_tokens || (promptTokens + completionTokens)
+            }
+          } catch (e) {
+            console.error("Failed to parse usage metadata", e)
           }
-        } catch (e) {
-          console.error("Failed to parse usage metadata", e)
         }
       }
       
@@ -137,6 +145,30 @@ export async function POST(req: NextRequest) {
           promptTokens,
           completionTokens,
           totalTokens,
+          styleModifier: body.style_modifier_id,
+        },
+        overrideAccess: true,
+      })
+    },
+    async cancel(reason) {
+      // Log cancellation
+      await payload.create({
+        collection: 'ai-audit-logs',
+        data: {
+          user: user.id,
+          tenant: tenantId,
+          session: body.sessionId,
+          requestType: 'draft',
+          prompt: body.prompt,
+          model: modelName || modelProvider,
+          provider: modelProvider,
+          status: 'error',
+          errorMessage: `Stream cancelled: ${reason}`,
+          durationMs: Date.now() - startTime,
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          styleModifier: body.style_modifier_id,
         },
         overrideAccess: true,
       })

@@ -27,6 +27,11 @@ export const AIAuditLogs: CollectionConfig = {
       relationTo: 'drafting-sessions',
     },
     {
+      name: 'styleModifier',
+      type: 'relationship',
+      relationTo: 'style-modifiers',
+    },
+    {
       name: 'requestType',
       type: 'select',
       required: true,

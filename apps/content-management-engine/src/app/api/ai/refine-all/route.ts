@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const styleModifier = await payload.findByID({
       collection: 'style-modifiers',
       id: style_modifier_id,
+      req,
     })
     styleModifierPrompt = styleModifier?.systemPrompt
   }
@@ -71,6 +72,10 @@ export async function POST(req: NextRequest) {
       let buffer = ''
       let parseError = null
 
+      let promptTokens = 0
+      let completionTokens = 0
+      let totalTokens = 0
+
       try {
         while (true) {
           const { done, value } = await reader.read()
@@ -83,7 +88,8 @@ export async function POST(req: NextRequest) {
           buffer = lines.pop() || ''
           
           for (let i = 0; i < lines.length; i++) {
-            if (lines[i].startsWith('event: REFINE_COMPLETE')) {
+            const line = lines[i]
+            if (line.startsWith('event: REFINE_COMPLETE')) {
               const dataLine = lines[i + 1]
               if (dataLine && dataLine.startsWith('data: ')) {
                 try {
@@ -93,13 +99,24 @@ export async function POST(req: NextRequest) {
                   }
                 } catch (e) {
                   parseError = "Failed to parse REFINE_COMPLETE data"
-                  console.error(parseError, e)
                 }
               }
-            } else if (lines[i].startsWith('event: ERROR')) {
+            } else if (line.startsWith('event: ERROR')) {
               const dataLine = lines[i + 1]
               if (dataLine && dataLine.startsWith('data: ')) {
                 parseError = dataLine.replace('data: ', '')
+              }
+            } else if (line.includes('"usage_metadata"')) {
+              try {
+                const match = line.match(/"usage_metadata":\s*({[^}]+})/)
+                if (match) {
+                  const usage = JSON.parse(match[1])
+                  promptTokens = usage.input_tokens || 0
+                  completionTokens = usage.output_tokens || 0
+                  totalTokens = usage.total_tokens || (promptTokens + completionTokens)
+                }
+              } catch (e) {
+                // Ignore parsing errors for metadata
               }
             }
           }
@@ -108,12 +125,52 @@ export async function POST(req: NextRequest) {
         parseError = err.message
       }
 
-      return { field, error: parseError || (!resultData ? 'No draft data returned' : null), data: { [field]: resultData || current_draft_json[field] } }
+      return { 
+        field, 
+        error: parseError || (!resultData ? 'No draft data returned' : null), 
+        data: { [field]: resultData || current_draft_json[field] },
+        promptTokens,
+        completionTokens,
+        totalTokens
+      }
     })
 
     const results = await Promise.all(refinementPromises)
     const combinedDraft = results.reduce((acc, curr) => ({ ...acc, ...curr.data }), {})
     const errors = results.filter(r => r.error).map(r => ({ field: r.field, error: r.error }))
+    
+    // Aggregate tokens
+    let totalPromptTokens = 0
+    let totalCompletionTokens = 0
+    let totalAllTokens = 0
+    results.forEach(r => {
+      totalPromptTokens += (r as any).promptTokens || 0
+      totalCompletionTokens += (r as any).completionTokens || 0
+      totalAllTokens += (r as any).totalTokens || 0
+    })
+
+    const resolvedModel = (await payload.findByID({ collection: 'tenants', id: tenantId })).defaultLLMModel || 'openai/gpt-4o'
+    const [modelProvider, modelName] = resolvedModel.split('/')
+
+    // Write aggregated audit log
+    await payload.create({
+      collection: 'ai-audit-logs',
+      data: {
+        user: user.id,
+        tenant: tenantId,
+        requestType: 'refine',
+        prompt: `Refine All: ${prompt}`,
+        model: modelName || modelProvider,
+        provider: modelProvider,
+        status: errors.length === fieldsToRefine.length ? 'error' : 'success',
+        durationMs: Date.now() - startTime,
+        promptTokens: totalPromptTokens,
+        completionTokens: totalCompletionTokens,
+        totalTokens: totalAllTokens,
+        styleModifier: style_modifier_id,
+      },
+      overrideAccess: true,
+    })
 
     const responsePayload: any = { draft: combinedDraft }
     if (errors.length > 0) {
@@ -122,6 +179,23 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(responsePayload)
   } catch (err: any) {
+    // Log error if everything failed
+    await payload.create({
+      collection: 'ai-audit-logs',
+      data: {
+        user: user.id,
+        tenant: tenantId,
+        requestType: 'refine',
+        prompt: `Refine All (FAILED): ${prompt}`,
+        model: 'unknown',
+        provider: 'unknown',
+        status: 'error',
+        errorMessage: err.message,
+        durationMs: Date.now() - startTime,
+        styleModifier: style_modifier_id,
+      },
+      overrideAccess: true,
+    })
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
