@@ -136,14 +136,14 @@ Streams field-level updates concurrently. Same event structure as `POST /api/ai/
 
 ---
 
-## POST /api/drafting-sessions
+## POST /api/ai-drafting/sessions
 
 **Purpose**: Create a new DraftingSession, acquiring the single-user lock.
 
 ### Request
 
 ```http
-POST /api/drafting-sessions HTTP/1.1
+POST /api/ai-drafting/sessions HTTP/1.1
 Content-Type: application/json
 Cookie: payload-token=<session-cookie>
 ```
@@ -187,14 +187,14 @@ Cookie: payload-token=<session-cookie>
 
 ---
 
-## PATCH /api/drafting-sessions/:id
+## PATCH /api/ai-drafting/sessions/:id
 
-**Purpose**: Auto-save field updates and version snapshots. The client UI sends the rich-text `body` as a Markdown string. The Next.js server-side route controller automatically converts it to Payload's Lexical JSON format before updating the DraftingSession in Postgres.
+**Purpose**: Auto-save field updates and version snapshots. The client UI sends the rich-text `body` field directly as a Lexical JSON object (avoiding unnecessary client-to-server conversion overhead on auto-saves). The Next.js server-side route controller persists this structured JSON data directly into the DraftingSession's draftData in Postgres.
 
 ### Request
 
 ```http
-PATCH /api/drafting-sessions/ds-001 HTTP/1.1
+PATCH /api/ai-drafting/sessions/ds-001 HTTP/1.1
 Content-Type: application/json
 Cookie: payload-token=<session-cookie>
 ```
@@ -204,7 +204,35 @@ Cookie: payload-token=<session-cookie>
   "draftData": {
     "title": "The Quantum Leap",
     "slug": "the-quantum-leap",
-    "body": "# The Quantum Leap\n\nQuantum computing is..."
+    "body": {
+      "root": {
+        "children": [
+          {
+            "children": [
+              {
+                "detail": 0,
+                "format": 0,
+                "mode": "normal",
+                "style": "",
+                "text": "Quantum computing is...",
+                "type": "text",
+                "version": 1
+              }
+            ],
+            "direction": "ltr",
+            "format": "",
+            "indent": 0,
+            "type": "paragraph",
+            "version": 1
+          }
+        ],
+        "direction": "ltr",
+        "format": "",
+        "indent": 0,
+        "type": "root",
+        "version": 1
+      }
+    }
   },
   "mainMedia": "media-789",
   "createSnapshot": false
@@ -213,7 +241,7 @@ Cookie: payload-token=<session-cookie>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `draftData` | object | no | Partial or full draft field values |
+| `draftData` | object | no | Partial or full draft field values. Rich text `body` field is a Lexical JSON block. |
 | `mainMedia` | string (UUID) | no | Reference to Payload Media ID (top-level relationship) |
 | `createSnapshot` | boolean | no | If true, push current state to versions array |
 
@@ -231,14 +259,14 @@ Cookie: payload-token=<session-cookie>
 
 ---
 
-## DELETE /api/drafting-sessions/:id/lock
+## DELETE /api/ai-drafting/sessions/:id/lock
 
 **Purpose**: Proactively release the session lock (called on user exit/tab close).
 
 ### Request
 
 ```http
-DELETE /api/drafting-sessions/ds-001/lock HTTP/1.1
+DELETE /api/ai-drafting/sessions/ds-001/lock HTTP/1.1
 Cookie: payload-token=<session-cookie>
 ```
 
@@ -250,14 +278,14 @@ Cookie: payload-token=<session-cookie>
 
 ---
 
-## POST /api/drafting-sessions/:id/rollback
+## POST /api/ai-drafting/sessions/:id/rollback
 
 **Purpose**: Rollback the drafting session state to a previous version snapshot on the server side (avoiding client-side JSON/Markdown roundtrips).
 
 ### Request
 
 ```http
-POST /api/drafting-sessions/ds-001/rollback HTTP/1.1
+POST /api/ai-drafting/sessions/ds-001/rollback HTTP/1.1
 Content-Type: application/json
 Cookie: payload-token=<session-cookie>
 ```
@@ -270,7 +298,7 @@ Cookie: payload-token=<session-cookie>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `versionIndex` | number | yes | The index of the version in the snapshots array to roll back to |
+| `versionIndex` | number | yes | The index of the version in the versions array to roll back to |
 
 ### Response
 
@@ -300,7 +328,7 @@ Cookie: payload-token=<session-cookie>
 
 ---
 
-## POST /api/drafting-sessions/:id/promote
+## POST /api/ai-drafting/sessions/:id/promote
 
 **Purpose**: Promote draft to ContentItem and atomically delete the DraftingSession.
 
@@ -309,7 +337,7 @@ Cookie: payload-token=<session-cookie>
 ### Request
 
 ```http
-POST /api/drafting-sessions/ds-001/promote HTTP/1.1
+POST /api/ai-drafting/sessions/ds-001/promote HTTP/1.1
 Content-Type: application/json
 Cookie: payload-token=<session-cookie>
 ```
@@ -339,6 +367,36 @@ Cookie: payload-token=<session-cookie>
 | 401 | `UNAUTHORIZED` | Invalid session |
 | 404 | `NOT_FOUND` | DraftingSession not found |
 | 409 | `INVALID_STATE` | Session is not in `active` status |
+
+---
+
+## POST /api/ai-drafting/sessions/cleanup
+
+**Purpose**: System cleanup endpoint. Transitions sessions with more than 10 minutes of inactivity from `active` to `expired` status to release the single-user lock, and permanently deletes expired DraftingSession records older than 24 hours and AIRateLimits records older than 5 minutes.
+
+### Request
+
+```http
+POST /api/ai-drafting/sessions/cleanup HTTP/1.1
+Content-Type: application/json
+X-Internal-Secret: <secret>
+```
+
+### Response
+
+```json
+{
+  "sessionsExpired": 2,
+  "sessionsPurged": 1,
+  "rateLimitsPurged": 12
+}
+```
+
+### Error Responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | `UNAUTHORIZED` | Missing or invalid `X-Internal-Secret` |
 
 ---
 

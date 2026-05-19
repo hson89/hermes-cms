@@ -102,7 +102,7 @@ event: STATUS_UPDATE
 data: {"status": "generating" | "paused" | "completed" | "failed"}
 ```
 
-**`TOKEN_USAGE`** — Token consumption for audit logging. Note: `estimated_cost` MUST be measured strictly in USD microcents ($1 = 1,000,000 microcents) to ensure billing calculations scale accurately.
+**`TOKEN_USAGE`** — Token consumption for audit logging. Note: `estimated_cost` MUST be measured strictly in USD microdollars ($1 = 1,000,000 microdollars) to ensure billing calculations scale accurately.
 ```
 event: TOKEN_USAGE
 data: {"prompt_tokens": 450, "completion_tokens": 1200, "total_tokens": 1650, "estimated_cost": 3300, "model": "gpt-4o", "provider": "openai", "duration_ms": 3200}
@@ -228,7 +228,7 @@ X-Internal-Secret: <secret>
     "prompt_tokens": 50,
     "completion_tokens": 0,
     "total_tokens": 50,
-    "estimated_cost": 4000000,
+    "estimated_cost": 40000,
     "model": "dall-e-3",
     "provider": "openai",
     "duration_ms": 8500

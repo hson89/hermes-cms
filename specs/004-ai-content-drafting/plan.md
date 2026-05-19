@@ -19,7 +19,8 @@ AI Content Drafting transforms the Hermes AI CMS into a true "AI-First" content 
 **Project Type**: Hybrid web service (monolith + microservice)  
 **Performance Goals**: First token in <2s for field refinements (SC-005), full 500-word draft in <45s (SC-001)  
 **Constraints**: <200ms p95 for auto-save operations, 10 req/min rate limit per user  
-**Cost Calculation**: Computed server-side in `content-authoring-service` (FastAPI) per model parameters and sent in token metadata over SSE, then recorded in USD microcents inside `AIAuditLogs`.  
+**Cost Calculation**: Computed server-side in `content-authoring-service` (FastAPI) per model parameters and sent in token metadata over SSE, then recorded in USD microdollars inside `AIAuditLogs`.  
+**Model Resolution**: Standardized identifiers (e.g., `openai/gpt-4o`) are resolved and dynamically parsed in the Content Authoring Service by splitting into provider and model arguments (e.g. `model_provider="openai"`, `model="gpt-4o"`) for LangChain's `init_chat_model` setup.
 **Scale/Scope**: Multi-tenant SaaS, initial MVP targeting 10–100 concurrent tenants
 
 ## Constitution Check
@@ -28,13 +29,13 @@ AI Content Drafting transforms the Hermes AI CMS into a true "AI-First" content 
 
 | # | Principle | Status | Evidence |
 |---|-----------|--------|----------|
-| I | Multi-tenancy by Default | ✅ PASS | DraftingSession, StyleModifier, and AIAuditLogs collections are logically tenant-scoped via `@payloadcms/plugin-multi-tenant`. Access control enforces isolation. The AIRateLimits collection is globally user-scoped to guarantee sliding window rate compliance across all tenants; all read/write queries to this collection MUST bypass tenant filters programmatically using `overrideAccess: true` in the local API. |
+| I | Multi-tenancy by Default | ✅ PASS | DraftingSessions, StyleModifiers, and AIAuditLogs collections are logically tenant-scoped via their kebab-case slugs ('drafting-sessions', 'style-modifiers', 'ai-audit-logs') registered under `@payloadcms/plugin-multi-tenant`. Access control enforces isolation. The AIRateLimits collection is globally user-scoped to guarantee sliding window rate compliance across all tenants; all read/write queries to this collection MUST bypass tenant filters programmatically using `overrideAccess: true` in the local API. |
 | II | AI as First-Class Citizen | ✅ PASS | The entire feature is the primary AI content creation interface — split-view workspace, conversational drafting, streaming, and tool-based generation. |
 | III | API-First Content Delivery | ✅ PASS | All interactions go through REST API endpoints (SSE streaming, CRUD operations). No server-rendered content pages. |
 | IV | Test-First (TDD) | ✅ PASS | Plan mandates tests before implementation. Test suites defined for drafting service, refine service, collections, and UI components. |
 | V | Developer Experience (DX) | ✅ PASS | Quickstart guide created. Clear file references. Predictable API contracts documented. |
 | VI | Strict DDD | ✅ PASS | New `content_drafting` bounded context in AI service with proper domain/application/infrastructure layering. Value objects (ContentDraft, DraftField) defined. |
-| VII | Hybrid Architecture | ✅ PASS | CMS Engine handles UI + session persistence. AI Service handles LLM orchestration. Communication via REST/SSE with `X-Internal-Secret` auth. |
+| VII | Hybrid Architecture | ✅ PASS | CMS Engine handles UI + session persistence. AI Service handles LLM orchestration. Communication via REST/SSE with inter-service authentication using the `X-Internal-Secret` header validated via the standard `INTERNAL_SECRET` environment variable. |
 
 **Post-Design Re-evaluation**: All gates remain ✅ PASS after Phase 1 design. No violations detected.
 
@@ -96,8 +97,8 @@ apps/content-management-engine/src/
 │           ├── route.ts                # NEW — Collection-level lock checks/creation
 │           ├── cleanup/route.ts        # NEW — Inactivity timeout & expired cleanup cron handler
 │           └── [id]/
-│               ├── route.ts            # NEW — Auto-save updates & version snapshots
-│               ├── lock/route.ts       # NEW — Lock release endpoint
+│               ├── route.ts            # NEW — Auto-save updates, version snapshots, & session deletion (DELETE)
+│               ├── lock/route.ts       # NEW — Lock release endpoint (supporting keepalive/sendBeacon release requests)
 │               ├── rollback/route.ts   # NEW — Server-side version rollback endpoint
 │               └── promote/route.ts    # NEW — Draft → ContentItem promotion
 ├── services/
@@ -115,15 +116,21 @@ apps/content-authoring-service/src/
 ├── application/
 │   ├── ai_service.py               # EXISTING — Schema generation
 │   ├── copilot_service.py          # EXISTING — Section editing
-│   ├── drafting_service.py         # NEW — Content drafting orchestration (with locale)
-│   └── refine_service.py           # NEW — Stateless text refinement (with locale)
+│   ├── drafting_service.py         # NEW — Content drafting orchestration (with locale & AIAgentSession persistence)
+│   └── refine_service.py           # NEW — Stateless text refinement (with locale & 30% length adjustment targets)
 ├── infrastructure/
+│   ├── database.py                 # EXISTING — SQLAlchemy engine, session maker, and Base class
+│   ├── models.py                   # EXISTING — SQLAlchemy entity models (AIAgentSession for conversational context)
+│   ├── repository.py               # EXISTING — Repository layer for AIAgentSession persistence (verified)
 │   ├── tools/                      # NEW — LangChain tools
 │   │   ├── __init__.py
 │   │   ├── image_generator.py      # Image generation tool
 │   │   └── schema_resolver.py      # Schema lookup/creation tool
-│   └── config.py                   # MODIFY — Add image config vars
-└── main.py                         # MODIFY — Register new endpoints
+│   └── config.py                   # MODIFY — Add image config vars & DB connection settings
+├── alembic/                        # EXISTING — Alembic migrations folder for microservice database (port 5433)
+│   ├── env.py
+│   └── versions/                   # Migration scripts including AIAgentSession table
+└── main.py                         # MODIFY — Register new endpoints + add X-Internal-Secret validation middleware
 
 tests/                              # BOTH SERVICES (Content Authoring Service: apps/content-authoring-service/tests/, CMS Engine: apps/content-management-engine/tests/)
 ├── test_drafting_service.py        # AI Service unit tests (under apps/content-authoring-service/tests/)
@@ -132,6 +139,8 @@ tests/                              # BOTH SERVICES (Content Authoring Service: 
 ├── test_image_generator.py         # AI Service unit tests
 ├── collections/
 │   └── test_drafting_sessions.ts   # CMS collection tests (under apps/content-management-engine/tests/collections/)
+├── integration/
+│   └── test_api_proxies.ts         # NEW — Next.js API proxy route integration tests (under apps/content-management-engine/tests/integration/)
 └── e2e/
     └── test_drafting_workspace.spec.ts # Playwright E2E tests (under apps/content-management-engine/tests/e2e/)
 

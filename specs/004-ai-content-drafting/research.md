@@ -110,15 +110,15 @@ async def generate_image(prompt: str, aspect_ratio: str = "16:9") -> dict:
   1. **Database-level unique constraint**: A **partial unique index** on `(tenant, contentType)` WHERE `status = 'active'`. This is the authoritative lock — if two users race to create a session within milliseconds, the DB rejects the second insert with a uniqueness violation, which Payload catches and returns as a 409.
   2. **`beforeChange` hook (advisory)**: A softer check that queries for existing active sessions and returns a user-friendly 409 error message before hitting the DB constraint. This provides a better UX error message but is NOT the sole lock mechanism.
 - **Lock release**: Three mechanisms:
-  1. **Proactive release**: CMS Engine exposes `DELETE /api/drafting-sessions/:id/lock` endpoint, called on `beforeunload` and explicit navigation.
-  2. **Inactivity timeout**: A secure Next.js API route `POST /api/drafting-sessions/cleanup` (protected by `X-Internal-Secret` verification) is called by an external cron scheduler (e.g., Kubernetes CronJob) to query sessions where `lastActivityAt < now() - 10min` and `status = 'active'`, updating their status to `expired`.
-  3. **Cleanup purge**: The same secure `POST /api/drafting-sessions/cleanup` API route runs a query to permanently delete expired sessions where `status = 'expired'` and `updatedAt < now() - 24h`.
+  1. **Proactive release**: CMS Engine exposes `DELETE /api/ai-drafting/sessions/:id/lock` endpoint, called on `beforeunload` and explicit navigation.
+  2. **Inactivity timeout**: A secure Next.js API route `POST /api/ai-drafting/sessions/cleanup` (protected by `X-Internal-Secret` verification) is called by an external cron scheduler (e.g., Kubernetes CronJob) to query sessions where `lastActivityAt < now() - 10min` and `status = 'active'`, updating their status to `expired`.
+  3. **Cleanup purge**: The same secure `POST /api/ai-drafting/sessions/cleanup` API route runs a query to permanently delete expired sessions where `status = 'expired'` and `updatedAt < now() - 24h`.
 
 **State Machine**:
 ```
-[active] --save/publish--> [promoted] --> DELETE
+[active] --save/publish--> DELETE (purged on promote FR-010)
 [active] --10min idle----> [expired]
-[active] --explicit exit-> [released] --> DELETE
+[active] --explicit exit-> DELETE (released)
 [expired] --recover------> [active]
 [expired] --24h----------> DELETE (purged)
 ```
@@ -281,7 +281,7 @@ try {
 - `promptTokens` (number)
 - `completionTokens` (number)
 - `totalTokens` (number)
-- `estimatedCost` (number) — In USD microcents
+- `estimatedCost` (number) — In USD microdollars ($1 = 1,000,000 microdollars)
 - `durationMs` (number) — Request duration
 - `createdAt` (date, auto)
 
@@ -356,10 +356,14 @@ src/app/api/                       # Standard Next.js API routes (outside Payloa
 │   ├── draft/route.ts             # SSE proxy to AI service
 │   ├── refine/route.ts            # Refinement proxy
 │   └── download-image/route.ts    # Image download + Media persist
-└── drafting-sessions/
-    └── [id]/
-        ├── lock/route.ts          # Lock release endpoint
-        └── promote/route.ts       # Draft → ContentItem promotion
+└── ai-drafting/
+    └── sessions/
+        ├── route.ts               # Lock checks & creation
+        ├── cleanup/route.ts       # Cron handler
+        └── [id]/
+            ├── lock/route.ts      # Lock release endpoint
+            ├── rollback/route.ts  # Version rollback
+            └── promote/route.ts   # Draft → ContentItem promotion
 ```
 
 **Rationale**:

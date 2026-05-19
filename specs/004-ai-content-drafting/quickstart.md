@@ -53,8 +53,14 @@ pytest tests/ -v
 
 ### Environment Variables
 
-Add to `apps/content-authoring-service/.env`:
+Add to `apps/content-authoring-service/.env` and `apps/content-management-engine/.env` where appropriate:
 ```env
+# Shared Security Key between CMS and AI Service
+INTERNAL_SECRET=hermes-internal-secret-token-key
+
+# Content Authoring Service Postgres (port 5433)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/hermes_authoring
+
 # Image generation (if using DALL-E)
 OPENAI_API_KEY=sk-...
 
@@ -69,8 +75,8 @@ IMAGE_GENERATION_PROVIDER=openai  # openai | stability | none
 ### 1. Create a DraftingSession
 
 ```bash
-# Via Payload REST API (requires auth cookie)
-curl -X POST http://localhost:3000/api/drafting-sessions \
+# Via Custom Next.js API route (requires auth cookie)
+curl -X POST http://localhost:3000/api/ai-drafting/sessions \
   -H "Content-Type: application/json" \
   -b "payload-token=<your-session-cookie>" \
   -d '{"contentType": "<content-type-id>", "locale": "en"}'
@@ -107,7 +113,7 @@ curl -N -X POST http://localhost:3000/api/ai/refine \
 ### 4. Promote Draft to ContentItem
 
 ```bash
-curl -X POST http://localhost:3000/api/drafting-sessions/<session-id>/promote \
+curl -X POST http://localhost:3000/api/ai-drafting/sessions/<session-id>/promote \
   -H "Content-Type: application/json" \
   -b "payload-token=<your-session-cookie>" \
   -d '{"action": "save"}'
@@ -137,7 +143,7 @@ During development, you can manually trigger the expired session and rate-limit 
 
 ```bash
 # Trigger the secure cleanup API endpoint locally using the internal secret
-curl -X POST http://localhost:3000/api/drafting-sessions/cleanup \
+curl -X POST http://localhost:3000/api/ai-drafting/sessions/cleanup \
   -H "X-Internal-Secret: <your-configured-internal-secret>"
 ```
 
@@ -170,11 +176,15 @@ curl -X POST http://localhost:3000/api/drafting-sessions/cleanup \
 | `src/domain/content_drafting/__init__.py` | **Create** | Bounded context init |
 | `src/domain/content_drafting/models.py` | **Create** | ContentDraft, DraftField value objects |
 | `src/domain/content_drafting/prompts.py` | **Create** | System prompts for content drafting |
-| `src/application/drafting_service.py` | **Create** | Content drafting orchestration service |
+| `src/application/drafting_service.py` | **Create** | Content drafting orchestration service with context continuity |
 | `src/application/refine_service.py` | **Create** | Stateless text refinement service |
+| `src/infrastructure/database.py` | **Verify** | SQLAlchemy database setup (Existing) |
+| `src/infrastructure/models.py` | **Verify** | SQLAlchemy database entity model schemas (including `AIAgentSession`) (Existing) |
+| `src/infrastructure/repository.py` | **Verify** | Repository layer for database persistence (Existing) |
 | `src/infrastructure/tools/__init__.py` | **Create** | LangChain tools package |
 | `src/infrastructure/tools/image_generator.py` | **Create** | Image generation LangChain tool |
 | `src/infrastructure/tools/schema_resolver.py` | **Create** | Schema lookup/creation tool |
-| `src/main.py` | **Modify** | Register new endpoints |
+| `src/main.py` | **Modify** | Register new endpoints + add auth validation middleware |
+| `alembic/versions/` | **Create** | Database migration script mapping the `ai_agent_sessions` table |
 | `tests/test_drafting_service.py` | **Create** | Drafting service unit tests |
 | `tests/test_refine_service.py` | **Create** | Refine service unit tests |
