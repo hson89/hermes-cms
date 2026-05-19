@@ -25,7 +25,7 @@
 - Q: Which User roles within a tenant should be authorized to initiate an AI Content Drafting session, generate content, and perform refinements? → A: All authenticated tenant users (e.g., `admin`, `editor`) who possess content creation/edit permissions are authorized.
 - Q: What rate-limiting or budget-control mechanism should be implemented in the application layer to prevent a single user or tenant from consuming excessive AI API credits and costs? → A: Request-Rate Limiting: Enforce a maximum of 10 AI request/refinement attempts per minute per user, throwing a HTTP 429 when exceeded.
 - Q: What should be the persistence lifecycle of inactive or expired `DraftingSession` entries? When a session is locked out or times out after 10 minutes of inactivity, does the system immediately delete the draft data, or do we retain it for recovery? → A: 24-Hour Recovery Window: Retain the session in an `expired` state for 24 hours to allow recovery, after which a background cleanup job permanently purges it.
-- Q: When a user opens the drafting interface for a schema that has an expired (inactive) but recoverable `DraftingSession` (within the 24-hour retention window), how should the UI handle the recovery flow? → A: Recovery Prompt Dialog: Block the view with a premium dialog: "An unsaved draft was found from [timestamp]. Would you like to resume drafting or start fresh?".
+- Q: When a user opens the drafting interface for a schema that has an expired (inactive) but recoverable `DraftingSession` (within the 24-hour retention window), how should the UI handle the recovery flow? → A: Recovery Prompt Dialog: Block the view with a glassmorphic modal dialog (using extra-diffused shadows, Outfit typography, and gold accents per Alexandria token guidelines): "An unsaved draft was found from [timestamp]. Would you like to resume drafting or start fresh?".
 - Q: How should the system determine and switch between different LLM models/providers (e.g., OpenAI, Anthropic, Gemini) for a drafting session? → A: Tenant Default + User Override: Admin sets a tenant-wide default model, which the editor can optionally override via the drafting sidebar settings using LangChain's dynamic model routing.
 - Q: How should the Content Authoring Service format and serialize the streamed content for the 'Body' field (FR-003, FR-008), given that Payload CMS 3.x utilizes a strict, block-based JSON Lexical editor? → A: Markdown-to-Lexical Conversion: The Content Authoring Service streams standard, clean Markdown, and the CMS Engine **server-side API route** converts the Markdown into Payload's Lexical JSON format using `@payloadcms/richtext-lexical`'s headless editor before persisting to the DraftingSession. The streaming UI renders raw Markdown in a preview component; the final Lexical JSON is produced only on save/auto-save. *(Amended 2026-05-18: Changed from "client-side" to "server-side API route" per R-001 architectural decision — client-side conversion is impractical because it requires shipping the full Lexical editor config and custom server-only node types to the browser.)*
 - Q: What should be the lifecycle of the temporary `DraftingSession` and its version snapshots once the user explicitly clicks "Save" or "Publish" and successfully promotes the draft into a persistent `ContentItem` in the CMS? → A: Atomic Promotion & Purge: The `DraftingSession` and all its 10 associated version snapshots are immediately and permanently deleted upon successful creation/update of the `ContentItem`.
@@ -108,14 +108,14 @@ As a content author, I want to recover my unsaved drafting sessions from network
 
 **Acceptance Scenarios**:
 
-1. **Given** an expired drafting session within the 24-hour recovery window, **When** the user navigates back to the drafting workspace for that schema, **Then** the system blocks the screen with a premium "Recovery Dialog" offering to resume the draft or start fresh.
+1. **Given** an expired drafting session within the 24-hour recovery window, **When** the user navigates back to the drafting workspace for that schema, **Then** the system blocks the screen with a glassmorphic modal "Recovery Dialog" (designed with extra-diffused shadows and Outfit typography per Alexandria token guidelines) offering to resume the draft or start fresh.
 2. **Given** a session with multiple version snapshots, **When** the user selects a historical version from the sidebar version list, **Then** the structured editor rolls back all fields to the matching historical snapshot state.
 
 ---
 
 ### Edge Cases
 
-- **Schema Mismatch**: What happens when the user asks to draft using a schema that doesn't exist? (System dynamically triggers schema creation inline via the `create_schema` tool in the same session, updates the Structured Editor view, and immediately proceeds to draft the content).
+- **Schema Mismatch**: What happens when the user asks to draft using a schema that doesn't exist? (System dynamically triggers schema creation inline via the `schema_resolver` tool in the same session, updates the Structured Editor view, and immediately proceeds to draft the content).
 - **Network Interruptions**: How does the system handle a lost connection during a long "Drafting..." state? (System retains the partially streamed field value in the `DraftingSession` collection and displays a "Stream Interrupted" warning alert with a manual "Regenerate" button, allowing the user to either continue editing the partial content or regenerate the field from scratch).
 - **Tenant Isolation**: How does the AI ensure it only uses knowledge and schemas from the current tenant? (Strict tenant-scoping for all RAG and prompt context).
 - **Concurrent Session Attempt**: When a user attempts to start a drafting session for a schema already being drafted by another user, the system MUST show a "Session in progress" message and prevent entry.
@@ -138,7 +138,7 @@ As a content author, I want to recover my unsaved drafting sessions from network
 - **FR-004**: System MUST provide a global "Pause" control to halt active AI generation streams.
 - **FR-005**: System MUST provide an "AI SUGGESTS" indicator and per-field actions (Edit, Accept, Refresh) for every AI-populated field.
 - **FR-006**: System MUST feature a "Style & Tone" selector that loads options from the tenant-scoped `StyleModifier` collection, allowing brand tone prompts to be dynamically injected into subsequent AI generation requests.
-- **FR-007**: System MUST provide a floating AI action bar for the rich-text editor with "Simplify", "Expand", and "Change Tone" capabilities, alongside a section-level "REFINE ALL" action. These inline refinements MUST be stateless calls that replace highlighted text directly in the client-side editor, which then triggers a standard field-level auto-save to the `DraftingSession` database. The client MUST explicitly pass the active editor locale and selected StyleModifier tone guidelines in the refinement request payload to preserve linguistic and tone consistency.
+- **FR-007**: System MUST provide a floating AI action bar for the rich-text editor with "Simplify", "Expand", and "Change Tone" capabilities, alongside a section-level "REFINE ALL" action (which applies the active StyleModifier tone to all drafted fields in parallel via batched, stateless refinement requests). These inline refinements MUST be stateless calls that replace highlighted text directly in the client-side editor, which then triggers a standard field-level auto-save to the `DraftingSession` database. The client MUST explicitly pass the active editor locale and selected StyleModifier tone guidelines in the refinement request payload to preserve linguistic and tone consistency. To prevent instant rate-limit exhaustion during this concurrent parallel batch refinement, the `/api/ai/refine-all` orchestrator route MUST decrement the user's sliding-window rate limit by only a single token for the entire batch operation, bypassing individual rate-limit checks for the downstream sub-requests sent to the Content Authoring Service.
 - **FR-008**: System MUST support AI-driven image generation for "Main Media" fields based on content context, orchestrated via LangChain tool calling in the `content-authoring-service`, with the Content Management Engine proactively downloading and persisting the generated image directly to the Payload `Media` collection to obtain a permanent local reference.
 - **FR-009**: System MUST support tracking "Versions" of the draft to allow users to navigate through iteration history, implemented as an array of up to 10 snapshot states inside the `DraftingSession` for rollback support.
 - **FR-010**: System MUST maintain drafts exclusively within the temporary `DraftingSession` state; they are NOT persisted to formal `ContentItems` until the user explicitly clicks "Save" or "Publish". Upon successful creation or update of the `ContentItem`, the temporary `DraftingSession` and all its snapshots MUST be atomically and permanently deleted.
@@ -157,20 +157,21 @@ As a content author, I want to recover my unsaved drafting sessions from network
 - **AISuggestion**: A structural value object embedded directly within the `DraftingSession` snapshot array (representing field-level suggestions for refresh/undo actions), rather than a separate database collection.
 - **StyleModifier**: A tenant-scoped Payload CMS collection defining custom brand tone prompts (e.g., Academic, Punchy, Technical) and their corresponding system prompt instructions.
 - **AIAuditLog**: A tenant-scoped Payload CMS collection documenting every AI request, model parameter, token count, cost, and user/session context for compliance and billing purposes.
+- **AIRateLimits**: A database-backed collection for tracking API request rate limits per user across a rolling 60-second window to prevent cost bloat.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can generate a complete 500-word structured draft in under 45 seconds.
-- **SC-002**: 70% of AI-generated titles are accepted by the user without manual modification.
-- **SC-003**: The floating AI bar reduces the time spent on paragraph editing by 30%.
+- **SC-001**: Users can generate a complete 500-word structured draft in under 45 seconds (measured as Time-To-Last-Token (TTLT) of the SSE stream on the network connection).
+- **SC-002 (Outcome KPI - Non-Buildable)**: 70% of AI-generated titles are accepted by the user without manual modification.
+- **SC-003 (Outcome KPI - Non-Buildable)**: The floating AI bar reduces the time spent on paragraph editing by 30%.
 - **SC-004**: All AI interactions must respect tenant boundaries, with 0% cross-tenant data leakage.
 - **SC-005**: Granular field-level AI refinements (e.g., "Simplify") MUST return the first token (Time-to-First-Token) in under 2 seconds.
 
 ## Assumptions
 
 - **Existing AI Service**: Relies on the `content-authoring-service` (FastAPI/LangChain) being functional and accessible.
-- **Schema Availability**: Assumes that at least one Content Type is defined for the tenant before drafting begins.
+- **Schema Availability**: Assumes that content drafting is initiated for an existing schema, or the user utilizes inline co-creation to dynamically define the schema if it does not exist.
 - **Asset Storage**: Assumes the CMS has a configured media provider for storing AI-generated images returned by the `content-authoring-service`.
 - **Auth**: CMS ↔ AI auth via `X-Internal-Secret` as per project rules.

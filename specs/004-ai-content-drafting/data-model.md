@@ -182,13 +182,13 @@ stateDiagram-v2
 ### 3. AIAuditLog (New — Payload CMS Collection)
 
 **Slug**: `ai-audit-logs`  
-**Multi-tenant**: Yes (custom tenant field)  
+**Multi-tenant**: Yes (via `@payloadcms/plugin-multi-tenant`)  
 **Purpose**: Immutable audit trail for every AI request, enabling usage tracking, cost attribution, and compliance.
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `id` | uuid | auto | auto | Primary key |
-| `tenant` | relationship → Tenants | yes | — | Owning tenant |
+| `tenant` | relationship → Tenants | yes | — | Owning tenant (plugin-managed) |
 | `user` | relationship → Users | yes | — | Requesting user |
 | `sessionId` | text | no | — | DraftingSession ID (if applicable) |
 | `requestType` | select | yes | — | `draft`, `refine`, `image-generate`, `schema-create` |

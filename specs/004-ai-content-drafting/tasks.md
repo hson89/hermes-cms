@@ -28,17 +28,21 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 [P] Implement `ai-rate-limits` collection definition in `apps/content-management-engine/src/collections/AIRateLimits/index.ts`
-- [ ] T004 [P] Implement `style-modifiers` collection definition in `apps/content-management-engine/src/collections/StyleModifiers/index.ts`
-- [ ] T005 [P] Implement `ai-audit-logs` collection definition in `apps/content-management-engine/src/collections/AIAuditLogs/index.ts`
-- [ ] T006 [P] Implement Postgres-backed sliding window sliding rate limiter in `apps/content-management-engine/src/services/rate-limiter.ts`
-- [ ] T007 [P] Implement headless Markdown-to-Lexical JSON conversion using Payload utility packages in `apps/content-management-engine/src/services/markdown-to-lexical.ts`
-- [ ] T008 Implement `drafting-sessions` collection definition (complete with partial unique constraint index on active session lock, FIFO 10-version cap hooks, and lastActivityAt updates) in `apps/content-management-engine/src/collections/DraftingSessions/index.ts`
-- [ ] T009 Register new collections `drafting-sessions`, `style-modifiers`, `ai-audit-logs`, and `ai-rate-limits` in central Payload configuration `apps/content-management-engine/src/payload.config.ts`
-- [ ] T010 Run pnpm generators to regenerate typescript types and custom import maps in `apps/content-management-engine/` by running `pnpm payload generate:types` and `pnpm payload generate:importmap`
-- [ ] T011 [P] Implement Pydantic domain entities (`ContentDraft`, `DraftField`) in `apps/content-authoring-service/src/domain/content_drafting/models.py`
-- [ ] T012 [P] Formulate LLM prompts and strict system prompt templates in `apps/content-authoring-service/src/domain/content_drafting/prompts.py`
-- [ ] T013 Create database migrations for the new Python models in `apps/content-authoring-service/` by executing `venv/bin/alembic revision --autogenerate` and `venv/bin/alembic upgrade head`
+- [ ] T003 [P] Write unit and hook validation tests for foundational components (sliding window rate limiter `rate-limiter.ts`, Markdown-to-Lexical converter `markdown-to-lexical.ts`, and DraftingSessions collection hooks) in `apps/content-management-engine/tests/` to guarantee test-first correctness prior to implementation (TDD)
+- [ ] T004 [P] Implement `AIRateLimits` collection definition in `apps/content-management-engine/src/collections/AIRateLimits/index.ts`
+- [ ] T005 [P] Implement `StyleModifiers` collection definition (complete with strict role-based access control policies restricting read/write capabilities strictly to authenticated tenant `admin` and `editor` roles to prevent unauthorized access or cross-tenant leakage) in `apps/content-management-engine/src/collections/StyleModifiers/index.ts`
+- [ ] T006 [P] Implement `AIAuditLogs` collection definition (complete with strict role-based access control policies restricting read access strictly to tenant `admin` and `super-admin` roles for privacy/billing protection, and preventing external write access) in `apps/content-management-engine/src/collections/AIAuditLogs/index.ts`
+- [ ] T007 [P] Implement Postgres-backed sliding window sliding rate limiter in `apps/content-management-engine/src/services/rate-limiter.ts`
+- [ ] T008 [P] Implement headless Markdown-to-Lexical JSON conversion using Payload utility packages in `apps/content-management-engine/src/services/markdown-to-lexical.ts`
+- [ ] T009 Implement `DraftingSessions` collection definition (complete with strict role-based access control policies permitting operations strictly to tenant `admin` and `editor` roles) in `apps/content-management-engine/src/collections/DraftingSessions/index.ts`. Establish individual hook files under `apps/content-management-engine/src/collections/DraftingSessions/hooks/`:
+  - `validateLock.ts` (enforcing single-user active lock unique constraints)
+  - `refreshActivity.ts` (auto-updating lastActivityAt)
+  - `capVersions.ts` (FIFO trimming version history to 10 versions max)
+- [ ] T010 Register new collections `DraftingSessions`, `StyleModifiers`, `AIAuditLogs`, and `AIRateLimits` in central Payload configuration `apps/content-management-engine/src/payload.config.ts`
+- [ ] T011 Run pnpm generators to regenerate typescript types and custom import maps in `apps/content-management-engine/` by running `pnpm payload generate:types` and `pnpm payload generate:importmap`
+- [ ] T011b [P] Generate and run database migrations for newly registered collections and custom indexes (using `pnpm payload migrate:create` and `pnpm payload migrate`) to ensure strict Postgres schema-level multi-tenancy lock indexes are created
+- [ ] T012 [P] Implement Pydantic domain entities (`ContentDraft`, `DraftField`) in `apps/content-authoring-service/src/domain/content_drafting/models.py`
+- [ ] T013 [P] Formulate LLM prompts and strict system prompt templates in `apps/content-authoring-service/src/domain/content_drafting/prompts.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
 
@@ -53,20 +57,22 @@
 ### Tests for User Story 1 (TDD - Write first!)
 
 - [ ] T014 [P] [US1] Write FastAPI unit and mock streaming tests in `apps/content-authoring-service/tests/test_drafting_service.py`
+- [ ] T014b [P] [US1] Write FastAPI unit and mock tests in `apps/content-authoring-service/tests/test_schema_resolver.py` to verify safe, tenant-scoped schema updates via the resolver tool (TDD)
 - [ ] T015 [P] [US1] Write CMS collections and lock validation tests in `apps/content-management-engine/tests/test_drafting_sessions.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Build `schema_resolver` LangChain tool in `apps/content-authoring-service/src/infrastructure/tools/schema_resolver.py`
+- [ ] T016 [P] [US1] Build `schema_resolver` LangChain tool in `apps/content-authoring-service/src/infrastructure/tools/schema_resolver.py` (which makes secure, tenant-scoped schema updates on the CMS Engine's REST endpoints `POST/PATCH /api/content-types` using `X-Internal-Secret` header authentication)
 - [ ] T017 [US1] Implement primary LangChain generation workflow in `apps/content-authoring-service/src/application/drafting_service.py`
 - [ ] T018 [P] [US1] Register FastAPI routing endpoints for `/api/ai/draft` in `apps/content-authoring-service/src/main.py`
-- [ ] T019 [US1] Implement Next.js Custom API Routes outside Payload group: `/api/drafting-sessions` (lock checks), `/api/drafting-sessions/[id]` (auto-save and snapshot updates), and `/api/ai/draft` (SSE relay proxy that handles locale forwarding, receives token counts in the SSE metadata chunk from FastAPI, and writes a tenant-scoped `AIAuditLog` entry upon completion) in `apps/content-management-engine/src/app/api/`
-- [ ] T020 [US1] Register custom admin views routing `/admin/draft/:contentTypeId` in `apps/content-management-engine/src/payload.config.ts`
+- [ ] T019 [US1] Implement Next.js Custom API Routes outside Payload group: `/api/drafting-sessions` (lock checks), `/api/drafting-sessions/[id]` (auto-save and snapshot updates), and `/api/ai/draft` (SSE relay proxy). **CRITICAL SECURITY & LIMITING**: Each route MUST verify the user's active Payload session, enforce strict logical tenant isolation to prevent cross-tenant leakage, and invoke the rate limiter (`rate-limiter.ts`) to throw HTTP 429 if the 10 requests/minute limit is exceeded. The SSE route must relay the stream, capture dynamic tokens in metadata, and write a tenant-scoped `AIAuditLog` entry in `apps/content-management-engine/src/app/api/`
+- [ ] T020 [US1] Register custom admin views routing `/admin/draft/:contentTypeId` in `apps/content-management-engine/src/payload.config.ts` (strictly adhering to Payload 3.x custom components registration rules: Named Exports only, absolute `/src/` pathing starting with `/src/components/views/DraftingWorkspace#DraftingWorkspace`, and lowercase view keys)
 - [ ] T021 [US1] Construct Main Split-View Workspace Component in `apps/content-management-engine/src/components/views/DraftingWorkspace.tsx`
 - [ ] T022 [US1] Implement Chat Interface Panel and sidebar LLM selection triggers in `apps/content-management-engine/src/components/Editor/ChatPanel.tsx`
-- [ ] T023 [US1] Implement structured fields, Rich Text editor wrappers, and suggestion visual indicators in `apps/content-management-engine/src/components/Editor/EditorPanel.tsx`, `apps/content-management-engine/src/components/Editor/FieldRenderer.tsx`, and `apps/content-management-engine/src/components/Editor/AISuggestIndicator.tsx` (ensuring the active editor locale is explicitly forwarded in request headers or payloads to Next.js routes)
+- [ ] T023 [US1] Implement structured fields, Rich Text editor wrappers, and suggestion visual indicators in `apps/content-management-engine/src/components/Editor/EditorPanel.tsx`, `apps/content-management-engine/src/components/Editor/FieldRenderer.tsx`, and `apps/content-management-engine/src/components/Editor/AISuggestIndicator.tsx` (ensuring the active editor locale is forwarded, adding an inline glassmorphic warning alert and manual 'Regenerate' option to handle interrupted streams cleanly, and configuring client-side Lexical Markdown transformers from `@lexical/markdown` for seamless export/import during auto-saves)
+- [ ] T023b [US1] Integrate global "Pause/Cancel" request abort controllers and cleanup pipelines in UI streams (FR-004) to allow users to halt active AI generation streams.
 - [ ] T024 [US1] Add proactive lock release handler `DELETE /api/drafting-sessions/[id]/lock` and register unload listeners in Next.js UI to release locks immediately on exit
-- [ ] T025 [US1] Implement postgres transaction logic mapping fields, creating a `ContentItem`, and atomically dropping `DraftingSession` in Next.js promotion route `apps/content-management-engine/src/app/api/drafting-sessions/[id]/promote/route.ts`
+- [ ] T025 [US1] Implement postgres transaction logic mapping fields, creating a `ContentItem`, and atomically dropping `DraftingSession` in Next.js promotion route `apps/content-management-engine/src/app/api/drafting-sessions/[id]/promote/route.ts`. **SECURITY**: Verify active Payload session and validate user permissions for the matching tenant prior to promoting draft.
 
 **Checkpoint**: User Story 1 is fully functional and testable. Authors can draft, stream fields, auto-save, and save drafts into permanent CMS ContentItems.
 
@@ -86,8 +92,10 @@
 
 - [ ] T027 [US2] Implement stateless tone/text refinement services in `apps/content-authoring-service/src/application/refine_service.py`
 - [ ] T028 [P] [US2] Add FastAPI routing `/api/ai/refine` in `apps/content-authoring-service/src/main.py`
-- [ ] T029 [US2] Create proxy routing endpoint for refinements in Next.js at `apps/content-management-engine/src/app/api/ai/refine/route.ts`
+- [ ] T029 [US2] Create proxy routing endpoint for refinements in Next.js at `apps/content-management-engine/src/app/api/ai/refine/route.ts`. **SECURITY & AUDITING**: Verify user session, enforce strict logical tenant isolation, invoke the rate limiter (`rate-limiter.ts`), and write a tenant-scoped `AIAuditLog` entry detailing token counts and cost estimation upon completion per FR-012.
+- [ ] T029b [US2] Implement section-level parallel 'REFINE ALL' orchestrator logic in `apps/content-management-engine/src/app/api/ai/refine-all/route.ts`. The route MUST validate the active session, decrement the user's rate limit by only a single token for the entire batch operation to prevent rate-limit exhaustion (bypassing individual checks on downstream sub-requests), and trigger concurrent parallel refinement requests to the Content Authoring Service, applying the active StyleModifier tone per FR-007.
 - [ ] T030 [US2] Implement Lexical floating action bar UI component appearing on text selection in `apps/content-management-engine/src/components/Editor/FloatingAIBar.tsx`
+- [ ] T030b [US2] Implement a section-level 'REFINE ALL' UI button in the right-hand Structured Editor of `apps/content-management-engine/src/components/views/DraftingWorkspace.tsx` to trigger the concurrent parallel refinement stream
 - [ ] T031 [US2] Wire "AI SUGGESTS" indicator badge buttons in the Next.js editor to trigger field-level regeneration streaming from the refinement backend
 
 **Checkpoint**: User Story 2 complete. Granular, field-level, and selection-level refinements are functional with immediate inline updates and database auto-saving.
@@ -129,8 +137,8 @@
 
 - [ ] T038 [US4] Implement `image_generator` tool in `apps/content-authoring-service/src/infrastructure/tools/image_generator.py`
 - [ ] T039 [US4] Register and bind `image_generator` tool to `init_chat_model` configurations in `apps/content-authoring-service/src/application/drafting_service.py`
-- [ ] T040 [US4] Implement Next.js streaming API pipeline endpoint in `apps/content-management-engine/src/app/api/ai/download-image/route.ts` using `Readable.fromWeb` piping directly to Payload's Media creation local API
-- [ ] T041 [US4] Add custom image previews and generation actions inside `apps/content-management-engine/src/components/Editor/EditorPanel.tsx` and `apps/content-management-engine/src/components/Editor/FieldRenderer.tsx`
+- [ ] T040 [US4] Implement Next.js streaming API pipeline endpoint in `apps/content-management-engine/src/app/api/ai/download-image/route.ts` using `Readable.fromWeb` piping directly to Payload's Media creation local API. **SECURITY**: Verify active Payload session, validate content edit permissions, and scope media storage strictly to the active tenant.
+- [ ] T041 [US4] Add custom image previews and direct generation actions inside `apps/content-management-engine/src/components/Editor/EditorPanel.tsx` and `apps/content-management-engine/src/components/Editor/FieldRenderer.tsx` (wiring the generation button to internally trigger a chat command message like 'Generate a hero image of [context]' sent directly to the SSE drafting proxy route, preserving the unified tool-calling pipeline)
 
 **Checkpoint**: User Story 4 complete. LangChain tools generate images, which the Next.js backend downloads via streams to prevent memory bloat, updating the editor's upload fields automatically.
 
@@ -149,7 +157,8 @@
 ### Implementation for User Story 5
 
 - [ ] T043 [US5] Implement modal recovery overlay dialog in `apps/content-management-engine/src/components/Editor/RecoveryDialog.tsx`
-- [ ] T044 [US5] Implement inactivity and expired session cleanup trigger via a secure Next.js API route `POST /api/drafting-sessions/cleanup` protected by `X-Internal-Secret` verification
+- [ ] T044 [US5] Implement inactivity and expired session cleanup trigger via a secure Next.js API route `POST /api/drafting-sessions/cleanup` protected by `X-Internal-Secret` verification (which also deletes expired `AIRateLimits` records older than 5 minutes to maintain database health). **CRITICAL**: Enforce secure internal routing headers, restricting execution to system crons.
+- [ ] T044b [US5] Create or update Kubernetes CronJob manifest under `k8s/cron-cleanup-sessions.yaml` (or Next.js cron scheduler config) to trigger the `POST /api/drafting-sessions/cleanup` route securely every 5 minutes in production environments (ensuring the `X-Internal-Secret` header is supplied by fetching the secret securely from the container's environment variables).
 - [ ] T045 [US5] Implement dynamic Version Selector rollback triggers in `apps/content-management-engine/src/components/Editor/EditorPanel.tsx` that replace current fields via PATCH
 
 **Checkpoint**: User Story 5 complete. Sessions recover cleanly from network/idle disruptions, and iteration rollbacks support safe design exploration.
@@ -161,7 +170,6 @@
 **Purpose**: Improvements that affect multiple user stories, visual styling alignment, rate limiting validations, and final E2E test suites.
 
 - [ ] T046 Refine components styling using "Alexandria — High-End Editorial" design tokens (glassmorphism floats, outfit typographic hierarchies, gold accent pills)
-- [ ] T047 Integrate global "Pause/Cancel" request abort controllers and cleanup pipelines in UI streams
 - [ ] T048 Write complete Playwright integration testing suites in `apps/content-management-engine/tests/test_drafting_workspace.spec.ts` (including automated latency verification ensuring the first streamed token for inline refinements is returned in under 2 seconds)
 - [ ] T049 [P] Update technical design documentation files under `docs/` and add comprehensive quickstart guide verification notes
 - [ ] T050 Validate quickstart guidelines, run final verification runs (benchmarking stream generation speed and rate limiter compliance), and confirm linting standards pass locally across both workspaces

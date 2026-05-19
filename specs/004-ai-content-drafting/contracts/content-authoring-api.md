@@ -105,7 +105,7 @@ data: {"status": "generating" | "paused" | "completed" | "failed"}
 **`TOKEN_USAGE`** — Token consumption for audit logging.
 ```
 event: TOKEN_USAGE
-data: {"prompt_tokens": 450, "completion_tokens": 1200, "total_tokens": 1650, "model": "gpt-4o", "provider": "openai", "duration_ms": 3200}
+data: {"prompt_tokens": 450, "completion_tokens": 1200, "total_tokens": 1650, "estimated_cost": 3300, "model": "gpt-4o", "provider": "openai", "duration_ms": 3200}
 ```
 
 **`ERROR`** — Error event.
@@ -180,7 +180,7 @@ event: REFINE_COMPLETE
 data: {"text": "Quantum computing uses special physics to solve problems faster than regular computers.", "instruction": "simplify"}
 
 event: TOKEN_USAGE
-data: {"prompt_tokens": 85, "completion_tokens": 25, "total_tokens": 110, "model": "gpt-4o", "provider": "openai", "duration_ms": 800}
+data: {"prompt_tokens": 85, "completion_tokens": 25, "total_tokens": 110, "estimated_cost": 220, "model": "gpt-4o", "provider": "openai", "duration_ms": 800}
 ```
 
 ### Error Responses
@@ -228,6 +228,7 @@ X-Internal-Secret: <secret>
     "prompt_tokens": 50,
     "completion_tokens": 0,
     "total_tokens": 50,
+    "estimated_cost": 4000000,
     "model": "dall-e-3",
     "provider": "openai",
     "duration_ms": 8500

@@ -21,9 +21,9 @@ Cookie: payload-token=<session-cookie>
 ```json
 {
   "prompt": "Write an article about the future of quantum computing",
-  "contentTypeId": "ct-789",
-  "draftingSessionId": "ds-001",
-  "styleModifierId": "sm-123",
+  "contentType": "ct-789",
+  "draftingSession": "ds-001",
+  "styleModifier": "sm-123",
   "locale": "en",
   "modelOverride": null
 }
@@ -32,9 +32,9 @@ Cookie: payload-token=<session-cookie>
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `prompt` | string | yes | User's natural language instruction |
-| `contentTypeId` | string | yes | ContentType document ID |
-| `draftingSessionId` | string | yes | Active DraftingSession ID |
-| `styleModifierId` | string | null | no | StyleModifier document ID to load |
+| `contentType` | string | yes | ContentType document ID |
+| `draftingSession` | string | yes | Active DraftingSession ID |
+| `styleModifier` | string | null | no | StyleModifier document ID to load |
 | `locale` | string | no | Target locale (default: `en`) |
 | `modelOverride` | string | null | no | LLM model override |
 
@@ -70,8 +70,8 @@ Cookie: payload-token=<session-cookie>
 {
   "text": "The selected paragraph text...",
   "instruction": "simplify",
-  "draftingSessionId": "ds-001",
-  "styleModifierId": null,
+  "draftingSession": "ds-001",
+  "styleModifier": null,
   "locale": "en",
   "modelOverride": null
 }
@@ -143,7 +143,7 @@ Cookie: payload-token=<session-cookie>
 
 ## PATCH /api/drafting-sessions/:id
 
-**Purpose**: Auto-save field updates and version snapshots.
+**Purpose**: Auto-save field updates and version snapshots. The client UI sends the rich-text `body` as a Markdown string. The Next.js server-side route controller automatically converts it to Payload's Lexical JSON format before updating the DraftingSession in Postgres.
 
 ### Request
 
@@ -158,7 +158,7 @@ Cookie: payload-token=<session-cookie>
   "draftData": {
     "title": "The Quantum Leap",
     "slug": "the-quantum-leap",
-    "body": { "root": { "children": [...] } }
+    "body": "# The Quantum Leap\n\nQuantum computing is..."
   },
   "createSnapshot": false
 }
@@ -262,7 +262,7 @@ Cookie: payload-token=<session-cookie>
 {
   "url": "https://provider.com/temp/img-abc123.png",
   "alt_text": "Quantum computing chip",
-  "draftingSessionId": "ds-001"
+  "draftingSession": "ds-001"
 }
 ```
 

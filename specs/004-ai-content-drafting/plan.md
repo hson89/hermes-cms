@@ -87,10 +87,13 @@ apps/content-management-engine/src/
 │   ├── ai/
 │   │   ├── draft/route.ts          # NEW — SSE proxy to AI service
 │   │   ├── refine/route.ts         # NEW — Refinement proxy
+│   │   ├── refine-all/route.ts     # NEW — Batched parallel refinement proxy
 │   │   └── download-image/route.ts # NEW — Image download (streaming pipeline)
 │   └── drafting-sessions/
+│       ├── route.ts                # NEW — Collection-level lock checks/creation
 │       ├── cleanup/route.ts        # NEW — Inactivity timeout & expired cleanup cron handler
 │       └── [id]/
+│           ├── route.ts            # NEW — Auto-save updates & version snapshots
 │           ├── lock/route.ts       # NEW — Lock release endpoint
 │           └── promote/route.ts    # NEW — Draft → ContentItem promotion
 ├── services/

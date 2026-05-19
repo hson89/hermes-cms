@@ -128,7 +128,7 @@ pytest tests/ -v
 
 # Specific test suites
 pytest tests/test_drafting_service.py -v
-pytest tests/test_refine_endpoint.py -v
+pytest tests/test_refine_service.py -v
 ```
 
 ---
