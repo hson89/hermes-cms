@@ -49,50 +49,67 @@ export async function POST(req: NextRequest) {
         }),
       })
 
-      if (!response.ok) return { [field]: current_draft_json[field] } // Fallback to current
+      if (!response.ok) return { field, error: `Failed with status ${response.status}`, data: { [field]: current_draft_json[field] } }
 
       // Parse the stream efficiently
-      if (!response.body) return { [field]: current_draft_json[field] }
+      if (!response.body) return { field, error: 'No response body', data: { [field]: current_draft_json[field] } }
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let resultData = null
       let buffer = ''
+      let parseError = null
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
 
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        
-        // Keep the last line in the buffer as it might be incomplete
-        buffer = lines.pop() || ''
-        
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith('event: REFINE_COMPLETE')) {
-            const dataLine = lines[i + 1]
-            if (dataLine && dataLine.startsWith('data: ')) {
-              try {
-                const parsed = JSON.parse(dataLine.replace('data: ', ''))
-                if (parsed.draft && parsed.draft[field]) {
-                  resultData = parsed.draft[field]
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          
+          // Keep the last line in the buffer as it might be incomplete
+          buffer = lines.pop() || ''
+          
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith('event: REFINE_COMPLETE')) {
+              const dataLine = lines[i + 1]
+              if (dataLine && dataLine.startsWith('data: ')) {
+                try {
+                  const parsed = JSON.parse(dataLine.replace('data: ', ''))
+                  if (parsed.draft && parsed.draft[field]) {
+                    resultData = parsed.draft[field]
+                  }
+                } catch (e) {
+                  parseError = "Failed to parse REFINE_COMPLETE data"
+                  console.error(parseError, e)
                 }
-              } catch (e) {
-                console.error("Failed to parse REFINE_COMPLETE data", e)
+              }
+            } else if (lines[i].startsWith('event: ERROR')) {
+              const dataLine = lines[i + 1]
+              if (dataLine && dataLine.startsWith('data: ')) {
+                parseError = dataLine.replace('data: ', '')
               }
             }
           }
         }
+      } catch (err: any) {
+        parseError = err.message
       }
 
-      return { [field]: resultData || current_draft_json[field] }
+      return { field, error: parseError || (!resultData ? 'No draft data returned' : null), data: { [field]: resultData || current_draft_json[field] } }
     })
 
     const results = await Promise.all(refinementPromises)
-    const combinedDraft = results.reduce((acc, curr) => ({ ...acc, ...curr }), {})
+    const combinedDraft = results.reduce((acc, curr) => ({ ...acc, ...curr.data }), {})
+    const errors = results.filter(r => r.error).map(r => ({ field: r.field, error: r.error }))
 
-    return NextResponse.json({ draft: combinedDraft })
+    const responsePayload: any = { draft: combinedDraft }
+    if (errors.length > 0) {
+      responsePayload.errors = errors
+    }
+
+    return NextResponse.json(responsePayload)
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

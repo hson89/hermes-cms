@@ -91,33 +91,46 @@ class AIService:
     def _llm(self):
         """Return (or create) the LangChain chat model instance."""
         if self.__llm is None:
-            if settings.LANGCHAIN_MODEL_PROVIDER == "nvidia":
-                from langchain_nvidia_ai_endpoints import ChatNVIDIA
-                kwargs = {
-                    "model": settings.LANGCHAIN_MODEL,
-                    "api_key": settings.NVIDIA_API_KEY,
-                    "temperature": settings.NVIDIA_TEMPERATURE,
-                    "top_p": settings.NVIDIA_TOP_P,
-                    "max_tokens": settings.NVIDIA_MAX_TOKENS,
-                    "model_kwargs": {
-                        "reasoning_budget": settings.NVIDIA_REASONING_BUDGET,
-                        "chat_template_kwargs": {"enable_thinking": settings.NVIDIA_ENABLE_THINKING},
-                    },
-                }
-                if settings.LANGCHAIN_ENDPOINT_URL and "11434" not in settings.LANGCHAIN_ENDPOINT_URL:
-                    kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
-                self.__llm = ChatNVIDIA(**kwargs)
-            else:
-                kwargs = {}
-                if settings.LANGCHAIN_ENDPOINT_URL:
-                    kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
-
-                self.__llm = init_chat_model(
-                    model=settings.LANGCHAIN_MODEL,
-                    model_provider=settings.LANGCHAIN_MODEL_PROVIDER,
-                    **kwargs,
-                )
+            self.__llm = self.get_model()
         return self.__llm
+
+    def get_model(self, model_override: str | None = None):
+        """Return a configured LangChain chat model, optionally overriding the default."""
+        provider = settings.LANGCHAIN_MODEL_PROVIDER
+        model_name = settings.LANGCHAIN_MODEL
+
+        if model_override:
+            if "/" in model_override:
+                provider, model_name = model_override.split("/", 1)
+            else:
+                model_name = model_override
+
+        if provider == "nvidia":
+            from langchain_nvidia_ai_endpoints import ChatNVIDIA
+            kwargs = {
+                "model": model_name,
+                "api_key": settings.NVIDIA_API_KEY,
+                "temperature": settings.NVIDIA_TEMPERATURE,
+                "top_p": settings.NVIDIA_TOP_P,
+                "max_tokens": settings.NVIDIA_MAX_TOKENS,
+                "model_kwargs": {
+                    "reasoning_budget": settings.NVIDIA_REASONING_BUDGET,
+                    "chat_template_kwargs": {"enable_thinking": settings.NVIDIA_ENABLE_THINKING},
+                },
+            }
+            if settings.LANGCHAIN_ENDPOINT_URL and "11434" not in settings.LANGCHAIN_ENDPOINT_URL:
+                kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
+            return ChatNVIDIA(**kwargs)
+        else:
+            kwargs = {}
+            if settings.LANGCHAIN_ENDPOINT_URL:
+                kwargs["base_url"] = settings.LANGCHAIN_ENDPOINT_URL
+
+            return init_chat_model(
+                model=model_name,
+                model_provider=provider,
+                **kwargs,
+            )
 
     # ── Schema Generation ──────────────────────────────────────────────────
  
