@@ -131,6 +131,44 @@ class SessionMessageRequest(BaseModel):
         return v.strip()
 
 
+class DraftRequest(BaseModel):
+    """Payload for POST /api/ai/draft."""
+
+    prompt: str
+    content_type_slug: str
+    content_schema: dict
+    tenant_id: str
+    user_id: str
+    locale: str = "en"
+    style_modifier_id: str | None = None
+    style_modifier_prompt: str | None = None
+
+    @field_validator("tenant_id", "user_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
+
+
+class RefineRequest(BaseModel):
+    """Payload for POST /api/ai/refine."""
+
+    prompt: str
+    current_draft_json: dict
+    content_schema: dict
+    tenant_id: str
+    user_id: str
+    locale: str = "en"
+
+    @field_validator("tenant_id", "user_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
+
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 
@@ -138,6 +176,67 @@ class SessionMessageRequest(BaseModel):
 async def health() -> dict:
     """Health check endpoint."""
     return {"status": "ok", "service": "content-authoring-service"}
+
+
+@app.post(
+    "/api/ai/draft",
+    tags=["AI Drafting"],
+    summary="Generate a full content draft",
+    dependencies=[Security(_require_internal_secret)],
+)
+async def generate_draft(body: DraftRequest, request: Request) -> StreamingResponse:
+    """
+    Generate a full content draft from a natural language prompt.
+    Returns a stream of tokens for the explanation/thought process,
+    followed by the final JSON draft.
+    """
+    from src.application.drafting_service import DraftingService  # noqa: PLC0415
+
+    drafting_service = DraftingService(request.app.state.ai_service)
+
+    async def event_generator():
+        async for event in drafting_service.generate_draft_stream(
+            prompt=body.prompt,
+            content_type_slug=body.content_type_slug,
+            schema_json=body.content_schema,
+            tenant_id=body.tenant_id,
+            user_id=body.user_id,
+            locale=body.locale,
+            style_modifier_id=body.style_modifier_id,
+        ):
+            yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.post(
+    "/api/ai/refine",
+    tags=["AI Drafting"],
+    summary="Refine an existing content draft",
+    dependencies=[Security(_require_internal_secret)],
+)
+async def refine_draft(body: RefineRequest, request: Request) -> StreamingResponse:
+    """
+    Refine an existing content draft based on user feedback.
+    Returns a stream of tokens for the explanation, followed by updated JSON.
+    """
+    from src.application.refine_service import RefineService  # noqa: PLC0415
+
+    refine_service = RefineService(request.app.state.ai_service)
+
+    async def event_generator():
+        async for event in refine_service.refine_draft_stream(
+            prompt=body.prompt,
+            current_draft_json=body.current_draft_json,
+            schema_json=body.content_schema,
+            tenant_id=body.tenant_id,
+            user_id=body.user_id,
+            db=request.state.db,
+            locale=body.locale,
+        ):
+            yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @app.post(

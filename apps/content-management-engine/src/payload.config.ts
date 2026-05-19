@@ -14,6 +14,10 @@ import { HostedSites } from './collections/HostedSites'
 import { AuditLogs } from './collections/AuditLogs'
 import { Media } from './collections/Media'
 import { AIPromptHistory } from './collections/AIPromptHistory'
+import { DraftingSessions } from './collections/DraftingSessions'
+import { StyleModifiers } from './collections/StyleModifiers'
+import { AIAuditLogs } from './collections/AIAuditLogs'
+import { AIRateLimits } from './collections/AIRateLimits'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -35,12 +39,30 @@ export default buildConfig({
         login: {
           Component: '/src/components/views/LoginPage#LoginPage',
         },
+        drafting: {
+          Component: '/src/components/views/DraftingWorkspace#DraftingWorkspace',
+          path: '/draft/:contentTypeId',
+        },
       },
       Nav: '/src/components/admin/Nav#Nav',
       header: ['/src/components/admin/Header#Header'] as any,
     },
   },
-  collections: [Tenants, Users, ContentTypes, ContentItems, HostedSites, Media, AuditLogs, APIKeys, AIPromptHistory],
+  collections: [
+    Tenants,
+    Users,
+    ContentTypes,
+    ContentItems,
+    HostedSites,
+    Media,
+    AuditLogs,
+    APIKeys,
+    AIPromptHistory,
+    DraftingSessions,
+    StyleModifiers,
+    AIAuditLogs,
+    AIRateLimits,
+  ],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || 'YOUR_SECRET_HERE',
   db: postgresAdapter({
@@ -59,6 +81,9 @@ export default buildConfig({
         'audit-logs': { customTenantField: true },
         'hosted-sites': { customTenantField: true },
         'ai-prompt-history': {},
+        'drafting-sessions': {},
+        'style-modifiers': {},
+        'ai-audit-logs': {},
       } as any,
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => {

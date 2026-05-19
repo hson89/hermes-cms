@@ -21,11 +21,17 @@ class Settings(BaseSettings):
 
     # Security
     INTERNAL_SERVICE_SECRET: str = ""
+    CMS_ENGINE_URL: str = "http://localhost:3000"
 
     # LLM Configuration
     LANGCHAIN_MODEL_PROVIDER: str = "openai"
     LANGCHAIN_MODEL: str = "gpt-4o-mini"
     LANGCHAIN_ENDPOINT_URL: str | None = None
+
+    # Image Configuration
+    IMAGE_MODEL_PROVIDER: str = "openai"
+    IMAGE_MODEL: str = "dall-e-3"
+    IMAGE_ENDPOINT_URL: str | None = None
 
     # NVIDIA Configuration
     NVIDIA_TEMPERATURE: float = 0.6

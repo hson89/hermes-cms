@@ -77,6 +77,10 @@ export interface Config {
     'audit-logs': AuditLog;
     'api-keys': ApiKey;
     'ai-prompt-history': AiPromptHistory;
+    'drafting-sessions': DraftingSession;
+    'style-modifiers': StyleModifier;
+    'ai-audit-logs': AiAuditLog;
+    'ai-rate-limits': AiRateLimit;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -93,6 +97,10 @@ export interface Config {
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'api-keys': ApiKeysSelect<false> | ApiKeysSelect<true>;
     'ai-prompt-history': AiPromptHistorySelect<false> | AiPromptHistorySelect<true>;
+    'drafting-sessions': DraftingSessionsSelect<false> | DraftingSessionsSelect<true>;
+    'style-modifiers': StyleModifiersSelect<false> | StyleModifiersSelect<true>;
+    'ai-audit-logs': AiAuditLogsSelect<false> | AiAuditLogsSelect<true>;
+    'ai-rate-limits': AiRateLimitsSelect<false> | AiRateLimitsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -166,6 +174,8 @@ export interface Tenant {
   status: 'active' | 'suspended' | 'archived';
   tier: 'standard' | 'premium' | 'enterprise';
   defaultLocale: 'en' | 'es' | 'fr' | 'de';
+  defaultLLMModel?: ('openai/gpt-4o' | 'anthropic/claude-3-5-sonnet' | 'google/gemini-2.5-flash') | null;
+  defaultImageModel?: 'openai/dall-e-3' | null;
   /**
    * Hostnames mapped to this tenant for branded access.
    */
@@ -340,7 +350,6 @@ export interface ContentItem {
  */
 export interface HostedSite {
   id: number;
-  tenant?: (number | null) | Tenant;
   name: string;
   template: 'nextjs-blog' | 'astro-portfolio';
   /**
@@ -349,6 +358,7 @@ export interface HostedSite {
   domain?: string | null;
   status?: ('pending' | 'deploying' | 'active' | 'failed') | null;
   deployedUrl?: string | null;
+  tenant: number | Tenant;
   updatedAt: string;
   createdAt: string;
 }
@@ -406,6 +416,10 @@ export interface ApiKey {
    */
   label: string;
   /**
+   * Identifier email address associated with this API key.
+   */
+  email: string;
+  /**
    * Optional expiry date. Leave empty for no expiry.
    */
   expiresAt?: string | null;
@@ -414,21 +428,6 @@ export interface ApiKey {
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
   collection: 'api-keys';
 }
 /**
@@ -462,6 +461,88 @@ export interface AiPromptHistory {
   user: number | User;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "drafting-sessions".
+ */
+export interface DraftingSession {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  user: number | User;
+  contentType: number | ContentType;
+  status: 'active' | 'expired';
+  draftData:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  mainMedia?: (number | null) | Media;
+  activeLocale: string;
+  selectedModel?: string | null;
+  lastActivityAt: string;
+  versions?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "style-modifiers".
+ */
+export interface StyleModifier {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  description?: string | null;
+  systemPrompt: string;
+  isDefault?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-audit-logs".
+ */
+export interface AiAuditLog {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  user: number | User;
+  session?: (number | null) | DraftingSession;
+  requestType: 'draft' | 'refine' | 'image-generate' | 'schema-create';
+  prompt?: string | null;
+  model: string;
+  provider: string;
+  promptTokens?: number | null;
+  completionTokens?: number | null;
+  totalTokens?: number | null;
+  estimatedCost?: number | null;
+  durationMs?: number | null;
+  status: 'success' | 'error' | 'timeout';
+  errorMessage?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-rate-limits".
+ */
+export interface AiRateLimit {
+  id: number;
+  userId: string;
+  timestamp: string;
+  requestPath: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -522,6 +603,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ai-prompt-history';
         value: number | AiPromptHistory;
+      } | null)
+    | ({
+        relationTo: 'drafting-sessions';
+        value: number | DraftingSession;
+      } | null)
+    | ({
+        relationTo: 'style-modifiers';
+        value: number | StyleModifier;
+      } | null)
+    | ({
+        relationTo: 'ai-audit-logs';
+        value: number | AiAuditLog;
+      } | null)
+    | ({
+        relationTo: 'ai-rate-limits';
+        value: number | AiRateLimit;
       } | null);
   globalSlug?: string | null;
   user:
@@ -585,6 +682,8 @@ export interface TenantsSelect<T extends boolean = true> {
   status?: T;
   tier?: T;
   defaultLocale?: T;
+  defaultLLMModel?: T;
+  defaultImageModel?: T;
   domains?:
     | T
     | {
@@ -667,12 +766,12 @@ export interface ContentItemsSelect<T extends boolean = true> {
  * via the `definition` "hosted-sites_select".
  */
 export interface HostedSitesSelect<T extends boolean = true> {
-  tenant?: T;
   name?: T;
   template?: T;
   domain?: T;
   status?: T;
   deployedUrl?: T;
+  tenant?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -716,26 +815,13 @@ export interface AuditLogsSelect<T extends boolean = true> {
 export interface ApiKeysSelect<T extends boolean = true> {
   tenant?: T;
   label?: T;
+  email?: T;
   expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;
   apiKey?: T;
   apiKeyIndex?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -748,6 +834,68 @@ export interface AiPromptHistorySelect<T extends boolean = true> {
   user?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "drafting-sessions_select".
+ */
+export interface DraftingSessionsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  contentType?: T;
+  status?: T;
+  draftData?: T;
+  mainMedia?: T;
+  activeLocale?: T;
+  selectedModel?: T;
+  lastActivityAt?: T;
+  versions?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "style-modifiers_select".
+ */
+export interface StyleModifiersSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  description?: T;
+  systemPrompt?: T;
+  isDefault?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-audit-logs_select".
+ */
+export interface AiAuditLogsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  session?: T;
+  requestType?: T;
+  prompt?: T;
+  model?: T;
+  provider?: T;
+  promptTokens?: T;
+  completionTokens?: T;
+  totalTokens?: T;
+  estimatedCost?: T;
+  durationMs?: T;
+  status?: T;
+  errorMessage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-rate-limits_select".
+ */
+export interface AiRateLimitsSelect<T extends boolean = true> {
+  userId?: T;
+  timestamp?: T;
+  requestPath?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
