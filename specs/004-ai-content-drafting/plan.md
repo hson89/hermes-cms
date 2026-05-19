@@ -12,14 +12,14 @@ AI Content Drafting transforms the Hermes AI CMS into a true "AI-First" content 
 ## Technical Context
 
 **Language/Version**: TypeScript 6.0+ (CMS Engine), Python 3.14+ (Content Authoring Service)  
-**Primary Dependencies**: Payload CMS 3.84+, Next.js 16.2+, React 19.2+, FastAPI 0.136+, LangChain 1.2+, `@payloadcms/richtext-lexical`  
+**Primary Dependencies**: Payload CMS 3.84+, Next.js 16.2+, React 19.2+, FastAPI 0.136+, LangChain 1.2+, `@payloadcms/richtext-lexical`, `@lexical/markdown`  
 **Storage**: PostgreSQL 18 (port 5432 — CMS Engine), PostgreSQL 18 (port 5433 — Authoring Service)  
 **Testing**: Jest 30 / Playwright 1.59 (CMS Engine), pytest 8.4+ (Authoring Service)  
 **Target Platform**: Linux server (Docker/Kubernetes)  
 **Project Type**: Hybrid web service (monolith + microservice)  
 **Performance Goals**: First token in <2s for field refinements (SC-005), full 500-word draft in <45s (SC-001)  
 **Constraints**: <200ms p95 for auto-save operations, 10 req/min rate limit per user  
-**Cost Calculation**: Computed server-side in `content-authoring-service` (FastAPI) per model parameters and sent in token metadata over SSE, then recorded in USD microcents inside `AIAuditLog`.  
+**Cost Calculation**: Computed server-side in `content-authoring-service` (FastAPI) per model parameters and sent in token metadata over SSE, then recorded in USD microcents inside `AIAuditLogs`.  
 **Scale/Scope**: Multi-tenant SaaS, initial MVP targeting 10–100 concurrent tenants
 
 ## Constitution Check
@@ -28,7 +28,7 @@ AI Content Drafting transforms the Hermes AI CMS into a true "AI-First" content 
 
 | # | Principle | Status | Evidence |
 |---|-----------|--------|----------|
-| I | Multi-tenancy by Default | ✅ PASS | DraftingSession, StyleModifier, and AIAuditLog collections are logically tenant-scoped via `@payloadcms/plugin-multi-tenant`. Access control enforces isolation. The AIRateLimits collection is globally user-scoped to guarantee sliding window rate compliance across all tenants. |
+| I | Multi-tenancy by Default | ✅ PASS | DraftingSession, StyleModifier, and AIAuditLogs collections are logically tenant-scoped via `@payloadcms/plugin-multi-tenant`. Access control enforces isolation. The AIRateLimits collection is globally user-scoped to guarantee sliding window rate compliance across all tenants; all read/write queries to this collection MUST bypass tenant filters programmatically using `overrideAccess: true` in the local API. |
 | II | AI as First-Class Citizen | ✅ PASS | The entire feature is the primary AI content creation interface — split-view workspace, conversational drafting, streaming, and tool-based generation. |
 | III | API-First Content Delivery | ✅ PASS | All interactions go through REST API endpoints (SSE streaming, CRUD operations). No server-rendered content pages. |
 | IV | Test-First (TDD) | ✅ PASS | Plan mandates tests before implementation. Test suites defined for drafting service, refine service, collections, and UI components. |
@@ -63,14 +63,16 @@ apps/content-management-engine/src/
 │   ├── DraftingSessions/          # NEW — DraftingSession collection + hooks
 │   │   ├── index.ts
 │   │   └── hooks/
-│   │       ├── validateLock.ts    # Single-user lock + DB unique constraint
+│   │       ├── validateLock.ts    # Single-user lock + DB unique constraint (status='active')
 │   │       ├── refreshActivity.ts # Auto-update lastActivityAt
 │   │       └── capVersions.ts     # FIFO trim versions to 10
 │   ├── StyleModifiers/            # NEW — Tenant-scoped tone/style collection
 │   │   └── index.ts
 │   ├── AIAuditLogs/               # NEW — Immutable AI usage audit log
 │   │   └── index.ts
-│   └── AIRateLimits/              # NEW — Postgres-backed rate limit tracking
+│   ├── AIRateLimits/              # NEW — Postgres-backed rate limit tracking (system RBAC only)
+│   │   └── index.ts
+│   └── Tenants/                   # MODIFY — Add defaultLLMModel field for tenant-wide AI config
 │       └── index.ts
 ├── components/
 │   ├── views/
@@ -99,20 +101,20 @@ apps/content-management-engine/src/
 ├── services/
 │   ├── rate-limiter.ts             # NEW — Postgres-backed sliding window limiter
 │   └── markdown-to-lexical.ts      # NEW — Markdown → Lexical JSON conversion
-└── payload.config.ts               # MODIFY — Register new collections + view
+└── payload.config.ts               # MODIFY — Register new collections (with multi-tenant isolation) + view
 
 apps/content-authoring-service/src/
 ├── domain/
 │   ├── ai_agent_session/           # EXISTING — Schema generation context
-│   └── content_drafting/           # NEW — Content drafting bounded context
+│   └── content_drafting/           # NEW — Content drafting bounded context (with locale parameter)
 │       ├── __init__.py
 │       ├── models.py               # ContentDraft, DraftField value objects
 │       └── prompts.py              # System prompts for content drafting
 ├── application/
 │   ├── ai_service.py               # EXISTING — Schema generation
 │   ├── copilot_service.py          # EXISTING — Section editing
-│   ├── drafting_service.py         # NEW — Content drafting orchestration
-│   └── refine_service.py           # NEW — Stateless text refinement
+│   ├── drafting_service.py         # NEW — Content drafting orchestration (with locale)
+│   └── refine_service.py           # NEW — Stateless text refinement (with locale)
 ├── infrastructure/
 │   ├── tools/                      # NEW — LangChain tools
 │   │   ├── __init__.py
@@ -121,11 +123,18 @@ apps/content-authoring-service/src/
 │   └── config.py                   # MODIFY — Add image config vars
 └── main.py                         # MODIFY — Register new endpoints
 
-tests/                              # BOTH SERVICES
-├── test_drafting_service.py        # AI Service unit tests
+tests/                              # BOTH SERVICES (Content Authoring Service: apps/content-authoring-service/tests/, CMS Engine: apps/content-management-engine/tests/)
+├── test_drafting_service.py        # AI Service unit tests (under apps/content-authoring-service/tests/)
 ├── test_refine_service.py          # AI Service unit tests
-├── test_drafting_sessions.ts       # CMS collection tests
-└── test_drafting_workspace.spec.ts # Playwright E2E tests
+├── test_schema_resolver.py         # AI Service unit tests
+├── test_image_generator.py         # AI Service unit tests
+├── collections/
+│   └── test_drafting_sessions.ts   # CMS collection tests (under apps/content-management-engine/tests/collections/)
+└── e2e/
+    └── test_drafting_workspace.spec.ts # Playwright E2E tests (under apps/content-management-engine/tests/e2e/)
+
+k8s/                                # DEPLOYMENT INFRASTRUCTURE
+└── cron-cleanup-sessions.yaml      # NEW — CronJob to clean up expired sessions and rate limits
 ```
 
 **Structure Decision**: Follows the existing hybrid architecture — CMS Engine monolith for UI/collections/session management, Content Authoring Service microservice for AI orchestration. New files are co-located with existing patterns (collections alongside existing collections, services alongside existing services, DDD layers maintained in the AI service). Custom API routes are placed under `app/api/` (standard Next.js convention), NOT inside the `app/(payload)/api/` group, to avoid conflicts with Payload's `[...slug]` catch-all route.

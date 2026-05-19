@@ -8,7 +8,7 @@
 
 ## POST /api/ai/draft
 
-**Purpose**: CMS proxy endpoint. Validates Payload auth, enforces rate limiting, acquires session lock, then proxies to the Content Authoring Service's `/api/ai/draft` endpoint as an SSE relay.
+**Purpose**: CMS proxy endpoint. Validates Payload auth, enforces global rate limiting (enforced via database checks using `overrideAccess: true` to prevent tenant switching bypasses), acquires session lock, then proxies to the Content Authoring Service's `/api/ai/draft` endpoint as an SSE relay. The proxy actively monitors connection closure (`req.on('close')`) to send an abort signal to the microservice to prevent runaway LLM costs if the user leaves the page.
 
 ### Request
 
@@ -56,7 +56,7 @@ Same event types as Content Authoring Service (see `content-authoring-api.md`).
 
 ## POST /api/ai/refine
 
-**Purpose**: CMS proxy for stateless inline text refinement. Rate-limited.
+**Purpose**: CMS proxy for stateless inline text refinement. Enforces global rate limiting using the `overrideAccess: true` option on `AIRateLimits`.
 
 ### Request
 
@@ -80,6 +80,52 @@ Cookie: payload-token=<session-cookie>
 ### Response (SSE Stream — Proxied)
 
 Same event types as Content Authoring Service refine endpoint.
+
+### Error Responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | `UNAUTHORIZED` | Invalid session |
+| 429 | `RATE_LIMITED` | Exceeded 10 requests/minute |
+
+---
+
+## POST /api/ai/refine-all
+
+**Purpose**: Batched parallel text refinement for all fields in the draft. Validates user session, decrements rate limit by a single token (using `overrideAccess: true` to bypass tenant-scoping filters on `AIRateLimits`), and triggers parallel stateless refinement requests to the Content Authoring Service, applying the active StyleModifier tone. Returns a merged SSE stream of delta updates per field, and logs a single aggregated `AIAuditLogs` entry with total token and cost summation upon completion.
+
+### Request
+
+```http
+POST /api/ai/refine-all HTTP/1.1
+Content-Type: application/json
+Cookie: payload-token=<session-cookie>
+```
+
+```json
+{
+  "fields": {
+    "title": "Supercomputer generation",
+    "body": "The supercomputer leverages quantum principles..."
+  },
+  "draftingSession": "ds-001",
+  "styleModifier": "sm-123",
+  "locale": "en",
+  "modelOverride": null
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fields` | object | yes | Key-value pairs representing field names and their current draft values to refine |
+| `draftingSession` | string | yes | Active DraftingSession ID |
+| `styleModifier` | string | null | no | StyleModifier document ID to apply to all fields |
+| `locale` | string | no | Target locale (default: `en`) |
+| `modelOverride` | string | null | no | LLM model override |
+
+### Response (SSE Stream — Proxied)
+
+Streams field-level updates concurrently. Same event structure as `POST /api/ai/draft` (e.g., `FIELD_START`, `TEXT_DELTA`, `FIELD_COMPLETE`), ending with an aggregated `TOKEN_USAGE` event summarizing the total batch performance.
 
 ### Error Responses
 

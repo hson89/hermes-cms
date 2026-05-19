@@ -102,7 +102,7 @@ event: STATUS_UPDATE
 data: {"status": "generating" | "paused" | "completed" | "failed"}
 ```
 
-**`TOKEN_USAGE`** — Token consumption for audit logging.
+**`TOKEN_USAGE`** — Token consumption for audit logging. Note: `estimated_cost` MUST be measured strictly in USD microcents ($1 = 1,000,000 microcents) to ensure billing calculations scale accurately.
 ```
 event: TOKEN_USAGE
 data: {"prompt_tokens": 450, "completion_tokens": 1200, "total_tokens": 1650, "estimated_cost": 3300, "model": "gpt-4o", "provider": "openai", "duration_ms": 3200}

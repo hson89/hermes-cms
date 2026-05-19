@@ -85,8 +85,8 @@ curl -N -X POST http://localhost:3000/api/ai/draft \
   -b "payload-token=<your-session-cookie>" \
   -d '{
     "prompt": "Write an article about sustainable energy",
-    "contentTypeId": "<content-type-id>",
-    "draftingSessionId": "<session-id>",
+    "contentType": "<content-type-id>",
+    "draftingSession": "<session-id>",
     "locale": "en"
   }'
 ```
@@ -100,7 +100,7 @@ curl -N -X POST http://localhost:3000/api/ai/refine \
   -d '{
     "text": "Solar energy is good for the environment.",
     "instruction": "expand",
-    "draftingSessionId": "<session-id>"
+    "draftingSession": "<session-id>"
   }'
 ```
 
@@ -129,6 +129,16 @@ pytest tests/ -v
 # Specific test suites
 pytest tests/test_drafting_service.py -v
 pytest tests/test_refine_service.py -v
+```
+
+### Local Session & Rate-Limit Cleanup
+
+During development, you can manually trigger the expired session and rate-limit database cleanup cron endpoint to release stale locks or reset test states.
+
+```bash
+# Trigger the secure cleanup API endpoint locally using the internal secret
+curl -X POST http://localhost:3000/api/drafting-sessions/cleanup \
+  -H "X-Internal-Secret: <your-configured-internal-secret>"
 ```
 
 ---

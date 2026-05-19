@@ -9,7 +9,7 @@
 ## View Registration
 
 **Route**: Custom admin view registered in `payload.config.ts`  
-**Path**: `/admin/draft/:contentTypeId`  
+**Path**: `/draft/:contentTypeId` (Registered relative to admin prefix in config to prevent duplicate prefixing `/admin/admin/draft`)  
 **Component**: `/src/components/views/DraftingWorkspace#DraftingWorkspace`
 
 ---
@@ -109,7 +109,7 @@ DraftingWorkspace (split-view container)
 | Style | Modal overlay with extra-diffused shadow (24-40px blur) |
 | Content | Timestamp of expired session, two action buttons |
 | Resume | Primary gradient button |
-| Start Fresh | Secondary surface-high button |
+| Start Fresh | Secondary surface-high button (triggers `DELETE /api/drafting-sessions/[id]` to permanently purge the expired session) |
 
 ---
 
