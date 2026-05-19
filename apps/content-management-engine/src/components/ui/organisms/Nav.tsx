@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
-import { Icon } from '../ui/atoms/Icon'
+import { Icon } from '../atoms/Icon'
 
 export const Nav: React.FC<any> = () => {
   const pathname = usePathname()

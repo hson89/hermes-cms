@@ -9,7 +9,7 @@ import { isRateLimited } from '@/services/rate-limiter'
  * Satisfies T019, FR-012.
  */
 export async function POST(req: NextRequest) {
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
 
   if (!user) {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate limiting check
-  if (await isRateLimited(user.id, payload)) {
+  if (await isRateLimited(String(user.id), payload)) {
     return new Response('Too Many Requests', { status: 429 })
   }
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         errorMessage: error,
         durationMs: Date.now() - startTime,
         styleModifier: body.style_modifier_id,
-      },
+      } as any,
       overrideAccess: true,
     })
     return new Response(error, { status: response.status })
@@ -146,33 +146,10 @@ export async function POST(req: NextRequest) {
           completionTokens,
           totalTokens,
           styleModifier: body.style_modifier_id,
-        },
+        } as any,
         overrideAccess: true,
       })
     },
-    async cancel(reason) {
-      // Log cancellation
-      await payload.create({
-        collection: 'ai-audit-logs',
-        data: {
-          user: user.id,
-          tenant: tenantId,
-          session: body.sessionId,
-          requestType: 'draft',
-          prompt: body.prompt,
-          model: modelName || modelProvider,
-          provider: modelProvider,
-          status: 'error',
-          errorMessage: `Stream cancelled: ${reason}`,
-          durationMs: Date.now() - startTime,
-          promptTokens,
-          completionTokens,
-          totalTokens,
-          styleModifier: body.style_modifier_id,
-        },
-        overrideAccess: true,
-      })
-    }
   })
 
   return new Response(stream.pipeThrough(loggingStream), {

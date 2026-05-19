@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
 import React from 'react'
-import { Icon } from '../ui/atoms/Icon'
+import { Icon } from '../atoms/Icon'
 import { useStepNav } from '@payloadcms/ui'
 import { usePathname } from 'next/navigation'
 
@@ -24,7 +24,7 @@ export const Header: React.FC = () => {
   }
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-72 h-16 z-40 bg-surface-bright/80 backdrop-blur-xl flex justify-between items-center px-8 shadow-[0_1px_4px_rgba(0,0,0,0.01)] transition-colors border-b border-surface-variant/30">
+    <header className="fixed top-0 right-0 left-0 lg:left-[18rem] h-20 z-40 bg-surface-bright/80 backdrop-blur-xl flex justify-between items-center px-8 shadow-[0_1px_4px_rgba(0,0,0,0.01)] transition-colors border-b border-surface-variant/30">
       <div className="flex items-center gap-6">
         <h2 className="font-headline text-xl font-bold text-on-surface m-0">
           {pathname?.includes('/draft/') ? 'The Content Oracle' : currentTitle}

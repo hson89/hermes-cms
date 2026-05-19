@@ -201,11 +201,22 @@
 .alexandria-nav {
   display: flex !important;
   width: 18rem !important;
-  z-index: 100 !important;
+  z-index: 1000 !important;
 }
 
-/* Hide Payload's built-in sidebar/nav */
-.nav, aside.nav, .sidebar, .app-header__nav-toggler {
+aside.nav {
+  width: 18rem !important;
+  display: block !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  height: 100vh !important;
+  z-index: 1000 !important;
+  background: var(--color-surface-container) !important;
+}
+
+/* Hide Payload's built-in sidebar/nav elements we don't want */
+.sidebar, .app-header__nav-toggler {
   display: none !important;
 }
 
@@ -321,6 +332,14 @@ body {
 .template-default__wrap:has(.custom-content-type-view) [class*="doc-header"],
 .template-default__wrap:has(.custom-content-type-view) [class*="collection-edit"],
 .template-default__wrap:has(.custom-content-type-view) [class*="collection-list"],
+div:has(> .drafting-workspace-view) > .doc-header,
+div:has(> .drafting-workspace-view) > .collection-edit__header,
+div:has(> .drafting-workspace-view) > .gutter,
+div:has(> .drafting-workspace-view) > [class*="doc-header"],
+div:has(> .drafting-workspace-view) > [class*="collection-edit"],
+.template-default__wrap:has(.drafting-workspace-view) .doc-header,
+.template-default__wrap:has(.drafting-workspace-view) .gutter,
+.template-default__wrap:has(.drafting-workspace-view) [class*="doc-header"],
 div:has(> .custom-tenant-view) > .doc-header,
 div:has(> .custom-tenant-view) > .collection-edit__header,
 div:has(> .custom-tenant-view) > .collection-list__header,
@@ -401,6 +420,25 @@ div:has(.custom-api-key-view) [class*="collection-list__header"] {
 
 .animate-soft-blur-in {
   animation: soft-blur-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes typing-cursor {
+  from, to { border-color: transparent }
+  50% { border-color: var(--color-primary) }
+}
+
+.typing-cursor {
+  border-right: 2px solid var(--color-primary);
+  animation: typing-cursor 1s step-end infinite;
+}
+
+@keyframes pulseBg {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .7; }
+}
+
+.pulse-subtle {
+  animation: pulseBg 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 

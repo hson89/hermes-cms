@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
-import { FieldRenderer } from './FieldRenderer'
-import { AISuggestIndicator } from './AISuggestIndicator'
-import { FloatingAIBar } from './FloatingAIBar'
+import { Badge } from '../atoms/Badge'
+import { FieldRenderer } from '../molecules/FieldRenderer'
+import { FloatingAIBar } from '../molecules/FloatingAIBar'
 
 export const EditorPanel: React.FC<{
   draftData: any
@@ -30,77 +30,74 @@ export const EditorPanel: React.FC<{
   const [modifiedFields, setModifiedFields] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Detect which fields were updated by AI
-    const newModified = new Set<string>()
-    if (draftData) {
-      Object.keys(draftData).forEach(key => {
-        if (draftData[key] !== data[key]) {
-          newModified.add(key)
-        }
-      })
-    }
-    setModifiedFields(newModified)
     setData(draftData)
   }, [draftData])
 
   const handleChange = (name: string, value: any) => {
     const newData = { ...data, [name]: value }
     setData(newData)
+    setModifiedFields(prev => new Set(prev).add(name))
     onSave?.(newData)
   }
 
-  if (!schema) return <div>No schema loaded.</div>
-
   const activeStyle = styleModifiers.find(s => s.id === selectedStyle)
 
-  return (
-    <div className="flex flex-col gap-12">
-      {/* Editor Header Actions */}
-      <div className="flex justify-between items-center pb-4 border-b border-surface-variant/30">
-        <div className="flex items-center gap-2">
-          <span className="px-2 py-1 bg-tertiary-container/20 text-tertiary font-label text-xs rounded uppercase tracking-wider font-semibold">Drafting</span>
-          <span className="text-sm text-outline font-body flex items-center gap-2">
-            <span className="material-symbols-outlined !text-base text-primary animate-pulse">sync</span>
-            AI Agent Active
-          </span>
-          <button className="ml-4 flex items-center gap-1 px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-label font-bold uppercase hover:bg-surface-variant transition-colors border-none cursor-pointer">
-            <span className="material-symbols-outlined !text-base">pause_circle</span>
-            Pause
-          </button>
+  if (!schema || schema.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4">
+          <span className="material-symbols-outlined text-outline-variant text-3xl">schema</span>
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-label text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors border-none bg-transparent cursor-pointer">
-            <span className="material-symbols-outlined !text-lg">history</span>
-            Versions
-          </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-label text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors border-none bg-transparent cursor-pointer">
-            <span className="material-symbols-outlined !text-lg">more_horiz</span>
-          </button>
-        </div>
+        <h3 className="font-headline text-xl font-bold text-on-surface mb-2">No Schema Defined</h3>
+        <p className="font-body text-on-surface-variant max-w-sm">
+          Please describe what you want to create so the AI can suggest a content structure.
+        </p>
       </div>
+    )
+  }
 
-      {/* Style & Tone Selector Block */}
-      <div className="p-6 bg-surface-container-low rounded-xl ghost-border">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-primary text-xl">tune</span>
-          <h3 className="font-headline text-lg font-bold text-on-surface m-0">Style & Tone</h3>
-          <span className="ml-auto text-[10px] font-label text-outline tracking-widest uppercase font-semibold">Global Modifier</span>
+  return (
+    <div className="flex flex-col gap-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Editorial Header */}
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col gap-1">
+            <span className="font-label text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Drafting Session</span>
+            <div className="flex items-center gap-3">
+              <h2 className="font-headline text-3xl font-bold text-on-surface m-0">Content Refinement</h2>
+              <div className="flex items-center gap-1.5 bg-success-container/10 text-success px-2 py-0.5 rounded-full border border-success/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                <span className="font-label text-[10px] font-bold">LIVE</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={onPromote}
+              className="bg-primary text-on-primary px-6 py-2.5 rounded-xl font-label text-sm font-bold shadow-lg hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all border-none cursor-pointer"
+            >
+              Promote to Entry
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2 mb-4">
+
+        {/* Style Selector */}
+        <div className="flex flex-wrap items-center gap-2 py-2">
           {styleModifiers.map((style) => (
             <button
               key={style.id}
-              onClick={() => onStyleChange?.(style.id === selectedStyle ? null : style.id)}
-              className={`px-4 py-1.5 rounded-full text-sm font-label transition-all cursor-pointer border ${
+              onClick={() => onStyleChange?.(style.id)}
+              className={`px-4 py-1.5 rounded-full font-label text-[11px] font-medium transition-all border cursor-pointer ${
                 selectedStyle === style.id
                   ? 'bg-primary text-on-primary border-primary shadow-sm'
-                  : 'bg-transparent border-outline-variant/50 text-on-surface-variant hover:bg-surface-variant'
+                  : 'bg-surface-container-lowest text-on-surface-variant border-outline-variant/30 hover:border-primary/50'
               }`}
             >
               {style.name}
             </button>
           ))}
         </div>
+
         {activeStyle && (
           <div className="flex items-center gap-2 py-3 px-4 bg-surface-container-lowest rounded-lg border border-primary/20">
             <span className="material-symbols-outlined text-primary !text-sm">info</span>
@@ -125,7 +122,7 @@ export const EditorPanel: React.FC<{
                   {field.label || field.name}
                 </label>
                 <div className="flex items-center gap-3">
-                  <AISuggestIndicator isNew={isModified} />
+                  <Badge isNew={isModified} />
                   <div className="flex items-center gap-1">
                     <button className="text-outline hover:text-primary transition-colors border-none bg-transparent cursor-pointer">
                       <span className="material-symbols-outlined !text-sm">edit_note</span>

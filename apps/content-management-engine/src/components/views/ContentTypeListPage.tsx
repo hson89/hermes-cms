@@ -301,6 +301,17 @@ export const ContentTypeListPage: React.FC = () => {
               >
                 <button
                   type="button"
+                  onClick={() => router.push(`/admin/draft/${contentType.id}`)}
+                  className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                >
+                  <Icon name="auto_awesome" size={14} className="text-primary" />
+                  Draft with AI
+                </button>
+
+                <div className="h-[1px] bg-outline-variant/10 my-1" />
+
+                <button
+                  type="button"
                   onClick={() => router.push(`/admin/collections/content-types/${contentType.id}`)}
                   className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
                 >

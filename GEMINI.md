@@ -143,9 +143,9 @@ When adding custom React components to `payload.config.ts` (e.g., Dashboards, Gr
 
 ## Payload CMS 3.x UI Guardrails (CRITICAL)
 When modifying the Payload Admin UI or adding custom components:
-1. **Layout Hierarchy:** Never place global components (like `Nav` or `Header`) inside View components (like `Dashboard`). Payload automatically wraps all views in its `RootLayout`. Doing so causes severe duplication and overlapping.
-2. **Component Registration:** Global overrides must be registered in `payload.config.ts` under `admin.components`. Strictly follow the expected object syntax (e.g., `header: [ '/src/components/admin/Header#Header' ] as any`).
-3. **CSS Safety:** Never aggressively override or hide core Payload layout classes (e.g., `.nav`, `.app-header`, `.template-default__wrap`) using `display: none !important` globally without understanding the flex/grid container consequences.
-4. **Sidebar Offsets:** The native Next.js App Router template used by Payload expects an 18rem sidebar. If implementing a custom sidebar, ensure the main content wrapper maintains a `margin-left: 18rem`.
-5. **Skill Required:** Any time you are asked to work on or fix the Payload UI, you MUST invoke the `payload-ui` skill first.
+1. **Mandatory Skill:** ALWAYS invoke the `payload-ui` skill first. It contains the project-specific Alexandria layout tokens (18rem sidebar, 5rem header).
+2. **Standardized View Wrapper:** All custom views MUST use the `AdminView` component (`src/components/admin/AdminView.tsx`).
+   - Example: `<AdminView {...props} className="custom-your-view"><YourClientComponent /></AdminView>`
+3. **CSS Isolation:** Ensure your view content is wrapped with a class that is handled in `globals.css` (e.g., `.custom-editor-view`) to hide standard Payload gutters.
+4. **Verification:** Always check `src/app/(payload)/admin/importMap.js` and verify that the sidebar and header sit flush without overlapping.
 

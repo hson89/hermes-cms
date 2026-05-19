@@ -9,7 +9,7 @@ import { Readable } from 'stream'
  * Satisfies T040, addressing memory bloat and security concerns.
  */
 export async function POST(req: NextRequest) {
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
 
   if (!user) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   // Security: Verify user has access to the target tenant
   const userTenants = (user as any).tenants?.map((t: any) => t.tenant?.id || t.tenant) || []
-  const hasAccess = user.role === 'super-admin' || userTenants.includes(tenantId)
+  const hasAccess = (user as any).role === 'super-admin' || userTenants.includes(tenantId)
   
   if (!hasAccess && tenantId) {
     return NextResponse.json({ error: 'Forbidden: No access to this tenant' }, { status: 403 })

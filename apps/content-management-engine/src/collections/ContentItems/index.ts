@@ -66,6 +66,13 @@ export const ContentItems: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     description: 'Content entries per tenant and content type.',
+    components: {
+      edit: {
+        beforeDocumentControls: [
+          '/src/components/admin/DraftingCTA#DraftingCTA',
+        ],
+      },
+    },
   },
   access: {
     // Public delivery (GET) is guarded by API key at the endpoint level.

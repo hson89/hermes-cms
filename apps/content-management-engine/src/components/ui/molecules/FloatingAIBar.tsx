@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect } from 'react'
 
 export const FloatingAIBar: React.FC<{
   onRefine: (prompt: string) => void
 }> = ({ onRefine }) => {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
   const [visible, setVisible] = useState(false)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
   const [prompt, setPrompt] = useState('')
 
   useEffect(() => {
@@ -15,9 +15,10 @@ export const FloatingAIBar: React.FC<{
       if (selection && selection.toString().trim().length > 0) {
         const range = selection.getRangeAt(0)
         const rect = range.getBoundingClientRect()
+        
         setPosition({
-          x: rect.left + window.scrollX + rect.width / 2,
-          y: rect.top + window.scrollY - 60,
+          x: rect.left + rect.width / 2,
+          y: rect.top - 60
         })
         setVisible(true)
       } else {

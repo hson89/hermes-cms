@@ -53,7 +53,6 @@ export const DraftingSessions: CollectionConfig = {
       name: 'contentType',
       type: 'relationship',
       relationTo: 'content-types',
-      required: true,
     },
     {
       name: 'status',

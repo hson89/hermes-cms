@@ -177,7 +177,7 @@
 
 **Purpose**: Improvements that affect multiple user stories, visual styling alignment, rate limiting validations, and final E2E test suites.
 
-- [x] T046 Refine components styling using "Alexandria — High-End Editorial" design tokens (glassmorphism floats, outfit typographic hierarchies, gold accent pills)
+- [x] T046 Implement polished drafting workspace layout (Side Nav, Top App Bar, Split View) matching Alexandria design system tokens (Noto Serif, glassmorphism, ghost borders).
 - [x] T047 Write complete Playwright integration testing suites in `apps/content-management-engine/tests/e2e/test_drafting_workspace.spec.ts` (including automated latency verification ensuring the first streamed token for inline refinements is returned in under 2 seconds to validate SC-005, and that a full 500-word draft is completed in under 45 seconds of streaming to validate SC-001)
 - [x] T048 [P] Update technical design documentation files under `docs/` and add comprehensive quickstart guide verification notes
 - [x] T049 Validate quickstart guidelines, run final verification runs (benchmarking stream generation speed and rate limiter compliance), and confirm linting standards pass locally across both workspaces

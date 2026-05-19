@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from 'next/server'
  * Restores a drafting session to a historical version.
  * Satisfies T045.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const payload = await getPayload({ config })
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
-  const { id } = params
+  const { id } = await params
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

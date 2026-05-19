@@ -77,14 +77,14 @@ apps/content-management-engine/src/
 │       └── index.ts
 ├── components/
 │   ├── views/
-│   │   └── DraftingWorkspace.tsx   # NEW — Main split-view drafting UI
+│   │   └── DraftingWorkspace.tsx   # NEW — Main split-view drafting UI with Side Nav and Top App Bar
 │   ├── Editor/
-│   │   ├── FloatingAIBar.tsx       # NEW — Inline refinement toolbar
-│   │   ├── AISuggestIndicator.tsx  # NEW — Per-field AI badge
-│   │   ├── ChatPanel.tsx           # NEW — Conversational AI panel
-│   │   ├── EditorPanel.tsx         # NEW — Structured field editor
-│   │   ├── FieldRenderer.tsx       # NEW — Dynamic field rendering
-│   │   └── RecoveryDialog.tsx      # NEW — Expired session recovery
+│   │   ├── FloatingAIBar.tsx       # NEW — Inline refinement toolbar (Dark Glassmorphic)
+│   │   ├── AISuggestIndicator.tsx  # NEW — Per-field AI badge (Alexandria Primary)
+│   │   ├── ChatPanel.tsx           # NEW — Conversational AI panel (Alexandria Persona)
+│   │   ├── EditorPanel.tsx         # NEW — Structured field editor with Style & Tone block
+│   │   ├── FieldRenderer.tsx       # NEW — Dynamic field rendering with Real-time Visuals
+│   │   └── RecoveryDialog.tsx      # NEW — Expired session recovery (Noto Serif/Glassmorphic)
 │   └── ui/                        # Shared UI primitives
 ├── app/api/                       # Custom API routes (OUTSIDE Payload group)
 │   ├── ai/

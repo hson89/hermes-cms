@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await config })
   const now = new Date()
   const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000).toISOString()
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()

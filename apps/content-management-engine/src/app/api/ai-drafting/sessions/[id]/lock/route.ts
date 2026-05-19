@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from 'next/server'
  * Explicitly releases or updates a session lock.
  * Satisfies T024.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const payload = await getPayload({ config })
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
-  const { id } = params
+  const { id } = await params
 
   // Note: navigator.sendBeacon might not include auth cookies in some browsers
   // but we should still try to verify if possible.

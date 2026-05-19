@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Icon } from '../ui/atoms/Icon'
 import { useAuth } from '@payloadcms/ui'
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth()
+  const router = useRouter()
+  const [prompt, setPrompt] = useState('')
   const [stats, setStats] = useState({
     tenants: 0,
     contentItems: 0,
@@ -75,6 +78,62 @@ export const Dashboard: React.FC = () => {
           </div>
         </section>
 
+        {/* Alexandria AI — Primary Entry Point */}
+        <section className="relative w-full">
+          <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full -z-10" />
+          <div className="bg-surface/60 backdrop-blur-[20px] rounded-2xl p-10 border border-outline-variant/15 shadow-[0_8px_32px_rgba(0,0,0,0.04)] flex flex-col md:flex-row items-center gap-8 group transition-all hover:shadow-[0_12px_48px_rgba(0,0,0,0.08)]">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Icon name="auto_awesome" className="text-primary" size={20} />
+                </div>
+                <h2 className="font-headline text-2xl font-bold text-on-surface m-0">Alexandria AI</h2>
+              </div>
+              <p className="font-body text-on-surface-variant text-lg leading-relaxed mb-0 max-w-xl">
+                I am your scholarly co-author. Tell me what you want to create, and I will find the right schema and draft it for you instantly.
+              </p>
+            </div>
+            
+            <div className="w-full md:w-[480px] relative">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  if (prompt.trim()) {
+                    router.push(`/admin/draft/new?prompt=${encodeURIComponent(prompt)}`)
+                  }
+                }}
+                className="relative"
+              >
+                <input 
+                  type="text"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="E.g., Draft a blog post about the future of AI..."
+                  className="w-full h-16 pl-6 pr-16 bg-surface-container-lowest rounded-xl border border-outline-variant/20 font-body text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
+                />
+                <button 
+                  type="submit"
+                  className="absolute right-3 top-3 w-10 h-10 bg-primary text-on-primary rounded-lg flex items-center justify-center hover:bg-primary-container hover:text-on-primary-container transition-all shadow-sm cursor-pointer border-none"
+                >
+                  <Icon name="arrow_forward" size={20} />
+                </button>
+              </form>
+              <div className="mt-4 flex items-center gap-3">
+                <span className="font-label text-xs text-on-surface-variant/60 uppercase tracking-wider">Suggested:</span>
+                {['Technical Article', 'Press Release', 'Product Page'].map((type) => (
+                  <button 
+                    key={type}
+                    onClick={() => setPrompt(`Draft a ${type} about...`)}
+                    className="bg-surface-container-high hover:bg-primary/10 hover:text-primary text-on-surface-variant px-3 py-1.5 rounded-full font-label text-[11px] font-semibold transition-all border-none cursor-pointer"
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Action Cards */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1 */}
@@ -133,9 +192,15 @@ export const Dashboard: React.FC = () => {
                 Manage and curate rich text content and AI-generated articles across all sites.
               </p>
             </div>
-            <Link href="/admin/collections/content-items" className="w-full bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors py-3 rounded-lg font-label font-semibold text-sm tracking-wide text-center no-underline">
-              Start Curating
-            </Link>
+            <div className="flex flex-col gap-3">
+              <Link href="/admin/collections/content-items" className="w-full bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors py-3 rounded-lg font-label font-semibold text-sm tracking-wide text-center no-underline">
+                View All Items
+              </Link>
+              <Link href="/admin/draft/new" className="w-full bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all py-3 rounded-lg font-label font-semibold text-sm tracking-wide text-center no-underline flex items-center justify-center gap-2">
+                <Icon name="auto_awesome" size={16} className="text-primary" />
+                Start AI Drafting
+              </Link>
+            </div>
           </div>
         </section>
 

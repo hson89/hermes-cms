@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from 'next/server'
  * Promotes a draft to a permanent ContentItem.
  * Satisfies T025.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const payload = await getPayload({ config })
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
-  const { id } = params
+  const { id } = await params
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -31,12 +31,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     // 2. Create the ContentItem
     // Spread draftData to ensure all AI-generated fields (including custom ones) are preserved.
+    const draftData = session.draftData as any
     const contentItem = await payload.create({
       collection: 'content-items',
       data: {
-        ...session.draftData,
-        title: session.draftData.title || 'Untitled AI Draft',
-        slug: session.draftData.slug || `draft-${Date.now()}`,
+        ...draftData,
+        title: draftData.title || 'Untitled AI Draft',
+        slug: draftData.slug || `draft-${Date.now()}`,
         contentType: (session.contentType as any).id || session.contentType,
         tenant: (session.tenant as any).id || session.tenant,
         status: 'draft',

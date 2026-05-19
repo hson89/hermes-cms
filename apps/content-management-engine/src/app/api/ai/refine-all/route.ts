@@ -9,7 +9,8 @@ import { isRateLimited } from '@/services/rate-limiter'
  * Satisfies T029b.
  */
 export async function POST(req: NextRequest) {
-  const payload = await getPayload({ config })
+  const startTime = Date.now()
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
 
   if (!user) {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate limiting check (Consolidated 1 token for the whole batch)
-  if (await isRateLimited(user.id, payload)) {
+  if (await isRateLimited(String(user.id), payload)) {
     return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 })
   }
 
@@ -168,7 +169,7 @@ export async function POST(req: NextRequest) {
         completionTokens: totalCompletionTokens,
         totalTokens: totalAllTokens,
         styleModifier: style_modifier_id,
-      },
+      } as any,
       overrideAccess: true,
     })
 
@@ -193,7 +194,7 @@ export async function POST(req: NextRequest) {
         errorMessage: err.message,
         durationMs: Date.now() - startTime,
         styleModifier: style_modifier_id,
-      },
+      } as any,
       overrideAccess: true,
     })
     return NextResponse.json({ error: err.message }, { status: 500 })

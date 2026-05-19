@@ -6,10 +6,10 @@ import { NextRequest, NextResponse } from 'next/server'
  * PATCH /api/ai-drafting/sessions/[id]
  * Updates a drafting session (auto-save or manual snapshot).
  */
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const payload = await getPayload({ config })
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
-  const { id } = params
+  const { id } = await params
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -39,10 +39,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
  * DELETE /api/ai-drafting/sessions/[id]
  * Discards a drafting session.
  */
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const payload = await getPayload({ config })
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
-  const { id } = params
+  const { id } = await params
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

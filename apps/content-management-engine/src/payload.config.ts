@@ -41,11 +41,11 @@ export default buildConfig({
         },
         drafting: {
           Component: '/src/components/views/DraftingWorkspace#DraftingWorkspace',
-          path: '/draft/:contentTypeId',
+          path: '/draft/:contentTypeId?',
         },
       },
-      Nav: '/src/components/admin/Nav#Nav',
-      header: ['/src/components/admin/Header#Header'] as any,
+      Nav: ['/src/components/ui/organisms/Nav#Nav'] as any,
+      header: ['/src/components/ui/organisms/Header#Header'] as any,
     },
   },
   collections: [

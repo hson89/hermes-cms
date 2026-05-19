@@ -9,7 +9,7 @@ import { isRateLimited } from '@/services/rate-limiter'
  * Satisfies T019, addressing Review feedback for tenant ambiguity.
  */
 export async function GET(req: NextRequest) {
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
 
   if (!user) {
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Rate limiting check
-  if (await isRateLimited(user.id, payload)) {
+  if (await isRateLimited(String(user.id), payload)) {
     return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 })
   }
 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   // Security: Verify user has access to requested tenant
   const userTenants = (user as any).tenants?.map((t: any) => t.tenant?.id || t.tenant) || []
-  const hasAccess = user.role === 'super-admin' || userTenants.includes(requestedTenantId)
+  const hasAccess = (user as any).role === 'super-admin' || userTenants.includes(requestedTenantId)
   
   if (!hasAccess && requestedTenantId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -35,8 +35,8 @@ export async function GET(req: NextRequest) {
 
   const tenantId = requestedTenantId || userTenants[0]
 
-  if (!contentType || !tenantId) {
-    return NextResponse.json({ error: 'Missing contentType or tenantId' }, { status: 400 })
+  if (!tenantId) {
+    return NextResponse.json({ error: 'Missing tenantId' }, { status: 400 })
   }
 
   // Check for active sessions (including on-the-fly expiry)
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
         },
         {
           contentType: {
-            equals: contentType,
+            equals: contentType || null,
           },
         },
         {
@@ -61,7 +61,8 @@ export async function GET(req: NextRequest) {
         },
       ],
     },
-    overrideAccess: true,
+    user,
+    overrideAccess: false,
   })
 
   let activeSession = null
@@ -77,7 +78,8 @@ export async function GET(req: NextRequest) {
         data: {
           status: 'expired',
         },
-        overrideAccess: true,
+        user,
+        overrideAccess: false,
       })
     } else {
       activeSession = session
@@ -94,7 +96,7 @@ export async function GET(req: NextRequest) {
  * Starts a new drafting session.
  */
 export async function POST(req: NextRequest) {
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await config })
   const { user } = await payload.auth(req)
 
   if (!user) {
@@ -105,7 +107,7 @@ export async function POST(req: NextRequest) {
   
   // Security check
   const userTenants = (user as any).tenants?.map((t: any) => t.tenant?.id || t.tenant) || []
-  const hasAccess = user.role === 'super-admin' || userTenants.includes(requestedTenantId)
+  const hasAccess = (user as any).role === 'super-admin' || userTenants.includes(requestedTenantId)
   
   if (!hasAccess && requestedTenantId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -113,8 +115,8 @@ export async function POST(req: NextRequest) {
 
   const tenantId = requestedTenantId || userTenants[0]
 
-  if (!contentType || !tenantId) {
-    return NextResponse.json({ error: 'Missing contentType or tenantId' }, { status: 400 })
+  if (!tenantId) {
+    return NextResponse.json({ error: 'Missing tenantId' }, { status: 400 })
   }
 
   // Create the session
@@ -130,7 +132,8 @@ export async function POST(req: NextRequest) {
         draftData: {},
         lastActivityAt: new Date().toISOString(),
       },
-      overrideAccess: true,
+      user,
+      overrideAccess: false,
     })
 
     return NextResponse.json(session)

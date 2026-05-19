@@ -15,7 +15,7 @@ export async function loginAction(prevState: any, formData: FormData) {
 
   try {
     const config = (await import('@/payload.config')).default
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await config })
     
     const result = await payload.login({
       collection: 'users',

@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await config })
     const tenantService = new TenantService(payload)
 
     const result = await tenantService.resolveTenantByHostname(hostname)
