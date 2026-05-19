@@ -97,6 +97,7 @@ apps/content-management-engine/src/
 │       └── [id]/
 │           ├── route.ts            # NEW — Auto-save updates & version snapshots
 │           ├── lock/route.ts       # NEW — Lock release endpoint
+│           ├── rollback/route.ts   # NEW — Server-side version rollback endpoint
 │           └── promote/route.ts    # NEW — Draft → ContentItem promotion
 ├── services/
 │   ├── rate-limiter.ts             # NEW — Postgres-backed sliding window limiter

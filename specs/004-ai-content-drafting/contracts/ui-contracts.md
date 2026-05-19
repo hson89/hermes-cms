@@ -120,6 +120,7 @@ interface DraftingState {
   session: DraftingSession | null;
   schema: ContentTypeSchema | null;  // Current schema (may be updated via SCHEMA_UPDATED event)
   fields: Record<string, FieldState>;
+  mainMedia: string | null;           // Reference to AI-generated or uploaded main media ID (top-level relationship)
   chatMessages: ChatMessage[];
   isGenerating: boolean;
   isPaused: boolean;

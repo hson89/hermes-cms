@@ -206,6 +206,7 @@ Cookie: payload-token=<session-cookie>
     "slug": "the-quantum-leap",
     "body": "# The Quantum Leap\n\nQuantum computing is..."
   },
+  "mainMedia": "media-789",
   "createSnapshot": false
 }
 ```
@@ -213,6 +214,7 @@ Cookie: payload-token=<session-cookie>
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `draftData` | object | no | Partial or full draft field values |
+| `mainMedia` | string (UUID) | no | Reference to Payload Media ID (top-level relationship) |
 | `createSnapshot` | boolean | no | If true, push current state to versions array |
 
 ### Response
@@ -245,6 +247,56 @@ Cookie: payload-token=<session-cookie>
 ```json
 { "released": true }
 ```
+
+---
+
+## POST /api/drafting-sessions/:id/rollback
+
+**Purpose**: Rollback the drafting session state to a previous version snapshot on the server side (avoiding client-side JSON/Markdown roundtrips).
+
+### Request
+
+```http
+POST /api/drafting-sessions/ds-001/rollback HTTP/1.1
+Content-Type: application/json
+Cookie: payload-token=<session-cookie>
+```
+
+```json
+{
+  "versionIndex": 2
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `versionIndex` | number | yes | The index of the version in the snapshots array to roll back to |
+
+### Response
+
+```json
+{
+  "rolledBack": true,
+  "doc": {
+    "id": "ds-001",
+    "draftData": {
+      "title": "Historical Title",
+      "slug": "historical-title",
+      "body": { ... } // Reverted Lexical JSON
+    },
+    "mainMedia": "media-111",
+    "lastActivityAt": "2026-05-18T22:15:30Z",
+    "updatedAt": "2026-05-18T22:15:30Z"
+  }
+}
+```
+
+### Error Responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | `UNAUTHORIZED` | Invalid session |
+| 404 | `NOT_FOUND` | DraftingSession or versionIndex not found |
 
 ---
 

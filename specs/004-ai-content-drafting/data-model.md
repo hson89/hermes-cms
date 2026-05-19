@@ -110,7 +110,7 @@ erDiagram
 | `contentType` | relationship → ContentTypes | yes | — | Target schema for the draft |
 | `status` | select | yes | `active` | Lifecycle state: `active`, `expired`, `promoted` |
 | `draftData` | json | yes | `{}` | Current field values as `{ fieldName: value }` map. Rich-text Body stored as Lexical JSON. |
-| `versions` | json | no | `[]` | Array of up to 10 snapshot objects: `[{ timestamp, draftData }]` |
+| `versions` | json | no | `[]` | Array of up to 10 snapshot objects: `[{ timestamp, draftData, mainMedia }]` |
 | `mainMedia` | relationship → Media | no | — | Reference to AI-generated or uploaded main media |
 | `activeLocale` | text | no | `en` | The locale this drafting session is scoped to |
 | `selectedModel` | text | no | — | User-overridden LLM model identifier (null = tenant default) |
@@ -126,7 +126,7 @@ erDiagram
 - `status` transitions: `active → expired` (timeout), `active → promoted` (save/publish), `expired → active` (recovery).
 
 **Performance Optimization (versions field)**:
-- The `versions` field stores up to 10 full snapshots of `draftData`, which can contain verbose Lexical JSON. To prevent this from degrading lock-check queries and list views, the collection config MUST set `admin.hidden: true` on the `versions` field and use `select: false` (or equivalent Payload field-level access) to exclude it from list queries.
+- The `versions` field stores up to 10 full snapshots of `draftData` (including `mainMedia` reference), which can contain verbose Lexical JSON. To prevent this from degrading lock-check queries and list views, the collection config MUST set `admin.hidden: true` on the `versions` field and use `select: false` (or equivalent Payload field-level access) to exclude it from list queries.
 - The `versions` data is only fetched on explicit document-by-ID requests when the user opens the version selector UI.
 
 **State Transitions**:
