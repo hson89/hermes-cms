@@ -91,14 +91,15 @@ apps/content-management-engine/src/
 │   │   ├── refine/route.ts         # NEW — Refinement proxy
 │   │   ├── refine-all/route.ts     # NEW — Batched parallel refinement proxy
 │   │   └── download-image/route.ts # NEW — Image download (streaming pipeline)
-│   └── drafting-sessions/
-│       ├── route.ts                # NEW — Collection-level lock checks/creation
-│       ├── cleanup/route.ts        # NEW — Inactivity timeout & expired cleanup cron handler
-│       └── [id]/
-│           ├── route.ts            # NEW — Auto-save updates & version snapshots
-│           ├── lock/route.ts       # NEW — Lock release endpoint
-│           ├── rollback/route.ts   # NEW — Server-side version rollback endpoint
-│           └── promote/route.ts    # NEW — Draft → ContentItem promotion
+│   └── ai-drafting/
+│       └── sessions/
+│           ├── route.ts                # NEW — Collection-level lock checks/creation
+│           ├── cleanup/route.ts        # NEW — Inactivity timeout & expired cleanup cron handler
+│           └── [id]/
+│               ├── route.ts            # NEW — Auto-save updates & version snapshots
+│               ├── lock/route.ts       # NEW — Lock release endpoint
+│               ├── rollback/route.ts   # NEW — Server-side version rollback endpoint
+│               └── promote/route.ts    # NEW — Draft → ContentItem promotion
 ├── services/
 │   ├── rate-limiter.ts             # NEW — Postgres-backed sliding window limiter
 │   └── markdown-to-lexical.ts      # NEW — Markdown → Lexical JSON conversion
@@ -138,7 +139,7 @@ k8s/                                # DEPLOYMENT INFRASTRUCTURE
 └── cron-cleanup-sessions.yaml      # NEW — CronJob to clean up expired sessions and rate limits
 ```
 
-**Structure Decision**: Follows the existing hybrid architecture — CMS Engine monolith for UI/collections/session management, Content Authoring Service microservice for AI orchestration. New files are co-located with existing patterns (collections alongside existing collections, services alongside existing services, DDD layers maintained in the AI service). Custom API routes are placed under `app/api/` (standard Next.js convention), NOT inside the `app/(payload)/api/` group, to avoid conflicts with Payload's `[...slug]` catch-all route.
+**Structure Decision**: Follows the existing hybrid architecture — CMS Engine monolith for UI/collections/session management, Content Authoring Service microservice for AI orchestration. New files are co-located with existing patterns (collections alongside existing collections, services alongside existing services, DDD layers maintained in the AI service). Custom API routes are placed under `app/api/ai-drafting/` (standard Next.js convention), NOT inside the `app/(payload)/api/` group and NOT under `app/api/drafting-sessions/` to avoid conflicts with Payload's dynamic API collection `[...slug]` route handlers.
 
 ## Complexity Tracking
 
