@@ -251,7 +251,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
   }
 
   return (
-    <div className="drafting-workspace-view h-[calc(100vh-5rem)] bg-background overflow-hidden relative">
+    <div className="drafting-workspace-view h-[calc(100vh-6rem)] bg-background overflow-hidden relative">
       {loading && (
         <div className="absolute inset-0 z-50 bg-background/60 backdrop-blur-sm flex items-center justify-center transition-all duration-500">
           <div className="flex flex-col items-center gap-4">
