@@ -49,7 +49,35 @@ export const ChatPanel: React.FC<{
         }),
       })
 
-      if (!response.ok) throw new Error('Generation failed')
+      if (!response.ok) {
+        let errorMessage = 'Generation failed'
+        try {
+          const errText = await response.text()
+          if (errText) {
+            try {
+              const errData = JSON.parse(errText)
+              if (errData.detail) {
+                if (Array.isArray(errData.detail)) {
+                  errorMessage = errData.detail
+                    .map((d: any) => `${d.loc ? d.loc.join('.') + ': ' : ''}${d.msg || JSON.stringify(d)}`)
+                    .join(', ')
+                } else if (typeof errData.detail === 'string') {
+                  errorMessage = errData.detail
+                } else {
+                  errorMessage = JSON.stringify(errData.detail)
+                }
+              } else {
+                errorMessage = errData.error || errData.message || errorMessage
+              }
+            } catch (_) {
+              errorMessage = errText
+            }
+          }
+        } catch (readErr: any) {
+          errorMessage = `Connection error: ${readErr.message || readErr}`
+        }
+        throw new Error(errorMessage)
+      }
 
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
@@ -71,6 +99,10 @@ export const ChatPanel: React.FC<{
               
               const data = JSON.parse(dataLine.replace('data: ', '').trim())
               
+              if (eventType === 'ERROR') {
+                throw new Error(data.detail || data.message || JSON.stringify(data))
+              }
+
               if (eventType === 'TEXT_DELTA') {
                 const delta = typeof data === 'string' ? data : (data.delta || '')
                 setTokens((prev) => prev + delta)
@@ -88,8 +120,15 @@ export const ChatPanel: React.FC<{
 
       setMessages((prev) => [...prev, { role: 'assistant', content: assistantMessage }])
       setTokens('')
-    } catch (err) {
+    } catch (err: any) {
       console.error('Chat error:', err)
+      setMessages((prev) => [
+        ...prev, 
+        { 
+          role: 'error', 
+          content: err.message || 'An unexpected error occurred. Please verify that the microservice is running and try again.' 
+        }
+      ])
     } finally {
       setLoading(false)
     }
@@ -100,14 +139,24 @@ export const ChatPanel: React.FC<{
       {/* Message List */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar">
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm font-body leading-relaxed ${
-              msg.role === 'user' 
-                ? 'bg-primary text-on-primary shadow-sm' 
-                : 'bg-surface-container-high text-on-surface'
-            }`}>
-              {msg.content}
-            </div>
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}>
+            {msg.role === 'error' ? (
+              <div className="max-w-[85%] bg-error-container text-on-error-container rounded-2xl p-4 border border-error/15 flex items-start gap-3 animate-fade-slide-up shadow-sm">
+                <Icon name="error_outline" className="text-error mt-0.5 flex-shrink-0" />
+                <div className="flex flex-col gap-1">
+                  <span className="font-label font-bold text-xs uppercase tracking-widest text-error">System Error</span>
+                  <p className="text-sm font-body leading-relaxed text-on-error-container whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              </div>
+            ) : (
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm font-body leading-relaxed ${
+                msg.role === 'user' 
+                  ? 'bg-primary text-on-primary shadow-sm' 
+                  : 'bg-surface-container-high text-on-surface'
+              }`}>
+                {msg.content}
+              </div>
+            )}
           </div>
         ))}
         {tokens && (

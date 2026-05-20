@@ -135,8 +135,8 @@ class DraftRequest(BaseModel):
     """Payload for POST /api/ai/draft."""
 
     prompt: str
-    content_type_slug: str
-    content_schema: dict
+    content_type_slug: str | None = None
+    content_schema: dict | None = None
     tenant_id: str
     user_id: str
     locale: str = "en"
@@ -184,7 +184,11 @@ async def health() -> dict:
     summary="Generate a full content draft",
     dependencies=[Security(_require_internal_secret)],
 )
-async def generate_draft(body: DraftRequest, request: Request) -> StreamingResponse:
+async def generate_draft(
+    body: DraftRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
     """
     Generate a full content draft from a natural language prompt.
     Returns a stream of tokens for the explanation/thought process,
@@ -195,16 +199,23 @@ async def generate_draft(body: DraftRequest, request: Request) -> StreamingRespo
     drafting_service = DraftingService(request.app.state.ai_service)
 
     async def event_generator():
-        async for event in drafting_service.generate_draft_stream(
-            prompt=body.prompt,
-            content_type_slug=body.content_type_slug,
-            schema_json=body.content_schema,
-            tenant_id=body.tenant_id,
-            user_id=body.user_id,
-            locale=body.locale,
-            style_modifier_id=body.style_modifier_id,
-        ):
-            yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        try:
+            async for event in drafting_service.generate_draft_stream(
+                prompt=body.prompt,
+                content_type_slug=body.content_type_slug,
+                schema_json=body.content_schema,
+                tenant_id=body.tenant_id,
+                user_id=body.user_id,
+                db=db,
+                locale=body.locale,
+                style_modifier_id=body.style_modifier_id,
+                style_modifier_prompt=body.style_modifier_prompt,
+            ):
+                yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        except Exception as exc:
+            import traceback
+            traceback.print_exc()
+            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error during draft: {exc}'})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -215,7 +226,11 @@ async def generate_draft(body: DraftRequest, request: Request) -> StreamingRespo
     summary="Refine an existing content draft",
     dependencies=[Security(_require_internal_secret)],
 )
-async def refine_draft(body: RefineRequest, request: Request) -> StreamingResponse:
+async def refine_draft(
+    body: RefineRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
     """
     Refine an existing content draft based on user feedback.
     Returns a stream of tokens for the explanation, followed by updated JSON.
@@ -225,16 +240,21 @@ async def refine_draft(body: RefineRequest, request: Request) -> StreamingRespon
     refine_service = RefineService(request.app.state.ai_service)
 
     async def event_generator():
-        async for event in refine_service.refine_draft_stream(
-            prompt=body.prompt,
-            current_draft_json=body.current_draft_json,
-            schema_json=body.content_schema,
-            tenant_id=body.tenant_id,
-            user_id=body.user_id,
-            db=request.state.db,
-            locale=body.locale,
-        ):
-            yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        try:
+            async for event in refine_service.refine_draft_stream(
+                prompt=body.prompt,
+                current_draft_json=body.current_draft_json,
+                schema_json=body.content_schema,
+                tenant_id=body.tenant_id,
+                user_id=body.user_id,
+                db=db,
+                locale=body.locale,
+            ):
+                yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        except Exception as exc:
+            import traceback
+            traceback.print_exc()
+            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error during refinement: {exc}'})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

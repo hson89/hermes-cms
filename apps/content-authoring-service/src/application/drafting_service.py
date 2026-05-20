@@ -28,8 +28,8 @@ class DraftingService:
     async def generate_draft_stream(
         self,
         prompt: str,
-        content_type_slug: str,
-        schema_json: dict,
+        content_type_slug: Optional[str],
+        schema_json: Optional[dict],
         tenant_id: str,
         user_id: str,
         db: AsyncSession,
@@ -43,6 +43,25 @@ class DraftingService:
         Generates a content draft using a streaming LLM.
         Yields events for explanation tokens and the final JSON draft.
         """
+        if not content_type_slug or not schema_json:
+            # Bootstrap flow: generate schema first
+            schema_result = await self.ai_service.generate_schema(
+                prompt=prompt,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                current_schema=schema_json,
+                db=db,
+            )
+            
+            schema_json = schema_result["schema"]
+            content_type_slug = schema_json.get("slug", schema_json.get("name", "Generated Type"))
+            session_id = schema_result["sessionId"]
+            
+            if schema_result.get("message"):
+                yield {"event": "TEXT_DELTA", "data": schema_result["message"] + "\n\n"}
+                
+            yield {"event": "SCHEMA_UPDATED", "data": schema_json}
+
         repo = SQLSessionRepository(db)
         
         # 1. Handle session/history
@@ -89,16 +108,19 @@ class DraftingService:
         
         # 5. Extract and yield the final JSON
         try:
-            start_idx = full_content.find('{')
-            end_idx = full_content.rfind('}')
+            match = re.search(r"```(?:json)?\s*(.*?)\s*```", full_content, re.DOTALL)
+            clean_content = match.group(1).strip() if match else full_content.strip()
+            
+            start_idx = clean_content.find('{')
+            end_idx = clean_content.rfind('}')
             if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
-                json_str = full_content[start_idx:end_idx + 1]
+                json_str = clean_content[start_idx:end_idx + 1]
             else:
-                json_str = full_content
+                json_str = clean_content
             draft_data = json.loads(json_str)
             yield {"event": "DRAFT_COMPLETE", "data": {"draft": draft_data, "sessionId": str(session.id)}}
         except Exception as e:
-            yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON: {e}"}}
+            yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON: {e}. Raw content: {full_content[:2000]}"}}
 
     async def refine_draft_stream(
         self,
