@@ -441,6 +441,21 @@ div:has(.custom-api-key-view) [class*="collection-list__header"] {
   animation: pulseBg 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Custom View Viewport Fitting & Layout Locking */
+.template-default:has(.custom-editor-view),
+.template-default__wrap:has(.custom-editor-view),
+body:has(.custom-editor-view),
+html:has(.custom-editor-view) {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
 
-
-
+.custom-editor-view {
+  padding: 0 !important;
+  margin-top: 5rem !important;
+  height: calc(100vh - 5rem) !important;
+  max-height: calc(100vh - 5rem) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}

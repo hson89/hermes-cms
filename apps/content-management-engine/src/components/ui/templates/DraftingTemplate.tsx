@@ -35,7 +35,7 @@ export const DraftingTemplate: React.FC<DraftingTemplateProps> = ({
           <p className="font-body text-on-surface-variant">{welcomeSubtitle}</p>
         </div>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {chatPanel}
         </div>
       </section>

@@ -96,7 +96,7 @@ export const ChatPanel: React.FC<{
   }
 
   return (
-    <div className="flex flex-col h-full bg-surface-container-lowest/30">
+    <div className="flex flex-col flex-1 min-h-0 bg-surface-container-lowest/30">
       {/* Message List */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar">
         {messages.map((msg, i) => (
