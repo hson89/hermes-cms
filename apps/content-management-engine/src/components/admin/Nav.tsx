@@ -8,7 +8,7 @@ import { Icon } from '../ui/atoms/Icon'
 
 export const Nav: React.FC<any> = () => {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, logOut } = useAuth()
 
   const navLinks = [
     { label: 'Dashboard', icon: 'grid_view', path: '/admin' },
@@ -74,7 +74,39 @@ export const Nav: React.FC<any> = () => {
           <Icon name="settings" className="!text-xl" />
           <span>Settings</span>
         </Link>
+        <button
+          onClick={() => logOut()}
+          className="flex w-full items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant rounded-xl font-label text-sm transition-all no-underline bg-transparent border-none cursor-pointer text-left group"
+        >
+          <Icon name="logout" className="!text-xl transition-transform group-hover:translate-x-0.5" />
+          <span>Sign Out</span>
+        </button>
       </div>
+
+      {user && (
+        <div className="mx-4 mt-2 p-3 bg-surface-container-high/40 rounded-2xl flex items-center justify-between gap-3 border border-outline-variant/5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-label text-xs font-bold shrink-0">
+              {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : user.email?.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex flex-col">
+              <span className="font-label text-xs font-bold text-on-surface truncate leading-none mb-1">
+                {user.name || 'User'}
+              </span>
+              <span className="font-label text-[10px] text-on-surface-variant/70 uppercase tracking-wider font-semibold leading-none truncate">
+                {user.role || 'Editor'}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => logOut()}
+            title="Sign Out"
+            className="w-8 h-8 rounded-xl hover:bg-surface-variant text-on-surface-variant hover:text-error flex items-center justify-center transition-all border-none bg-transparent cursor-pointer shrink-0"
+          >
+            <Icon name="logout" className="!text-lg" />
+          </button>
+        </div>
+      )}
     </nav>
   )
 }

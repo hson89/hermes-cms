@@ -42,6 +42,12 @@ export async function POST(req: NextRequest) {
   const fieldsToRefine = Object.keys(current_draft_json)
   const authoringServiceUrl = process.env.CONTENT_AUTHORING_SERVICE_URL
   const internalSecret = process.env.INTERNAL_SERVICE_SECRET
+  
+  const abortController = new AbortController()
+  req.signal.addEventListener('abort', () => {
+    console.log('[AI Proxy] Refine All: Client disconnected, aborting parallel requests.')
+    abortController.abort()
+  })
 
   try {
     const refinementPromises = fieldsToRefine.map(async (field) => {
@@ -52,6 +58,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
           'X-Internal-Secret': internalSecret as string,
         },
+        signal: abortController.signal,
         body: JSON.stringify({
           prompt: `${prompt} (Focus on field: ${field})`,
           current_draft_json: { [field]: current_draft_json[field] },
@@ -76,6 +83,7 @@ export async function POST(req: NextRequest) {
       let promptTokens = 0
       let completionTokens = 0
       let totalTokens = 0
+      let estimatedCost = 0
 
       try {
         while (true) {
@@ -98,6 +106,12 @@ export async function POST(req: NextRequest) {
                   if (parsed.draft && parsed.draft[field]) {
                     resultData = parsed.draft[field]
                   }
+                  if (parsed.usage_metadata) {
+                    promptTokens = parsed.usage_metadata.input_tokens || promptTokens
+                    completionTokens = parsed.usage_metadata.output_tokens || completionTokens
+                    totalTokens = parsed.usage_metadata.total_tokens || (promptTokens + completionTokens)
+                    estimatedCost = parsed.usage_metadata.cost_microdollars || estimatedCost
+                  }
                 } catch (e) {
                   parseError = "Failed to parse REFINE_COMPLETE data"
                 }
@@ -107,23 +121,15 @@ export async function POST(req: NextRequest) {
               if (dataLine && dataLine.startsWith('data: ')) {
                 parseError = dataLine.replace('data: ', '')
               }
-            } else if (line.includes('"usage_metadata"')) {
-              try {
-                const match = line.match(/"usage_metadata":\s*({[^}]+})/)
-                if (match) {
-                  const usage = JSON.parse(match[1])
-                  promptTokens = usage.input_tokens || 0
-                  completionTokens = usage.output_tokens || 0
-                  totalTokens = usage.total_tokens || (promptTokens + completionTokens)
-                }
-              } catch (e) {
-                // Ignore parsing errors for metadata
-              }
             }
           }
         }
       } catch (err: any) {
-        parseError = err.message
+        if (err.name === 'AbortError') {
+          parseError = 'Aborted'
+        } else {
+          parseError = err.message
+        }
       }
 
       return { 
@@ -132,7 +138,8 @@ export async function POST(req: NextRequest) {
         data: { [field]: resultData || current_draft_json[field] },
         promptTokens,
         completionTokens,
-        totalTokens
+        totalTokens,
+        estimatedCost
       }
     })
 
@@ -140,14 +147,16 @@ export async function POST(req: NextRequest) {
     const combinedDraft = results.reduce((acc, curr) => ({ ...acc, ...curr.data }), {})
     const errors = results.filter(r => r.error).map(r => ({ field: r.field, error: r.error }))
     
-    // Aggregate tokens
+    // Aggregate tokens and costs
     let totalPromptTokens = 0
     let totalCompletionTokens = 0
     let totalAllTokens = 0
+    let totalCostMicrodollars = 0
     results.forEach(r => {
       totalPromptTokens += (r as any).promptTokens || 0
       totalCompletionTokens += (r as any).completionTokens || 0
       totalAllTokens += (r as any).totalTokens || 0
+      totalCostMicrodollars += (r as any).estimatedCost || 0
     })
 
     const resolvedModel = (await payload.findByID({ collection: 'tenants', id: tenantId })).defaultLLMModel || 'openai/gpt-4o'
@@ -168,10 +177,12 @@ export async function POST(req: NextRequest) {
         promptTokens: totalPromptTokens,
         completionTokens: totalCompletionTokens,
         totalTokens: totalAllTokens,
+        estimatedCost: totalCostMicrodollars,
         styleModifier: style_modifier_id,
       } as any,
       overrideAccess: true,
     })
+
 
     const responsePayload: any = { draft: combinedDraft }
     if (errors.length > 0) {

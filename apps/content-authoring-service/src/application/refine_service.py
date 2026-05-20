@@ -18,6 +18,7 @@ from src.domain.content_drafting.prompts import REFINEMENT_PROMPT
 from src.application.ai_service import AIService
 from src.infrastructure.repositories.session_repository import SQLSessionRepository
 from src.domain.ai_agent_session.models import AIAgentSession
+from src.domain.content_drafting.cost_calculator import calculate_cost
 
 
 class RefineService:
@@ -48,8 +49,11 @@ class RefineService:
         repo = SQLSessionRepository(db)
         
         if session_id:
-            session = await repo.get_by_id(UUID(session_id))
-            if not session or str(session.tenant_id) != tenant_id:
+            try:
+                session = await repo.get_by_id(UUID(session_id))
+                if not session or str(session.tenant_id) != tenant_id:
+                    session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
+            except (ValueError, AttributeError):
                 session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
         else:
             session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
@@ -59,13 +63,16 @@ class RefineService:
 
         # Use style modifier instructions
         style_modifier_instructions = style_modifier_prompt or ""
-
-        model = self.ai_service.get_model(model_override=model_override)
+        resolved_model = model_override or "openai/gpt-4o"
+        model = self.ai_service.get_model(model_override=resolved_model)
         history = session.to_langchain_messages()
 
         chain = REFINEMENT_PROMPT | model
 
         full_content = ""
+        total_input_tokens = 0
+        total_output_tokens = 0
+        
         async for chunk in chain.astream(
             {
                 "locale": locale,
@@ -76,6 +83,10 @@ class RefineService:
                 "history": history,
             }
         ):
+            if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
+                total_input_tokens += chunk.usage_metadata.get('input_tokens', 0)
+                total_output_tokens += chunk.usage_metadata.get('output_tokens', 0)
+
             if hasattr(chunk, 'content'):
                 content = chunk.content
                 full_content += content
@@ -92,6 +103,27 @@ class RefineService:
             else:
                 json_str = full_content
             refined_data = json.loads(json_str)
-            yield {"event": "REFINE_COMPLETE", "data": {"draft": refined_data, "sessionId": str(session.id)}}
+            
+            # Calculate cost
+            cost = calculate_cost(
+                model_identifier=resolved_model,
+                input_tokens=total_input_tokens,
+                output_tokens=total_output_tokens
+            )
+            
+            yield {
+                "event": "REFINE_COMPLETE", 
+                "data": {
+                    "draft": refined_data, 
+                    "sessionId": str(session.id),
+                    "usage_metadata": {
+                        "input_tokens": total_input_tokens,
+                        "output_tokens": total_output_tokens,
+                        "total_tokens": total_input_tokens + total_output_tokens,
+                        "cost_microdollars": cost
+                    }
+                }
+            }
         except Exception as e:
             yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON: {e}"}}
+

@@ -239,6 +239,19 @@ aside.nav {
   z-index: 40 !important;
 }
 
+/* Allow our custom header's elements (dropdowns etc.) to receive pointer events.
+   Payload's wrapper div intercepts clicks — make it pass-through. */
+.app-header__wrapper {
+  pointer-events: none !important;
+}
+
+/* Re-enable pointer events specifically on our custom header element */
+.app-header__wrapper header,
+.app-header__wrapper [data-radix-popper-content-wrapper],
+.app-header__wrapper > * {
+  pointer-events: auto !important;
+}
+
 /* Hide Payload's built-in header elements */
 .app-header__account,
 .app-header__logo,
@@ -249,6 +262,7 @@ aside.nav {
   display: none !important;
   visibility: hidden !important;
 }
+
 
 /* 4. Responsive Handlers */
 @media (max-width: 1023px) {

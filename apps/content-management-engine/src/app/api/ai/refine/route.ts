@@ -50,6 +50,13 @@ export async function POST(req: NextRequest) {
     const internalSecret = process.env.INTERNAL_SERVICE_SECRET
 
     const startTime = Date.now()
+    const abortController = new AbortController()
+    
+    // Propagate client disconnection to the microservice
+    req.signal.addEventListener('abort', () => {
+      console.log('[AI Proxy] Client disconnected, aborting upstream request.')
+      abortController.abort()
+    })
 
     let response: Response
     try {
@@ -59,6 +66,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
           'X-Internal-Secret': internalSecret as string,
         },
+        signal: abortController.signal,
         body: JSON.stringify({
           ...body,
           tenant_id: tenantId,
@@ -67,6 +75,9 @@ export async function POST(req: NextRequest) {
         }),
       })
     } catch (err: any) {
+      if (err.name === 'AbortError') {
+        return new Response('Aborted', { status: 499 })
+      }
       console.error('[AI Proxy Error] Failed to connect to Content Authoring Service:', err)
       // Log error to Audit Logs
       await payload.create({
@@ -128,6 +139,7 @@ export async function POST(req: NextRequest) {
     let promptTokens = 0
     let completionTokens = 0
     let totalTokens = 0
+    let estimatedCost = 0
     let streamHasError = false
     let streamErrorMessage = ''
     let buffer = ''
@@ -153,14 +165,17 @@ export async function POST(req: NextRequest) {
               streamErrorMessage = line
             }
           }
+          
+          // Extract usage metadata including cost
           if (line.includes('"usage_metadata"')) {
             try {
               const match = line.match(/"usage_metadata":\s*({[^}]+})/)
               if (match) {
                 const usage = JSON.parse(match[1])
-                promptTokens = usage.input_tokens || 0
-                completionTokens = usage.output_tokens || 0
+                promptTokens = usage.input_tokens || promptTokens
+                completionTokens = usage.output_tokens || completionTokens
                 totalTokens = usage.total_tokens || (promptTokens + completionTokens)
+                estimatedCost = usage.cost_microdollars || estimatedCost
               }
             } catch (e) {
               console.error("Failed to parse usage metadata", e)
@@ -186,12 +201,14 @@ export async function POST(req: NextRequest) {
             promptTokens,
             completionTokens,
             totalTokens,
+            estimatedCost,
             styleModifier: body.style_modifier_id,
           } as any,
           overrideAccess: true,
         })
       },
     })
+
 
     return new Response(stream.pipeThrough(loggingStream), {
       headers: {
