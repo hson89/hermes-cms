@@ -77,7 +77,8 @@ hermes-cms/
 ├── docker-compose.yml        # Local dev infra (2× Postgres, Kafka, Zookeeper)
 ├── docs/architecture.md      # High-level architecture doc
 ├── k8s/                      # Kubernetes manifests
-├── scripts/start-dev.sh      # One-command local dev startup
+├── scripts/start-dev.sh      # One-command local dev startup (Unix)
+├── scripts/start-dev.ps1     # One-command local dev startup (Windows)
 ├── specs/001-ai-headless-cms/ # Feature spec, plan, tasks, data model, contracts
 ├── DESIGN.md                 # "Alexandria" design system tokens
 └── README.md
@@ -128,7 +129,8 @@ Refer to `DESIGN.md` at the project root for full token definitions:
 
 ```bash
 # Start everything (Docker infra + CMS + AI service)
-./scripts/start-dev.sh
+./scripts/start-dev.sh         # Unix
+.\scripts\start-dev.ps1        # Windows (PowerShell)
 
 # Content Management Engine only (from apps/content-management-engine/)
 pnpm dev           # Next.js dev server on :3000

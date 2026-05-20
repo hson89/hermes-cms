@@ -54,7 +54,8 @@ hermes-cms/
 │   ├── infrastructure/               # Adapters, persistence
 │   └── main.py                       # FastAPI entrypoint
 ├── docker-compose.yml                # 2× Postgres + Kafka + Zookeeper
-├── scripts/start-dev.sh              # One-command local dev startup
+├── scripts/start-dev.sh              # One-command local dev startup (Unix)
+├── scripts/start-dev.ps1             # One-command local dev startup (Windows)
 ├── specs/001-ai-headless-cms/        # Active feature spec + plan + tasks
 ├── DESIGN.md                         # Alexandria design system tokens
 └── docs/architecture.md              # Architecture overview
@@ -64,7 +65,8 @@ hermes-cms/
 
 ```bash
 # Full stack (recommended)
-./scripts/start-dev.sh
+./scripts/start-dev.sh                # Unix
+.\scripts\start-dev.ps1               # Windows (PowerShell)
 
 # CMS only
 cd apps/content-management-engine && pnpm dev          # :3000
