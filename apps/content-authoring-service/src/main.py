@@ -211,6 +211,8 @@ async def generate_draft(
                 style_modifier_id=body.style_modifier_id,
                 style_modifier_prompt=body.style_modifier_prompt,
             ):
+                if await request.is_disconnected():
+                    break
                 yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
         except Exception as exc:
             import traceback
@@ -250,6 +252,8 @@ async def refine_draft(
                 db=db,
                 locale=body.locale,
             ):
+                if await request.is_disconnected():
+                    break
                 yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
         except Exception as exc:
             import traceback

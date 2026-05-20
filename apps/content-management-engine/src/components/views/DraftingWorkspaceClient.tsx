@@ -106,11 +106,12 @@ export const DraftingWorkspaceClient: React.FC = () => {
     const { event: eventType, data } = event
 
     if (eventType === 'SCHEMA_UPDATED') {
-      const { contentType: newCT } = data
+      const { contentType: newCT, prompt: carryPrompt } = data
       setContentType(newCT)
-      setSchema(newCT.fields)
+      setSchema(newCT.fields || [])
       setSession((prev: any) => ({ ...prev, contentType: newCT.id }))
-      router.replace(`/admin/draft/${newCT.id}`)
+      const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
+      router.replace(`/admin/draft/${newCT.id}${queryParam}`)
     } else if (eventType === 'FIELD_START') {
       setDraftingFields(prev => new Set(prev).add(data.field))
     } else if (eventType === 'TEXT_DELTA' && data.field) {
@@ -194,7 +195,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
     if (!session?.id) return
     setLoading(true)
     try {
-      const res = await fetch(`/api-internal/ai-drafting/sessions/${session.id}/promote`, {
+      const res = await fetch(`/api/ai-drafting/sessions/${session.id}/promote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId: activeTenantId }),
@@ -267,6 +268,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
         schemaPresent={!!schema}
         chatPanel={
           <ChatPanel 
+            mode="draft"
+            isCard={false}
             sessionId={session?.id} 
             onEvent={handleAIEvent} 
             initialPrompt={initialPrompt}

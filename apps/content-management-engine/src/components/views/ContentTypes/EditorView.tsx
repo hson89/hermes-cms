@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/atoms/Badge'
 import { Label } from '@/components/ui/atoms/Label'
 import { Card } from '@/components/ui/molecules/Card'
 import { FormField } from '@/components/ui/molecules/FormField'
-import { CoCreationChat } from './CoCreationChat'
+import { ChatPanel } from '../../ui/organisms/ChatPanel'
 
 interface FieldDefinition {
   name: string
@@ -794,7 +794,9 @@ export const EditorView: React.FC = () => {
 
         {/* Right Column (5 cols): AI Co-creation Companion */}
         <div className="lg:col-span-5">
-          <CoCreationChat
+          <ChatPanel
+            mode="schema"
+            isCard={true}
             sessionId={sessionId}
             onSessionIdChange={setSessionId}
             currentSchema={{ name, fields }}

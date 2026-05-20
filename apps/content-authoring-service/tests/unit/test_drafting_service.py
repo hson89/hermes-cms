@@ -43,7 +43,7 @@ async def test_generate_draft_stream_yields_events(drafting_service, mock_ai_ser
         async for event in drafting_service.generate_draft_stream(
             prompt="Write a blog post about AI",
             content_type_slug="blog-posts",
-            schema_json={},
+            schema_json={"fields": [{"name": "title", "type": "text"}]},
             tenant_id="tenant-1",
             user_id="user-1",
             db=mock_db
@@ -89,7 +89,7 @@ async def test_generate_draft_with_style_modifier(drafting_service, mock_ai_serv
         async for _ in drafting_service.generate_draft_stream(
             prompt="Hello",
             content_type_slug="post",
-            schema_json={},
+            schema_json={"fields": [{"name": "title", "type": "text"}]},
             tenant_id="t1",
             user_id="u1",
             db=mock_db,
@@ -101,3 +101,69 @@ async def test_generate_draft_with_style_modifier(drafting_service, mock_ai_serv
         mock_chain.astream.assert_called_once()
         call_args = mock_chain.astream.call_args[0][0]
         assert call_args["style_modifier_instructions"] == style_prompt
+
+
+@pytest.mark.asyncio
+async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_service):
+    """
+    Verify that when content_type_slug or schema_json is missing (bootstrap flow),
+    the generator calls generate_schema, yields SCHEMA_UPDATED and DRAFT_COMPLETE with default values,
+    and terminates early without running the drafting LLM chain.
+    """
+    mock_db = AsyncMock()
+    mock_ai_service.generate_schema = AsyncMock(return_value={
+        "schema": {
+            "name": "Contact Form",
+            "slug": "contact-form",
+            "fields": [
+                {"name": "fullName", "type": "text", "label": "Full Name"},
+                {"name": "consent", "type": "boolean", "label": "Consent"},
+                {"name": "phone", "type": "number", "label": "Phone"}
+            ]
+        },
+        "sessionId": "123e4567-e89b-12d3-a456-426614174000",
+        "message": "Schema co-created successfully."
+    })
+
+    # Verify that the LLM chains are NOT called
+    events = []
+    async for event in drafting_service.generate_draft_stream(
+        prompt="create a contact form",
+        content_type_slug=None,
+        schema_json=None,
+        tenant_id="tenant-123",
+        user_id="user-123",
+        db=mock_db
+    ):
+        events.append(event)
+
+    # 1. Assert generate_schema was called with original prompt
+    mock_ai_service.generate_schema.assert_called_once_with(
+        prompt="create a contact form",
+        tenant_id="tenant-123",
+        user_id="user-123",
+        current_schema=None,
+        db=mock_db
+    )
+
+    # 2. Assert correct sequence of emitted events
+    assert len(events) == 3
+    
+    # Event 1: Explanation delta
+    assert events[0]["event"] == "TEXT_DELTA"
+    assert "Schema co-created successfully." in events[0]["data"]
+
+    # Event 2: SCHEMA_UPDATED with content type AND carry-over prompt
+    assert events[1]["event"] == "SCHEMA_UPDATED"
+    assert events[1]["data"]["contentType"]["name"] == "Contact Form"
+    assert events[1]["data"]["prompt"] == "create a contact form"
+
+    # Event 3: DRAFT_COMPLETE containing empty default structured draft
+    assert events[2]["event"] == "DRAFT_COMPLETE"
+    draft = events[2]["data"]["draft"]
+    assert draft["fullName"] == ""
+    assert draft["consent"] is False
+    assert draft["phone"] is None
+    # Standard fallback fields
+    assert draft["title"] == ""
+    assert draft["slug"] == ""

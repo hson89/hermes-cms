@@ -60,7 +60,32 @@ class DraftingService:
             if schema_result.get("message"):
                 yield {"event": "TEXT_DELTA", "data": schema_result["message"] + "\n\n"}
                 
-            yield {"event": "SCHEMA_UPDATED", "data": schema_json}
+            yield {"event": "SCHEMA_UPDATED", "data": {"contentType": schema_json, "prompt": prompt}}
+
+            # Construct empty/default draft structure based on schema fields
+            default_draft = {}
+            for field in schema_json.get("fields", []):
+                fname = field.get("name")
+                ftype = field.get("type")
+                if not fname:
+                    continue
+                if ftype == "boolean":
+                    default_draft[fname] = False
+                elif ftype == "number":
+                    default_draft[fname] = None
+                elif ftype in ("text", "select"):
+                    default_draft[fname] = ""
+                else:
+                    default_draft[fname] = None
+
+            # Ensure standard title/slug properties exist if not defined
+            if "title" not in default_draft:
+                default_draft["title"] = ""
+            if "slug" not in default_draft:
+                default_draft["slug"] = ""
+
+            yield {"event": "DRAFT_COMPLETE", "data": {"draft": default_draft, "sessionId": session_id}}
+            return
 
         repo = SQLSessionRepository(db)
         
