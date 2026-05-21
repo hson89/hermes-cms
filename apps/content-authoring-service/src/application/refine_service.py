@@ -126,5 +126,55 @@ class RefineService:
                 }
             }
         except Exception as e:
-            yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON: {e}"}}
+            try:
+                # Healing block: attempt to recover plain text output into structured JSON schema format
+                healing_prompt = f"""You are an expert JSON formatter.
+You must convert the refined draft text below into a valid JSON object matching the requested schema.
+Strictly adhere to the keys, field names, and structures defined in the schema.
+
+Refined Text:
+{full_content}
+
+Schema:
+{json.dumps(schema_json, indent=2)}
+
+Return ONLY the raw JSON object matching the schema. Do not include any other conversational text, reasoning, or explanations. Do not include markdown formatting or blocks."""
+
+                healing_model = self.ai_service.get_model(model_override=resolved_model)
+                healing_res = await healing_model.ainvoke([HumanMessage(content=healing_prompt)])
+                healing_content = healing_res.content.strip()
+                
+                match_healed = re.search(r"```(?:json)?\s*(.*?)\s*```", healing_content, re.DOTALL)
+                clean_healed = match_healed.group(1).strip() if match_healed else healing_content.strip()
+                
+                start_idx_healed = clean_healed.find('{')
+                end_idx_healed = clean_healed.rfind('}')
+                if start_idx_healed != -1 and end_idx_healed != -1 and start_idx_healed < end_idx_healed:
+                    json_str_healed = clean_healed[start_idx_healed:end_idx_healed + 1]
+                else:
+                    json_str_healed = clean_healed
+                
+                refined_healed = json.loads(json_str_healed)
+                
+                cost = calculate_cost(
+                    model_identifier=resolved_model,
+                    input_tokens=total_input_tokens,
+                    output_tokens=total_output_tokens
+                )
+                
+                yield {
+                    "event": "REFINE_COMPLETE", 
+                    "data": {
+                        "draft": refined_healed, 
+                        "sessionId": str(session.id),
+                        "usage_metadata": {
+                            "input_tokens": total_input_tokens,
+                            "output_tokens": total_output_tokens,
+                            "total_tokens": total_input_tokens + total_output_tokens,
+                            "cost_microdollars": cost
+                        }
+                    }
+                }
+            except Exception as healing_err:
+                yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON: {e}. Healing also failed: {healing_err}. Raw content: {full_content[:2000]}"}}
 

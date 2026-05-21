@@ -305,3 +305,61 @@ async def test_generate_draft_stream_bootstrap_flow_with_matching(drafting_servi
     draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
     assert draft_event["data"]["draft"]["title"] == "Matched Fuel Saving Info"
 
+
+@pytest.mark.asyncio
+async def test_generate_draft_stream_self_healing(drafting_service, mock_ai_service):
+    """
+    Verify that when the model output is plain text (not valid JSON),
+    the generator catches the parse error, invokes the healing model,
+    and successfully yields the parsed JSON draft from the healed response.
+    """
+    mock_db = AsyncMock()
+
+    # Mock the LLM used for primary generation (which returns plain text) and healing (which returns JSON)
+    mock_model = MagicMock()
+    mock_model_with_tools = MagicMock()
+    
+    mock_chunk = MagicMock()
+    mock_chunk.content = "Here is a structured outline:\nTitle: Saving Fuel"
+    
+    async def mock_astream(*args, **kwargs):
+        yield mock_chunk
+        
+    mock_ai_service.get_model.return_value = mock_model
+    mock_model.bind_tools.return_value = mock_model_with_tools
+    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
+
+    # Healing response
+    mock_healed_res = MagicMock()
+    mock_healed_res.content = '{"title": "Saving Fuel Healed", "body": "healed content"}'
+    mock_model.ainvoke = AsyncMock(return_value=mock_healed_res)
+
+    with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class:
+        mock_repo = mock_repo_class.return_value
+        mock_repo.get_by_id.return_value = None
+        mock_repo.save = AsyncMock()
+
+        events = []
+        async for event in drafting_service.generate_draft_stream(
+            prompt="write an article about saving fuel",
+            content_type_slug="articles",
+            schema_json={"fields": [{"name": "title", "type": "text"}, {"name": "body", "type": "text"}]},
+            tenant_id="tenant-123",
+            user_id="user-123",
+            db=mock_db
+        ):
+            events.append(event)
+
+    # 1. Verify astream was called for streaming primary content
+    mock_model_with_tools.astream.assert_called()
+    
+    # 2. Verify ainvoke was called on the healing model
+    mock_model.ainvoke.assert_called()
+
+    # 3. Verify healing succeeded and returned valid schema data
+    assert any(e["event"] == "DRAFT_COMPLETE" for e in events)
+    draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
+    assert draft_event["data"]["draft"]["title"] == "Saving Fuel Healed"
+    assert draft_event["data"]["draft"]["body"] == "healed content"
+
+
