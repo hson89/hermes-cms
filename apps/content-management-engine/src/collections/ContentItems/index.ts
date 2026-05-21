@@ -71,6 +71,11 @@ export const ContentItems: CollectionConfig = {
     useAsTitle: 'title',
     description: 'Content entries per tenant and content type.',
     components: {
+      views: {
+        list: {
+          Component: '/src/components/views/ContentItemListPage#ContentItemListPage',
+        },
+      },
       edit: {
         beforeDocumentControls: [
           '/src/components/admin/DraftingCTA#DraftingCTA',

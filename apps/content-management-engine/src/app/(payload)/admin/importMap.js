@@ -30,6 +30,7 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { DraftingCTA as DraftingCTA_77419b624008c9bd679717994141bbad } from '../../../../src/components/admin/DraftingCTA'
 import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
+import { ContentItemListPage as ContentItemListPage_37d21c0ac527c782eaa01278022738dc } from '../../../../src/components/views/ContentItemListPage'
 import { CreateHostedSitePage as CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a } from '../../../../src/components/views/CreateHostedSitePage'
 import { HostedSiteListPage as HostedSiteListPage_3e442b45b17811de0e52627585bc87ad } from '../../../../src/components/views/HostedSiteListPage'
 import { CreateAPIKeyPage as CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d } from '../../../../src/components/views/CreateAPIKeyPage'
@@ -79,6 +80,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/src/components/admin/DraftingCTA#DraftingCTA": DraftingCTA_77419b624008c9bd679717994141bbad,
   "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,
+  "/src/components/views/ContentItemListPage#ContentItemListPage": ContentItemListPage_37d21c0ac527c782eaa01278022738dc,
   "/src/components/views/CreateHostedSitePage#CreateHostedSitePage": CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a,
   "/src/components/views/HostedSiteListPage#HostedSiteListPage": HostedSiteListPage_3e442b45b17811de0e52627585bc87ad,
   "/src/components/views/CreateAPIKeyPage#CreateAPIKeyPage": CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d,
