@@ -101,8 +101,8 @@ async def test_generate_draft_with_style_modifier(drafting_service, mock_ai_serv
 async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_service):
     """
     Verify that when content_type_slug or schema_json is missing (bootstrap flow),
-    the generator calls generate_schema, yields SCHEMA_UPDATED and DRAFT_COMPLETE with default values,
-    and terminates early without running the drafting LLM chain.
+    the generator checks for existing schemas, generates a new schema, registers it in Payload CMS,
+    and then falls through to stream the actual draft content from the LLM drafting chain.
     """
     mock_db = AsyncMock()
     mock_ai_service.generate_schema = AsyncMock(return_value={
@@ -119,19 +119,75 @@ async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_se
         "message": "Schema co-created successfully."
     })
 
-    # Verify that the LLM chains are NOT called
-    events = []
-    async for event in drafting_service.generate_draft_stream(
-        prompt="create a contact form",
-        content_type_slug=None,
-        schema_json=None,
-        tenant_id="tenant-123",
-        user_id="user-123",
-        db=mock_db
-    ):
-        events.append(event)
+    # Mock the LangChain LLM used for matching and drafting
+    mock_model = MagicMock()
+    mock_model_with_tools = MagicMock()
+    
+    mock_match_res = MagicMock()
+    mock_match_res.content = "NONE" # No matching content type
+    
+    mock_chunk1 = MagicMock()
+    mock_chunk1.content = "Thought: Drafting contact form..."
+    mock_chunk2 = MagicMock()
+    mock_chunk2.content = ' {"fullName": "John Doe", "consent": true, "phone": 1234567}'
+    
+    async def mock_astream(*args, **kwargs):
+        yield mock_chunk1
+        yield mock_chunk2
+        
+    mock_ai_service.get_model.return_value = mock_model
+    mock_model.ainvoke = AsyncMock(return_value=mock_match_res)
+    mock_model.bind_tools.return_value = mock_model_with_tools
+    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
 
-    # 1. Assert generate_schema was called with original prompt
+    # Mock HTTP client responses
+    class MockResponse:
+        def __init__(self, json_data, status_code):
+            self._json = json_data
+            self.status_code = status_code
+        def json(self):
+            return self._json
+        @property
+        def text(self):
+            return json.dumps(self._json)
+
+    # Mock the database repository and httpx client
+    with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class, \
+         patch("httpx.AsyncClient", autospec=True) as mock_client_class:
+        
+        mock_repo = mock_repo_class.return_value
+        mock_repo.get_by_id.return_value = None
+        mock_repo.save = AsyncMock()
+
+        mock_client = mock_client_class.return_value.__aenter__.return_value
+        mock_client.get = AsyncMock(return_value=MockResponse({"docs": []}, 200))
+        mock_client.post = AsyncMock(return_value=MockResponse({
+            "id": "mock-ct-id",
+            "name": "Contact Form",
+            "slug": "contact-form",
+            "schema": {
+                "name": "Contact Form",
+                "slug": "contact-form",
+                "fields": [
+                    {"name": "fullName", "type": "text", "label": "Full Name"},
+                    {"name": "consent", "type": "boolean", "label": "Consent"},
+                    {"name": "phone", "type": "number", "label": "Phone"}
+                ]
+            }
+        }, 201))
+
+        events = []
+        async for event in drafting_service.generate_draft_stream(
+            prompt="create a contact form",
+            content_type_slug=None,
+            schema_json=None,
+            tenant_id="tenant-123",
+            user_id="user-123",
+            db=mock_db
+        ):
+            events.append(event)
+
+    # 1. Assert generate_schema was called
     mock_ai_service.generate_schema.assert_called_once_with(
         prompt="create a contact form",
         tenant_id="tenant-123",
@@ -140,24 +196,112 @@ async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_se
         db=mock_db
     )
 
-    # 2. Assert correct sequence of emitted events
-    assert len(events) == 3
+    # 2. Verify events
+    assert any(e["event"] == "SCHEMA_UPDATED" for e in events)
+    schema_event = next(e for e in events if e["event"] == "SCHEMA_UPDATED")
+    assert schema_event["data"]["contentType"]["id"] == "mock-ct-id"
+    assert schema_event["data"]["contentType"]["name"] == "Contact Form"
     
-    # Event 1: Explanation delta
-    assert events[0]["event"] == "TEXT_DELTA"
-    assert "Schema co-created successfully." in events[0]["data"]
+    assert any(e["event"] == "DRAFT_COMPLETE" for e in events)
+    draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
+    assert draft_event["data"]["draft"]["fullName"] == "John Doe"
+    assert draft_event["data"]["draft"]["consent"] is True
 
-    # Event 2: SCHEMA_UPDATED with content type AND carry-over prompt
-    assert events[1]["event"] == "SCHEMA_UPDATED"
-    assert events[1]["data"]["contentType"]["name"] == "Contact Form"
-    assert events[1]["data"]["prompt"] == "create a contact form"
 
-    # Event 3: DRAFT_COMPLETE containing empty default structured draft
-    assert events[2]["event"] == "DRAFT_COMPLETE"
-    draft = events[2]["data"]["draft"]
-    assert draft["fullName"] == ""
-    assert draft["consent"] is False
-    assert draft["phone"] is None
-    # Standard fallback fields
-    assert draft["title"] == ""
-    assert draft["slug"] == ""
+@pytest.mark.asyncio
+async def test_generate_draft_stream_bootstrap_flow_with_matching(drafting_service, mock_ai_service):
+    """
+    Verify that when content_type_slug or schema_json is missing (bootstrap flow),
+    and there is an existing content type matching the user prompt,
+    the generator reuses it and falls through to stream the actual draft content.
+    """
+    mock_db = AsyncMock()
+
+    # Mock the LangChain LLM used for matching and drafting
+    mock_model = MagicMock()
+    mock_model_with_tools = MagicMock()
+    
+    mock_match_res = MagicMock()
+    mock_match_res.content = "existing-article" # Matched slug
+    
+    mock_chunk1 = MagicMock()
+    mock_chunk1.content = "Thought: Drafting article..."
+    mock_chunk2 = MagicMock()
+    mock_chunk2.content = ' {"title": "Matched Fuel Saving Info", "slug": "matched-fuel-saving", "body": "matched content"}'
+    
+    async def mock_astream(*args, **kwargs):
+        yield mock_chunk1
+        yield mock_chunk2
+        
+    mock_ai_service.get_model.return_value = mock_model
+    mock_model.ainvoke = AsyncMock(return_value=mock_match_res)
+    mock_model.bind_tools.return_value = mock_model_with_tools
+    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
+
+    # Mock HTTP client responses
+    class MockResponse:
+        def __init__(self, json_data, status_code):
+            self._json = json_data
+            self.status_code = status_code
+        def json(self):
+            return self._json
+        @property
+        def text(self):
+            return json.dumps(self._json)
+
+    # Mock the database repository and httpx client
+    with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class, \
+         patch("httpx.AsyncClient", autospec=True) as mock_client_class:
+        
+        mock_repo = mock_repo_class.return_value
+        mock_repo.get_by_id.return_value = None
+        mock_repo.save = AsyncMock()
+
+        mock_client = mock_client_class.return_value.__aenter__.return_value
+        mock_client.get = AsyncMock(return_value=MockResponse({
+            "docs": [
+                {
+                    "id": "existing-ct-id",
+                    "name": "Editorial Article",
+                    "slug": "existing-article",
+                    "schema": {
+                        "name": "Editorial Article",
+                        "slug": "existing-article",
+                        "fields": [
+                            {"name": "title", "type": "text"},
+                            {"name": "slug", "type": "text"},
+                            {"name": "body", "type": "text"}
+                        ]
+                    }
+                }
+            ]
+        }, 200))
+
+        events = []
+        async for event in drafting_service.generate_draft_stream(
+            prompt="write an article about saving fuel",
+            content_type_slug=None,
+            schema_json=None,
+            tenant_id="tenant-123",
+            user_id="user-123",
+            db=mock_db
+        ):
+            events.append(event)
+
+    # SCHEMA GENERATION should NOT be called since a match was found!
+    mock_ai_service.generate_schema.assert_not_called()
+
+    # 1. Verify match reused
+    assert any("Reusing existing" in e.get("data", "") for e in events if e["event"] == "TEXT_DELTA")
+    
+    # 2. Verify schema event
+    assert any(e["event"] == "SCHEMA_UPDATED" for e in events)
+    schema_event = next(e for e in events if e["event"] == "SCHEMA_UPDATED")
+    assert schema_event["data"]["contentType"]["id"] == "existing-ct-id"
+    assert schema_event["data"]["contentType"]["slug"] == "existing-article"
+    
+    # 3. Verify draft completed
+    assert any(e["event"] == "DRAFT_COMPLETE" for e in events)
+    draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
+    assert draft_event["data"]["draft"]["title"] == "Matched Fuel Saving Info"
+

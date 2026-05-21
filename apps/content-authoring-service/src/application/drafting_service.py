@@ -4,6 +4,7 @@ import asyncio
 from typing import Any, AsyncGenerator, Optional, List, Dict
 from uuid import UUID
 
+import httpx
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage, BaseMessage
 from langchain_core.runnables import RunnableConfig
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,15 @@ from src.infrastructure.repositories.session_repository import SQLSessionReposit
 from src.application.refine_service import RefineService
 from src.domain.ai_agent_session.models import AIAgentSession
 from src.domain.content_drafting.cost_calculator import calculate_cost, get_model_metadata
+from src.infrastructure.config import settings
+
+
+def slugify(text: str) -> str:
+    s = text.lower().strip()
+    s = re.sub(r'[^\w\s-]', '', s)
+    s = re.sub(r'[\s-]+', '-', s)
+    return s.strip('-')
+
 
 
 class DraftingService:
@@ -46,47 +56,156 @@ class DraftingService:
         Yields events for explanation tokens, field-level updates, and the final JSON draft.
         """
         if not content_type_slug or not schema_json:
-            # Bootstrap flow: generate schema first
-            schema_result = await self.ai_service.generate_schema(
-                prompt=prompt,
-                tenant_id=tenant_id,
-                user_id=user_id,
-                current_schema=schema_json,
-                db=db,
-            )
+            # Bootstrap flow: check if there's an existing matching content type first
+            cms_url = settings.CMS_ENGINE_URL
+            headers = {
+                "X-Internal-Secret": settings.INTERNAL_SERVICE_SECRET,
+                "Content-Type": "application/json",
+            }
             
-            schema_json = schema_result["schema"]
-            content_type_slug = schema_json.get("slug", schema_json.get("name", "Generated Type"))
-            session_id = schema_result["sessionId"]
+            existing_types = []
+            try:
+                async with httpx.AsyncClient() as client:
+                    find_url = f"{cms_url}/api/content-types?where[tenant][equals]={tenant_id}&limit=100"
+                    response = await client.get(find_url, headers=headers)
+                    if response.status_code == 200:
+                        existing_types = response.json().get("docs", [])
+            except Exception as e:
+                yield {"event": "TEXT_DELTA", "data": f"[Warning: Failed to fetch existing content types: {e}]\n\n"}
             
-            if schema_result.get("message"):
-                yield {"event": "TEXT_DELTA", "data": schema_result["message"] + "\n\n"}
+            matched_ct = None
+            if existing_types:
+                # Prepare existing types info for matching
+                types_info = []
+                for ct in existing_types:
+                    desc = ct.get("description", "")
+                    fields_list = [f.get("name") for f in ct.get("schema", {}).get("fields", [])]
+                    types_info.append({
+                        "id": ct.get("id"),
+                        "name": ct.get("name"),
+                        "slug": ct.get("slug"),
+                        "description": desc,
+                        "fields": fields_list
+                    })
                 
-            yield {"event": "SCHEMA_UPDATED", "data": {"contentType": schema_json, "prompt": prompt}}
+                # Fetch default model for matching
+                resolved_model = model_override or "openai/gpt-4o"
+                model_for_match = self.ai_service.get_model(model_override=resolved_model)
+                
+                matching_prompt = f"""You are an assistant that decides if a user's request for content can be satisfied by any of the existing content types.
+Here is the user's request: "{prompt}"
 
-            # Construct empty/default draft structure based on schema fields
-            default_draft = {}
-            for field in schema_json.get("fields", []):
-                fname = field.get("name")
-                ftype = field.get("type")
-                if not fname:
-                    continue
-                if ftype == "boolean":
-                    default_draft[fname] = False
-                elif ftype == "number":
-                    default_draft[fname] = None
-                elif ftype in ("text", "select"):
-                    default_draft[fname] = ""
-                else:
-                    default_draft[fname] = None
+Here are the existing content types (JSON array):
+{json.dumps(types_info, indent=2)}
 
-            if "title" not in default_draft:
-                default_draft["title"] = ""
-            if "slug" not in default_draft:
-                default_draft["slug"] = ""
+Determine if one of the existing content types matches or is a good fit for the user's request (e.g. if they want to write an article, post, etc., and there is a matching Article or Editorial Article type).
+If a good fit exists, reply with the slug of the matched content type.
+If none of them matches or fits, reply with "NONE".
+Return ONLY the slug or "NONE". Do not include any other text or markdown block."""
 
-            yield {"event": "DRAFT_COMPLETE", "data": {"draft": default_draft, "sessionId": session_id}}
-            return
+                try:
+                    matching_res = await model_for_match.ainvoke([HumanMessage(content=matching_prompt)])
+                    matching_ans = matching_res.content.strip().strip("`").strip()
+                    if matching_ans != "NONE":
+                        for ct in existing_types:
+                            if ct.get("slug") == matching_ans:
+                                matched_ct = ct
+                                break
+                except Exception as e:
+                    pass
+            
+            content_type_id = None
+            if matched_ct:
+                schema_json = matched_ct.get("schema", {})
+                content_type_slug = matched_ct.get("slug")
+                content_type_name = matched_ct.get("name")
+                content_type_id = matched_ct.get("id")
+                yield {"event": "TEXT_DELTA", "data": f"Reusing existing content type: **{content_type_name}**\n\n"}
+                
+                yield {
+                    "event": "SCHEMA_UPDATED",
+                    "data": {
+                        "contentType": {
+                            "id": content_type_id,
+                            "name": content_type_name,
+                            "slug": content_type_slug,
+                            "fields": schema_json.get("fields", []),
+                            "schema": schema_json,
+                        },
+                        "prompt": prompt,
+                    }
+                }
+            else:
+                yield {"event": "TEXT_DELTA", "data": "No matching content type found. Creating a new one...\n\n"}
+                # Generate new schema
+                schema_result = await self.ai_service.generate_schema(
+                    prompt=prompt,
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    current_schema=schema_json,
+                    db=db,
+                )
+                
+                schema_json = schema_result["schema"]
+                content_type_slug = schema_json.get("slug", schema_json.get("name", "Generated Type"))
+                session_id = schema_result["sessionId"]
+                
+                if schema_result.get("message"):
+                    yield {"event": "TEXT_DELTA", "data": schema_result["message"] + "\n\n"}
+                
+                if not schema_json.get("slug") and schema_json.get("name"):
+                    schema_json["slug"] = slugify(schema_json["name"])
+                elif not schema_json.get("slug"):
+                    schema_json["slug"] = "generated-type"
+                
+                # Register new content type in Payload CMS via POST /api/content-types
+                payload_data = {
+                    "name": schema_json.get("name", "Generated Type"),
+                    "slug": schema_json.get("slug", "generated-type"),
+                    "status": "draft",
+                    "originalSchema": schema_json,
+                    "schema": schema_json,
+                    "generatedByAI": True,
+                    "aiSessionId": session_id,
+                    "tenant": tenant_id
+                }
+                
+                try:
+                    async with httpx.AsyncClient() as client:
+                        create_url = f"{cms_url}/api/content-types"
+                        response = await client.post(create_url, json=payload_data, headers=headers)
+                        if response.status_code in (200, 201):
+                            created_ct = response.json()
+                            if created_ct.get("doc"):
+                                content_type_id = created_ct["doc"].get("id")
+                                schema_json = created_ct["doc"].get("schema", schema_json)
+                                content_type_slug = created_ct["doc"].get("slug", content_type_slug)
+                            else:
+                                content_type_id = created_ct.get("id")
+                                schema_json = created_ct.get("schema", schema_json)
+                                content_type_slug = created_ct.get("slug", content_type_slug)
+                            
+                            yield {"event": "TEXT_DELTA", "data": f"Registered new content type **{schema_json.get('name')}** in CMS.\n\n"}
+                        else:
+                            yield {"event": "TEXT_DELTA", "data": f"[Warning: Failed to create content type in CMS: {response.text}]\n\n"}
+                except Exception as e:
+                    yield {"event": "TEXT_DELTA", "data": f"[Warning: Failed to connect to CMS to create content type: {e}]\n\n"}
+                
+                # Fallback to session_id as the ID if CMS registration failed
+                final_ct_id = content_type_id or "gen-ct-id"
+                yield {
+                    "event": "SCHEMA_UPDATED",
+                    "data": {
+                        "contentType": {
+                            "id": final_ct_id,
+                            "name": schema_json.get("name", "Generated Type"),
+                            "slug": content_type_slug,
+                            "fields": schema_json.get("fields", []),
+                            "schema": schema_json,
+                        },
+                        "prompt": prompt,
+                    }
+                }
 
         repo = SQLSessionRepository(db)
         
@@ -95,6 +214,9 @@ class DraftingService:
                 session = await repo.get_by_id(UUID(session_id))
                 if not session or str(session.tenant_id) != tenant_id:
                     session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
+                else:
+                    # Clear schema generation history to start the drafting conversation fresh
+                    session.context = []
             except (ValueError, AttributeError):
                 session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
         else:
