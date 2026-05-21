@@ -33,7 +33,7 @@ export default buildConfig({
         dashboard: {
           Component: '/src/components/views/Dashboard#Dashboard',
         },
-        init: {
+        createFirstUser: {
           Component: '/src/components/views/InitPage#InitPage',
         },
         login: {

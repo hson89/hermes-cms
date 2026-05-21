@@ -35,8 +35,8 @@ import { CreateHostedSitePage as CreateHostedSitePage_fe055b935ddf6e8c7f70072bbc
 import { HostedSiteListPage as HostedSiteListPage_3e442b45b17811de0e52627585bc87ad } from '../../../../src/components/views/HostedSiteListPage'
 import { CreateAPIKeyPage as CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d } from '../../../../src/components/views/CreateAPIKeyPage'
 import { APIKeyListPage as APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f } from '../../../../src/components/views/APIKeyListPage'
-import { Nav as Nav_f9fd2b4264c96de9aad33b08efee653b } from '../../../../src/components/ui/organisms/Nav'
-import { Header as Header_02cf1ef79dd724a149fdc47d1c79b4ef } from '../../../../src/components/ui/organisms/Header'
+import { Nav as Nav_725104caa96b88e49c21a618118acd02 } from '../../../../src/components/ui/organisms/Nav'
+import { Header as Header_7cf062c528de236e4ac0d80ace4e9e1d } from '../../../../src/components/ui/organisms/Header'
 import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { Dashboard as Dashboard_2a99722be2bc34386fe3c5345b6f60e6 } from '../../../../src/components/views/Dashboard'
@@ -84,8 +84,8 @@ export const importMap = {
   "/src/components/views/HostedSiteListPage#HostedSiteListPage": HostedSiteListPage_3e442b45b17811de0e52627585bc87ad,
   "/src/components/views/CreateAPIKeyPage#CreateAPIKeyPage": CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d,
   "/src/components/views/APIKeyListPage#APIKeyListPage": APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f,
-  "/src/components/ui/organisms/Nav#Nav": Nav_f9fd2b4264c96de9aad33b08efee653b,
-  "/src/components/ui/organisms/Header#Header": Header_02cf1ef79dd724a149fdc47d1c79b4ef,
+  "/src/components/ui/organisms/Nav#Nav": Nav_725104caa96b88e49c21a618118acd02,
+  "/src/components/ui/organisms/Header#Header": Header_7cf062c528de236e4ac0d80ace4e9e1d,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelector": TenantSelector_d6d5f193a167989e2ee7d14202901e62,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelectionProvider": TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62,
   "/src/components/views/Dashboard#Dashboard": Dashboard_2a99722be2bc34386fe3c5345b6f60e6,
