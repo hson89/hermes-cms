@@ -15,7 +15,7 @@ export const getTenantIds = (user: any): (string | number)[] => {
         if (typeof t === 'string' || typeof t === 'number') return t
         return typeof t.tenant === 'object' ? t.tenant?.id : t.tenant
       })
-      .filter((id): id is string | number => id !== undefined && id !== null)
+      .filter((id: string | number | undefined | null): id is string | number => id !== undefined && id !== null)
   }
 
   // Fallback for API keys or users with a single tenant relationship

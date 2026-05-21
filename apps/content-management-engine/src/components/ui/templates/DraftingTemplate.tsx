@@ -25,7 +25,7 @@ export const DraftingTemplate: React.FC<DraftingTemplateProps> = ({
           flex flex-col h-full z-10 relative transition-all duration-700 ease-in-out
           ${!schemaPresent 
             ? 'w-full max-w-2xl mx-auto border-none' 
-            : 'w-1/3 min-w-[400px] border-r border-surface-variant/40 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'
+            : 'w-1/3 min-w-[400px] border-r border-outline-variant/15 shadow-[4px_0_24px_rgba(0,0,0,0.02)]'
           }
           bg-surface
         `}

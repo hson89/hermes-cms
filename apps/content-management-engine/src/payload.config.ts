@@ -22,7 +22,7 @@ import { AIRateLimits } from './collections/AIRateLimits'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const config = buildConfig({
+const configPromise = buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -98,32 +98,34 @@ const config = buildConfig({
 
 // Fix for multi-tenant plugin not saving tenants to JWT by default
 // This is required for getTenantIds() to work in access control checks on the server
-if (config.collections) {
-  const usersCollection = config.collections.find((c) => c.slug === 'users')
-  if (usersCollection && usersCollection.fields) {
-    const roleField = usersCollection.fields.find(
-      (f) => 'name' in f && f.name === 'role',
-    )
-    if (roleField) {
-      ;(roleField as any).saveToJWT = true
-    }
+configPromise.then((config) => {
+  if (config.collections) {
+    const usersCollection = config.collections.find((c) => c.slug === 'users')
+    if (usersCollection && usersCollection.fields) {
+      const roleField = usersCollection.fields.find(
+        (f) => 'name' in f && f.name === 'role',
+      )
+      if (roleField) {
+        ;(roleField as any).saveToJWT = true
+      }
 
-    const tenantsField = usersCollection.fields.find(
-      (f) => 'name' in f && f.name === 'tenants',
-    )
-    if (tenantsField && typeof tenantsField === 'object') {
-      ;(tenantsField as any).saveToJWT = true
-      // Also ensure the nested relationship field is in the JWT
-      if ('fields' in tenantsField && Array.isArray(tenantsField.fields)) {
-        const tenantRelField = tenantsField.fields.find(
-          (f) => 'name' in f && f.name === 'tenant',
-        )
-        if (tenantRelField) {
-          ;(tenantRelField as any).saveToJWT = true
+      const tenantsField = usersCollection.fields.find(
+        (f) => 'name' in f && f.name === 'tenants',
+      )
+      if (tenantsField && typeof tenantsField === 'object') {
+        ;(tenantsField as any).saveToJWT = true
+        // Also ensure the nested relationship field is in the JWT
+        if ('fields' in tenantsField && Array.isArray(tenantsField.fields)) {
+          const tenantRelField = tenantsField.fields.find(
+            (f) => 'name' in f && f.name === 'tenant',
+          )
+          if (tenantRelField) {
+            ;(tenantRelField as any).saveToJWT = true
+          }
         }
       }
     }
   }
-}
+})
 
-export default config
+export default configPromise

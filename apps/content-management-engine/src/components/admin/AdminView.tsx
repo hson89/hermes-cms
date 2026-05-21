@@ -29,7 +29,7 @@ export const AdminView: React.FC<AdminViewProps> = (props) => {
       user={initPageResult.req.user || undefined}
       visibleEntities={initPageResult.visibleEntities}
     >
-      <div className={`${className} lg:ml-[18rem]`} style={{ marginTop: '5rem' }}>
+      <div className={className} style={{ marginTop: '5rem' }}>
         {children}
       </div>
     </DefaultTemplate>

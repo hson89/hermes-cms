@@ -5,6 +5,7 @@ import { CreateUserPage as CreateUserPage_913d5b23f33cda93261c04e0e37d4b55 } fro
 import { UserListPage as UserListPage_86189bd53a034cea3e66cd5c99ea1212 } from '../../../../src/components/views/UserListPage'
 import { GeneratorView as GeneratorView_1d1663104411f3249e49e11834ea065f } from '../../../../src/components/views/ContentTypes/GeneratorView'
 import { ContentTypeListPage as ContentTypeListPage_a1d37317a26eeea16c6de0a4978585ab } from '../../../../src/components/views/ContentTypeListPage'
+import { FieldsDataEditor as FieldsDataEditor_7f8453c598b7f8b3b37cb1365a029f00 } from '../../../../src/components/admin/FieldsDataEditor'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -28,8 +29,8 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { DraftingCTA as DraftingCTA_77419b624008c9bd679717994141bbad } from '../../../../src/components/admin/DraftingCTA'
 import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
+import { DraftingWorkspace as DraftingWorkspace_4afbc8fae6f1cef3d3ee192b056b84b4 } from '../../../../src/components/views/DraftingWorkspace'
 import { ContentItemListPage as ContentItemListPage_37d21c0ac527c782eaa01278022738dc } from '../../../../src/components/views/ContentItemListPage'
 import { CreateHostedSitePage as CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a } from '../../../../src/components/views/CreateHostedSitePage'
 import { HostedSiteListPage as HostedSiteListPage_3e442b45b17811de0e52627585bc87ad } from '../../../../src/components/views/HostedSiteListPage'
@@ -43,7 +44,6 @@ import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7
 import { Dashboard as Dashboard_2a99722be2bc34386fe3c5345b6f60e6 } from '../../../../src/components/views/Dashboard'
 import { InitPage as InitPage_9d8465fe0818a95e328764da64c051af } from '../../../../src/components/views/InitPage'
 import { LoginPage as LoginPage_11fe2e3d8aeddfa2c8dd279b1b5a0298 } from '../../../../src/components/views/LoginPage'
-import { DraftingWorkspace as DraftingWorkspace_4afbc8fae6f1cef3d3ee192b056b84b4 } from '../../../../src/components/views/DraftingWorkspace'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -55,6 +55,7 @@ export const importMap = {
   "/src/components/views/UserListPage#UserListPage": UserListPage_86189bd53a034cea3e66cd5c99ea1212,
   "/src/components/views/ContentTypes/GeneratorView#GeneratorView": GeneratorView_1d1663104411f3249e49e11834ea065f,
   "/src/components/views/ContentTypeListPage#ContentTypeListPage": ContentTypeListPage_a1d37317a26eeea16c6de0a4978585ab,
+  "/src/components/admin/FieldsDataEditor#FieldsDataEditor": FieldsDataEditor_7f8453c598b7f8b3b37cb1365a029f00,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -78,8 +79,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "/src/components/admin/DraftingCTA#DraftingCTA": DraftingCTA_77419b624008c9bd679717994141bbad,
   "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,
+  "/src/components/views/DraftingWorkspace#DraftingWorkspace": DraftingWorkspace_4afbc8fae6f1cef3d3ee192b056b84b4,
   "/src/components/views/ContentItemListPage#ContentItemListPage": ContentItemListPage_37d21c0ac527c782eaa01278022738dc,
   "/src/components/views/CreateHostedSitePage#CreateHostedSitePage": CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a,
   "/src/components/views/HostedSiteListPage#HostedSiteListPage": HostedSiteListPage_3e442b45b17811de0e52627585bc87ad,
@@ -93,6 +94,5 @@ export const importMap = {
   "/src/components/views/Dashboard#Dashboard": Dashboard_2a99722be2bc34386fe3c5345b6f60e6,
   "/src/components/views/InitPage#InitPage": InitPage_9d8465fe0818a95e328764da64c051af,
   "/src/components/views/LoginPage#LoginPage": LoginPage_11fe2e3d8aeddfa2c8dd279b1b5a0298,
-  "/src/components/views/DraftingWorkspace#DraftingWorkspace": DraftingWorkspace_4afbc8fae6f1cef3d3ee192b056b84b4,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

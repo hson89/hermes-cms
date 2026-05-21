@@ -473,3 +473,22 @@ html:has(.custom-editor-view) {
   overflow: hidden !important;
   box-sizing: border-box !important;
 }
+
+/* Reset parent paddings/margins/max-width to ensure no empty gaps for drafting workspace */
+.template-default__wrap:has(.custom-editor-view) {
+  padding: 0 !important;
+}
+
+.template-default__wrap:has(.custom-editor-view) div:has(.custom-editor-view),
+.template-default__wrap:has(.custom-editor-view) form:has(.custom-editor-view),
+.template-default__wrap:has(.custom-editor-view) main:has(.custom-editor-view),
+.template-default__wrap:has(.custom-editor-view) section:has(.custom-editor-view),
+.template-default__wrap:has(.custom-editor-view) .collection-edit,
+.template-default__wrap:has(.custom-editor-view) .gutter {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+

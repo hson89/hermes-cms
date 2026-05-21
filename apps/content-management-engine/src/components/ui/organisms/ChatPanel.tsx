@@ -458,7 +458,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               <div
                 className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed transition-all duration-300 ${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-r from-primary to-[#1e61cc] text-white shadow-md rounded-tr-none'
+                    ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-none shadow-sm'
                     : 'bg-surface-container-low/60 text-on-surface border border-outline-variant/10 rounded-tl-none shadow-inner'
                 }`}
               >
@@ -487,12 +487,52 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         )}
 
-        {isGenerating && !tokens && (
-          <div className="flex justify-start">
-            <div className="bg-surface-container-low/60 border border-outline-variant/10 text-on-surface px-4 py-3 rounded-2xl flex items-center gap-2 shadow-inner">
-              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"></span>
-              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.4s]"></span>
+        {isGenerating && (
+          <div className="flex justify-start w-full animate-fade-slide-up">
+            <div className="max-w-[85%] rounded-2xl p-4 bg-surface-container-lowest border border-outline-variant/15 rounded-tl-none shadow-sm flex flex-col gap-3">
+              <span className="font-label text-[8px] font-bold uppercase tracking-widest text-outline">Generation Pipeline</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Icon 
+                    name={statusText ? "hourglass_empty" : "check_circle"} 
+                    className={`!text-sm ${statusText ? "text-primary animate-spin" : "text-tertiary"}`} 
+                    filled={!statusText}
+                  />
+                  <span className={`text-[11px] font-body ${statusText ? "text-on-surface font-medium" : "text-outline line-through"}`}>
+                    Connecting & Initializing Handshake
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon 
+                    name={statusText === 'Generating content layout...' ? "hourglass_empty" : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText ? "check_circle" : "radio_button_unchecked")} 
+                    className={`!text-sm ${(statusText === 'Generating content layout...' || statusText === 'Thinking...') ? "text-primary animate-spin" : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText ? "text-tertiary" : "text-outline")}`}
+                    filled={statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText}
+                  />
+                  <span className={`text-[11px] font-body ${(statusText === 'Generating content layout...' || statusText === 'Thinking...') ? "text-on-surface font-medium" : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText ? "text-outline line-through" : "text-outline")}`}>
+                    Analyzing Structural Layout & Fields
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon 
+                    name={statusText === 'Enforcing schema constraints...' ? "hourglass_empty" : (statusText === 'Self-healing JSON errors...' || !statusText ? "check_circle" : "radio_button_unchecked")} 
+                    className={`!text-sm ${statusText === 'Enforcing schema constraints...' ? "text-primary animate-spin" : (statusText === 'Self-healing JSON errors...' || !statusText ? "text-tertiary" : "text-outline")}`}
+                    filled={statusText === 'Self-healing JSON errors...' || !statusText}
+                  />
+                  <span className={`text-[11px] font-body ${statusText === 'Enforcing schema constraints...' ? "text-on-surface font-medium" : (statusText === 'Self-healing JSON errors...' || !statusText ? "text-outline line-through" : "text-outline")}`}>
+                    Synthesizing Narrative Prose
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon 
+                    name={statusText === 'Self-healing JSON errors...' ? "hourglass_empty" : (!statusText ? "check_circle" : "radio_button_unchecked")} 
+                    className={`!text-sm ${statusText === 'Self-healing JSON errors...' ? "text-primary animate-spin" : (!statusText ? "text-tertiary" : "text-outline")}`}
+                    filled={!statusText}
+                  />
+                  <span className={`text-[11px] font-body ${statusText === 'Self-healing JSON errors...' ? "text-on-surface font-medium" : (!statusText ? "text-outline line-through" : "text-outline")}`}>
+                    Validating Editorial Integrity
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -521,34 +561,36 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       </div>
 
       {/* Textarea Inputs area */}
-      <div className="p-4 bg-surface-container-low border-t border-outline-variant/15 flex gap-3 items-center shrink-0">
-        <textarea
-          rows={1}
-          value={inputPrompt}
-          onChange={(e) => setInputPrompt(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-              handleSendMessage()
-            }
-          }}
-          disabled={isGenerating || isAiPaused}
-          placeholder={isAiPaused ? "AI is paused. Resume AI in Content Refinement to interact." : "Instruct the AI to create, refine, or edit..."}
-          className="flex-1 bg-surface-container-lowest rounded-xl border border-outline-variant/15 focus:border-primary/60 focus:ring-4 focus:ring-primary/10 outline-none p-3 text-xs text-on-surface placeholder-outline/50 resize-none max-h-24 font-body leading-relaxed transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-        />
-
-        <Button
-          type="button"
-          disabled={isGenerating || !inputPrompt.trim() || isAiPaused}
-          onClick={() => handleSendMessage()}
-          className="size-10 rounded-xl bg-gradient-to-r from-primary to-[#1e61cc] flex items-center justify-center text-white border-none flex-shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isGenerating ? (
-            <span className="size-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-          ) : (
-            <Icon name="arrow_forward" size={16} />
-          )}
-        </Button>
+      <div className="p-4 bg-surface-container-lowest/30 border-t border-outline-variant/15 shrink-0">
+        <div className="bg-surface-container-lowest border border-outline-variant/15 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 rounded-2xl flex items-center gap-2 p-2 shadow-sm transition-all">
+          <textarea
+            rows={1}
+            value={inputPrompt}
+            onChange={(e) => setInputPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSendMessage()
+              }
+            }}
+            disabled={isGenerating || isAiPaused}
+            placeholder={isAiPaused ? "AI is paused. Resume AI in Content Refinement to interact." : "Instruct the AI to create, refine, or edit..."}
+            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none outline-none pl-3 py-2 text-xs text-on-surface placeholder-outline/50 resize-none max-h-24 font-body leading-relaxed disabled:opacity-60"
+          />
+          
+          <button
+            type="button"
+            disabled={isGenerating || !inputPrompt.trim() || isAiPaused}
+            onClick={() => handleSendMessage()}
+            className="size-9 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-center justify-center border-none flex-shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+          >
+            {isGenerating ? (
+              <span className="size-4 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />
+            ) : (
+              <Icon name="arrow_upward" size={16} className="text-on-primary" />
+            )}
+          </button>
+        </div>
       </div>
     </>
   )

@@ -75,11 +75,11 @@ export const ContentItems: CollectionConfig = {
         list: {
           Component: '/src/components/views/ContentItemListPage#ContentItemListPage',
         },
-      },
-      edit: {
-        beforeDocumentControls: [
-          '/src/components/admin/DraftingCTA#DraftingCTA',
-        ],
+        edit: {
+          default: {
+            Component: '/src/components/views/DraftingWorkspace#DraftingWorkspace',
+          },
+        },
       },
     },
   },
@@ -142,6 +142,9 @@ export const ContentItems: CollectionConfig = {
       defaultValue: {},
       admin: {
         description: 'Structured JSON data holding actual field values matching the selected Content Type schema.',
+        components: {
+          Field: '/src/components/admin/FieldsDataEditor#FieldsDataEditor',
+        },
       },
     },
     {

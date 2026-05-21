@@ -132,7 +132,8 @@ Super-admin bypass: users with `role === 'super-admin'`.
    hardcode a specific LLM.
 8. CMS ↔ AI auth: `X-Internal-Secret` header.
 9. Feature specs live under `specs/<feature-id>/`.
-10. **Payload Expertise:** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control) in `apps/content-management-engine/`, you MUST invoke the `payload` skill first.
+10. **Payload CMS & UI Safety (with Pre-Commit Hook Enforcement):** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) or making UI/UX modifications to the admin interface in `apps/content-management-engine/`, you MUST invoke the unified `payload` skill (located in `.agents/skills/payload/SKILL.md`) first. An automated git pre-commit hook is active; if staged files contain changes under `apps/content-management-engine/`, it reminds/enforces that you have invoked and followed this skill before you commit. Always check the Alexandria Layout & Admin UI Guardrails section in the skill, verify whether the custom view is auto-wrapped by the framework's default templates, and apply deep-ancestor `:has()` CSS overrides in `globals.css` to prevent layout gaps.
+
 
 ## Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts` (e.g., Dashboards, Graphics, Custom Fields):
@@ -151,9 +152,11 @@ When adding custom React components to `payload.config.ts` (e.g., Dashboards, Gr
 
 ## Payload CMS 3.x UI Guardrails (CRITICAL)
 When modifying the Payload Admin UI or adding custom components:
-1. **Mandatory Skill:** ALWAYS invoke the `payload-ui` skill first. It contains the project-specific Alexandria layout tokens (18rem sidebar, 5rem header).
-2. **Standardized View Wrapper:** All custom views MUST use the `AdminView` component (`src/components/admin/AdminView.tsx`).
-   - Example: `<AdminView {...props} className="custom-your-view"><YourClientComponent /></AdminView>`
-3. **CSS Isolation:** Ensure your view content is wrapped with a class that is handled in `globals.css` (e.g., `.custom-editor-view`) to hide standard Payload gutters.
-4. **Verification:** Always check `src/app/(payload)/admin/importMap.js` and verify that the sidebar and header sit flush without overlapping.
+1. **Mandatory Skill:** ALWAYS invoke the unified `payload` skill first (located in `.agents/skills/payload/SKILL.md`). It contains the project-specific Alexandria layout tokens (18rem sidebar, 5rem header) and detailed UI guardrails.
+2. **View Wrapper Distinctions (Critical)**:
+   - **Standalone Custom Views** (registered under `admin.components.views` on the admin router) MUST use the `AdminView` component (`src/components/admin/AdminView.tsx`).
+   - **Collection-level custom views** (registered under `collections[X].admin.components.views` like `list` or `edit.default`) are automatically wrapped by the framework. **DO NOT** use the `AdminView` or `DefaultTemplate` wrapper inside the custom component itself, as this results in a duplicate 18rem margin shift layout bug.
+3. **CSS Isolation & Parent Resets:** Ensure your custom view content is wrapped in a designated isolation class (e.g., `.custom-editor-view`). In `globals.css`, write a deep-ancestor reset rule using the `:has()` selector to strip all padding, margins, and max-widths from the default Payload container tree.
+4. **Verification:** Always check `src/app/(payload)/admin/importMap.js` and verify that the sidebar, header, and visual canvas sit completely flush without overlapping or horizontal/vertical whitespace gaps.
+
 
