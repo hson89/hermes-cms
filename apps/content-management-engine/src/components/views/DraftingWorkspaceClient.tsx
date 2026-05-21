@@ -32,6 +32,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
   const [styleModifiers, setStyleModifiers] = useState<any[]>([])
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null)
   const [draftingFields, setDraftingFields] = useState<Set<string>>(new Set())
+  const [isAiPaused, setIsAiPaused] = useState(false)
 
   // 1. Initial Session Setup / Recovery
   useEffect(() => {
@@ -39,14 +40,16 @@ export const DraftingWorkspaceClient: React.FC = () => {
       if (!user || !activeTenantId) return
       
       try {
-        if (contentTypeId && contentTypeId !== 'new') {
+        const isBootstrap = !contentTypeId || contentTypeId === 'new' || contentTypeId === 'undefined'
+
+        if (contentTypeId && !isBootstrap) {
           const ctRes = await fetch(`/api/content-types/${contentTypeId}`)
           const ctData = await ctRes.json()
           setContentType(ctData)
           setSchema(ctData.fields)
         }
 
-        const query = contentTypeId && contentTypeId !== 'new' 
+        const query = (contentTypeId && !isBootstrap)
           ? `contentType=${contentTypeId}&tenantId=${activeTenantId}`
           : `tenantId=${activeTenantId}&status=active`
         
@@ -59,7 +62,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
             setShowRecovery(true)
           } else {
             setSession(sessionData.activeSession)
-            if (contentTypeId === 'new' && sessionData.activeSession.contentType) {
+            if (isBootstrap && sessionData.activeSession.contentType) {
                router.replace(`/admin/draft/${sessionData.activeSession.contentType}`)
             }
           }
@@ -68,7 +71,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              contentType: contentTypeId === 'new' ? null : contentTypeId, 
+              contentType: isBootstrap ? null : contentTypeId, 
               tenantId: activeTenantId 
             }),
           })
@@ -109,7 +112,16 @@ export const DraftingWorkspaceClient: React.FC = () => {
       const { contentType: newCT, prompt: carryPrompt } = data
       setContentType(newCT)
       setSchema(newCT.fields || [])
-      setSession((prev: any) => ({ ...prev, contentType: newCT.id }))
+      setSession((prev: any) => {
+        if (prev?.id) {
+          fetch(`/api/ai-drafting/sessions/${prev.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contentType: newCT.id, tenantId: activeTenantId }),
+          }).catch(err => console.error('Failed to persist schema update to session:', err))
+        }
+        return { ...prev, contentType: newCT.id }
+      })
       const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
       router.replace(`/admin/draft/${newCT.id}${queryParam}`)
     } else if (eventType === 'FIELD_START') {
@@ -154,16 +166,21 @@ export const DraftingWorkspaceClient: React.FC = () => {
 
   const handleSave = useCallback(async (draftData: any) => {
     if (!session?.id) return
+    setSession((prev: any) => ({ ...prev, draftData }))
     try {
       await fetch(`/api/ai-drafting/sessions/${session.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draftData, tenantId: activeTenantId }),
+        body: JSON.stringify({ 
+          draftData, 
+          contentType: session.contentType,
+          tenantId: activeTenantId 
+        }),
       })
     } catch (err) {
       console.error('Failed to auto-save draft:', err)
     }
-  }, [session?.id, activeTenantId])
+  }, [session?.id, session?.contentType, activeTenantId])
 
   const handleRefineAll = useCallback(async (prompt: string) => {
     if (!session?.id) return
@@ -191,6 +208,57 @@ export const DraftingWorkspaceClient: React.FC = () => {
     }
   }, [session, schema, activeTenantId, selectedStyle])
 
+  const handleRefineField = useCallback(async (fieldName: string, instruction: string) => {
+    if (!session?.id) return
+    setDraftingFields(prev => {
+      const next = new Set(prev)
+      next.add(fieldName)
+      return next
+    })
+    try {
+      const res = await fetch('/api/ai/refine-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `For the field '${fieldName}', apply this change: ${instruction}`,
+          current_draft_json: { [fieldName]: session.draftData?.[fieldName] || '' },
+          content_schema: schema,
+          style_modifier_id: selectedStyle,
+          tenantId: activeTenantId
+        }),
+      })
+      const data = await res.json()
+      if (data.draft) {
+        setSession((prev: any) => {
+          const updatedDraftData = {
+            ...prev.draftData,
+            [fieldName]: data.draft[fieldName]
+          }
+          handleSave(updatedDraftData)
+          return {
+            ...prev,
+            draftData: updatedDraftData
+          }
+        })
+      }
+    } catch (err) {
+      console.error(`Failed to refine field ${fieldName}:`, err)
+    } finally {
+      setDraftingFields(prev => {
+        const next = new Set(prev)
+        next.delete(fieldName)
+        return next
+      })
+    }
+  }, [session, schema, activeTenantId, selectedStyle, handleSave])
+
+  const handleRegenerateField = useCallback(async (fieldName: string) => {
+    await handleRefineField(
+      fieldName,
+      `Regenerate the '${fieldName}' field to be creative, engaging, and professional based on the other fields.`
+    )
+  }, [handleRefineField])
+
   const handlePromote = useCallback(async () => {
     if (!session?.id) return
     setLoading(true)
@@ -200,12 +268,18 @@ export const DraftingWorkspaceClient: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId: activeTenantId }),
       })
-      const contentItem = await res.json()
-      if (contentItem.id) {
-        router.push(`/admin/collections/content-items/${contentItem.id}`)
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Unknown error occurred during promotion')
       }
-    } catch (err) {
+      if (data.id) {
+        router.push(`/admin/collections/content-items/${data.id}`)
+      } else {
+        throw new Error('No content item ID returned from server')
+      }
+    } catch (err: any) {
       console.error('Failed to promote draft:', err)
+      alert(`Promotion Failed: ${err.message}`)
     } finally {
       setLoading(false)
     }
@@ -228,12 +302,16 @@ export const DraftingWorkspaceClient: React.FC = () => {
 
   const handleDiscard = async () => {
     if (!recoveredSession) return
+    const isBootstrap = !contentTypeId || contentTypeId === 'new' || contentTypeId === 'undefined'
     try {
       await fetch(`/api/ai-drafting/sessions/${recoveredSession.id}`, { method: 'DELETE' })
       const createRes = await fetch(`/api/ai-drafting/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentType: contentTypeId, tenantId: activeTenantId }),
+        body: JSON.stringify({ 
+          contentType: isBootstrap ? null : contentTypeId, 
+          tenantId: activeTenantId 
+        }),
       })
       const newSession = await createRes.json()
       setSession(newSession)
@@ -282,6 +360,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               tenantId: activeTenantId,
               style_modifier_id: selectedStyle
             }}
+            isAiPaused={isAiPaused}
           />
         }
         editorPanel={
@@ -295,6 +374,10 @@ export const DraftingWorkspaceClient: React.FC = () => {
             selectedStyle={selectedStyle}
             onStyleChange={setSelectedStyle}
             onPromote={handlePromote}
+            onRefineField={handleRefineField}
+            onRegenerateField={handleRegenerateField}
+            isAiPaused={isAiPaused}
+            onPauseToggle={setIsAiPaused}
           />
         }
       />

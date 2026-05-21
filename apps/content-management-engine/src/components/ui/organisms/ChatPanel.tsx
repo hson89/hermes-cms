@@ -34,6 +34,7 @@ export interface ChatPanelProps {
   initialPrompt?: string | null
   endpoint?: string
   additionalBody?: any
+  isAiPaused?: boolean
 }
 
 // Custom presets aligned with premium co-creation micro-actions
@@ -96,6 +97,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   initialPrompt,
   endpoint = '/api/ai/draft',
   additionalBody = {},
+  isAiPaused = false,
 }) => {
   // Controlled vs uncontrolled state for generating flag
   const [localIsGenerating, setLocalIsGenerating] = useState(false)
@@ -164,10 +166,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     const controller = new AbortController()
     abortControllerRef.current = controller
 
-    // Safety timeout of 45 seconds
+    // Safety timeout of 120 seconds
     const timeoutId = setTimeout(() => {
       controller.abort()
-    }, 45000)
+    }, 120000)
 
     // Append User Bubble
     const newUserMsg: Message = {
@@ -507,7 +509,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             <button
               key={preset.label}
               type="button"
-              disabled={isGenerating}
+              disabled={isGenerating || isAiPaused}
               onClick={() => handleSendMessage(preset.prompt)}
               className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:border-primary/50 text-outline hover:text-primary transition-all duration-300 text-[10px] font-medium cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
             >
@@ -530,16 +532,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               handleSendMessage()
             }
           }}
-          disabled={isGenerating}
-          placeholder="Instruct the AI to create, refine, or edit..."
-          className="flex-1 bg-surface-container-lowest rounded-xl border border-outline-variant/15 focus:border-primary/60 focus:ring-4 focus:ring-primary/10 outline-none p-3 text-xs text-on-surface placeholder-outline/50 resize-none max-h-24 font-body leading-relaxed transition-all"
+          disabled={isGenerating || isAiPaused}
+          placeholder={isAiPaused ? "AI is paused. Resume AI in Content Refinement to interact." : "Instruct the AI to create, refine, or edit..."}
+          className="flex-1 bg-surface-container-lowest rounded-xl border border-outline-variant/15 focus:border-primary/60 focus:ring-4 focus:ring-primary/10 outline-none p-3 text-xs text-on-surface placeholder-outline/50 resize-none max-h-24 font-body leading-relaxed transition-all disabled:opacity-60 disabled:cursor-not-allowed"
         />
 
         <Button
           type="button"
-          disabled={isGenerating || !inputPrompt.trim()}
+          disabled={isGenerating || !inputPrompt.trim() || isAiPaused}
           onClick={() => handleSendMessage()}
-          className="size-10 rounded-xl bg-gradient-to-r from-primary to-[#1e61cc] flex items-center justify-center text-white border-none flex-shrink-0 transition-transform active:scale-95"
+          className="size-10 rounded-xl bg-gradient-to-r from-primary to-[#1e61cc] flex items-center justify-center text-white border-none flex-shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <span className="size-4 rounded-full border-2 border-white border-t-transparent animate-spin" />

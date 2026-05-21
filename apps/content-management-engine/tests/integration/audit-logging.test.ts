@@ -22,7 +22,8 @@ describe('Audit Logging', () => {
     const logs = await payload.find({
       collection: 'audit-logs',
       where: {
-        action: { equals: 'TENANT_RESOLUTION_FAILURE' }
+        action: { equals: 'TENANT_RESOLUTION_FAILURE' },
+        'metadata.hostname': { equals: 'non-existent.com' }
       },
       sort: '-createdAt',
       overrideAccess: true,

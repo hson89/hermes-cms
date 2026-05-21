@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { draftData, versions } = await req.json()
+  const { draftData, versions, contentType } = await req.json()
 
   try {
     const session = await payload.update({
@@ -24,6 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       data: {
         draftData,
         versions,
+        ...(contentType !== undefined ? { contentType } : {}),
       },
       overrideAccess: true, // Verification done via user check above if needed, 
                             // but DraftingSessions.access already restricts to owner.

@@ -9,7 +9,7 @@ export const validateLockHook: CollectionBeforeChangeHook = async ({
   req,
   operation,
 }) => {
-  if (operation === 'create' && data.status === 'active') {
+  if (operation === 'create' && data.status === 'active' && data.contentType) {
     const { payload } = req
     
     // Find active sessions for the same tenant and content type
