@@ -19,6 +19,7 @@ from src.application.ai_service import AIService
 from src.infrastructure.repositories.session_repository import SQLSessionRepository
 from src.domain.ai_agent_session.models import AIAgentSession
 from src.domain.content_drafting.cost_calculator import calculate_cost
+from src.infrastructure.config import settings
 
 
 class RefineService:
@@ -63,7 +64,7 @@ class RefineService:
 
         # Use style modifier instructions
         style_modifier_instructions = style_modifier_prompt or ""
-        resolved_model = model_override or "openai/gpt-4o"
+        resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
         model = self.ai_service.get_model(model_override=resolved_model)
         history = session.to_langchain_messages()
 

@@ -89,7 +89,7 @@ class DraftingService:
                     })
                 
                 # Fetch default model for matching
-                resolved_model = model_override or "openai/gpt-4o"
+                resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
                 model_for_match = self.ai_service.get_model(model_override=resolved_model)
                 
                 matching_prompt = f"""You are an assistant that decides if a user's request for content can be satisfied by any of the existing content types.
@@ -226,7 +226,7 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
         await repo.save(session)
         
         style_modifier_instructions = style_modifier_prompt or ""
-        resolved_model = model_override or "openai/gpt-4o"
+        resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
         model = self.ai_service.get_model(model_override=resolved_model)
         
         # Define tools and bind them
