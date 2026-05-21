@@ -22,7 +22,7 @@ import { AIRateLimits } from './collections/AIRateLimits'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-export default buildConfig({
+const config = buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -74,14 +74,13 @@ export default buildConfig({
   plugins: [
     multiTenantPlugin({
       collections: {
-        'content-types': {},
-        'content-items': {},
-        'api-keys': {},
+        'content-items': { customTenantField: true },
+        'api-keys': { customTenantField: true },
         'media': { customTenantField: true },
         'audit-logs': { customTenantField: true },
         'hosted-sites': { customTenantField: true },
         'ai-prompt-history': {},
-        'drafting-sessions': {},
+        'drafting-sessions': { customTenantField: true },
         'style-modifiers': {},
         'ai-audit-logs': {},
       } as any,
@@ -96,3 +95,35 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
 })
+
+// Fix for multi-tenant plugin not saving tenants to JWT by default
+// This is required for getTenantIds() to work in access control checks on the server
+if (config.collections) {
+  const usersCollection = config.collections.find((c) => c.slug === 'users')
+  if (usersCollection && usersCollection.fields) {
+    const roleField = usersCollection.fields.find(
+      (f) => 'name' in f && f.name === 'role',
+    )
+    if (roleField) {
+      ;(roleField as any).saveToJWT = true
+    }
+
+    const tenantsField = usersCollection.fields.find(
+      (f) => 'name' in f && f.name === 'tenants',
+    )
+    if (tenantsField && typeof tenantsField === 'object') {
+      ;(tenantsField as any).saveToJWT = true
+      // Also ensure the nested relationship field is in the JWT
+      if ('fields' in tenantsField && Array.isArray(tenantsField.fields)) {
+        const tenantRelField = tenantsField.fields.find(
+          (f) => 'name' in f && f.name === 'tenant',
+        )
+        if (tenantRelField) {
+          ;(tenantRelField as any).saveToJWT = true
+        }
+      }
+    }
+  }
+}
+
+export default config

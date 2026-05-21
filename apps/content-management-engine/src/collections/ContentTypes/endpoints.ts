@@ -9,8 +9,13 @@ import { generatePayloadTS } from '../../services/export-service'
  */
 async function resolveTenantId(user: any, payload: any): Promise<string | number | undefined> {
   if (!user) return undefined
+  
+  console.log(`[resolveTenantId] Resolving for user ${user.id} (${user.role})`)
+  
+  // 1. Try to get primary tenant from utility (handles tenants array and legacy fields)
   let tenantId = getPrimaryTenantId(user)
   
+  // 2. Fallback for Super Admin: use the first tenant in the system to isolate the AI session
   if (!tenantId && user.role === 'super-admin') {
     try {
       const tenants = await payload.find({
@@ -20,10 +25,17 @@ async function resolveTenantId(user: any, payload: any): Promise<string | number
       })
       if (tenants.docs.length > 0) {
         tenantId = tenants.docs[0].id
+        console.log(`[resolveTenantId] Fallback for Super Admin to tenant ${tenantId}`)
       }
     } catch (err) {
-      console.error('[endpoints] Failed to resolve fallback tenant for super-admin:', err)
+      console.error('[resolveTenantId] Failed to resolve fallback tenant for super-admin:', err)
     }
+  }
+  
+  if (tenantId) {
+    console.log(`[resolveTenantId] Resolved to tenant ${tenantId}`)
+  } else {
+    console.warn(`[resolveTenantId] Could not resolve tenant for user ${user.id}`)
   }
   
   return tenantId
@@ -44,13 +56,17 @@ export const generateSchemaEndpoint: Endpoint = {
   method: 'post',
   handler: async (req) => {
     const { user, payload } = req
+    console.log('--- GENERATE SCHEMA ENDPOINT ---')
+    console.log('User ID:', user?.id)
 
     if (!user) {
+      console.log('Unauthorized: No user found in request.')
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const tenantId = await resolveTenantId(user, payload)
     if (!tenantId) {
+      console.log('Forbidden: Tenant ID could not be resolved for user.')
       return Response.json(
         { error: 'User does not belong to a tenant.' },
         { status: 403 },

@@ -25,6 +25,10 @@ const slugify = (text: string): string => {
  */
 export const ContentTypes: CollectionConfig = {
   slug: 'content-types',
+  labels: {
+    singular: 'Content Type',
+    plural: 'Content Types',
+  },
   admin: {
     useAsTitle: 'name',
     description: 'Dynamic content schemas, possibly AI-generated.',
@@ -42,22 +46,18 @@ export const ContentTypes: CollectionConfig = {
     },
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      if ((user as any).role === 'super-admin') return true
-      const tenantIds = getTenantIds(user)
-      if (tenantIds.length === 0) return false
-      return {
-        tenant: {
-          in: tenantIds,
-        },
-      }
+    read: () => true,
+    admin: () => true,
+    create: ({ req: { user } }) => {
+      console.log('--- CONTENT-TYPES CREATE ACCESS ---')
+      console.log('User:', JSON.stringify(user))
+      return (
+        Boolean(user) &&
+        ((user as any).role === 'super-admin' ||
+          (user as any).role === 'tenant-admin' ||
+          (user as any).role === 'editor')
+      )
     },
-    create: ({ req: { user } }) =>
-      Boolean(user) &&
-      ((user as any).role === 'super-admin' ||
-        (user as any).role === 'tenant-admin' ||
-        (user as any).role === 'editor'),
     update: ({ req: { user } }) => {
       if (!user) return false
       if ((user as any).role === 'super-admin') return true
@@ -153,6 +153,16 @@ export const ContentTypes: CollectionConfig = {
       defaultValue: 1,
       admin: {
         hidden: true,
+      },
+    },
+    {
+      name: 'tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      required: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
       },
     },
   ],

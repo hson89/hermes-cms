@@ -8,6 +8,7 @@ export const Media: CollectionConfig = {
   },
   access: {
     read: () => true,
+    admin: ({ req: { user } }) => !!user,
     create: ({ req: { user } }) => !!user,
     update: ({ req: { user } }) => !!user,
     delete: ({ req: { user } }) => !!user,

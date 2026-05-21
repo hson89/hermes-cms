@@ -19,6 +19,7 @@ export const DraftingSessions: CollectionConfig = {
         },
       }
     },
+    admin: ({ req: { user } }) => !!user,
     create: ({ req: { user } }) => !!user,
     update: ({ req: { user } }) => {
       if (!user) return false
@@ -96,6 +97,16 @@ export const DraftingSessions: CollectionConfig = {
       type: 'json',
       admin: {
         hidden: true,
+      },
+    },
+    {
+      name: 'tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      required: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
       },
     },
   ],

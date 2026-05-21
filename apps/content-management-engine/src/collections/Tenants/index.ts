@@ -38,6 +38,7 @@ export const Tenants: CollectionConfig = {
       // multi-tenant plugin will add further restrictions
       return true
     },
+    admin: ({ req: { user } }) => !!user,
     // Mutation: Super Admin only
     create: ({ req: { user } }) => (user as any)?.role === 'super-admin',
     update: ({ req: { user } }) => (user as any)?.role === 'super-admin',

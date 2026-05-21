@@ -197,11 +197,23 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             }),
           })
 
-          if (!initRes.ok) {
-            throw new Error('Handshake with generation service failed.')
+          let initResult: any
+          try {
+            const initText = await initRes.text()
+            try {
+              initResult = JSON.parse(initText)
+            } catch (_) {
+              if (!initRes.ok) throw new Error(initText || 'Handshake failed.')
+              throw new Error('Failed to parse response from generation service.')
+            }
+          } catch (err: any) {
+            throw new Error(err.message || 'Failed to read response from generation service.')
           }
 
-          const initResult = await initRes.json()
+          if (!initRes.ok) {
+            throw new Error(initResult?.error || initResult?.message || 'Handshake with generation service failed.')
+          }
+
           activeSessionId = initResult.sessionId
           if (activeSessionId && onSessionIdChange) {
             onSessionIdChange(activeSessionId)

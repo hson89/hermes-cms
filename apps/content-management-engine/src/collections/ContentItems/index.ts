@@ -62,6 +62,10 @@ const beforeValidateHook: CollectionBeforeValidateHook = async ({
  */
 export const ContentItems: CollectionConfig = {
   slug: 'content-items',
+  labels: {
+    singular: 'Content Item',
+    plural: 'Content Items',
+  },
   endpoints: [copilotEditEndpoint],
   admin: {
     useAsTitle: 'title',
@@ -77,7 +81,8 @@ export const ContentItems: CollectionConfig = {
   access: {
     // Public delivery (GET) is guarded by API key at the endpoint level.
     // Here we enforce tenant isolation for authenticated CMS users.
-    read: tenantDeliveryAccess,
+    read: ({ req: { user } }) => Boolean(user),
+    admin: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) =>
       Boolean(user) &&
       ((user as any).role === 'super-admin' ||
@@ -153,6 +158,16 @@ export const ContentItems: CollectionConfig = {
         { label: 'Draft', value: 'draft' },
         { label: 'Published', value: 'published' },
       ],
+    },
+    {
+      name: 'tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      required: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+      },
     },
   ],
   timestamps: true,
