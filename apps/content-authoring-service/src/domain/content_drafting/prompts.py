@@ -18,6 +18,14 @@ CORE GUIDELINES:
 3. STYLE ALIGNMENT: You may be provided with style modifiers or brand voice instructions.
 4. STRUCTURED OUTPUT: Always return your response as a valid JSON object matching the requested schema.
 5. NO MARKDOWN WRAPPERS: Do not wrap the JSON in markdown blocks like ```json ... ```. Return raw JSON.
+6. RICH TEXT AS HTML: For any field of type 'richText', ALWAYS output clean semantic HTML — NEVER markdown syntax.
+   Permitted tags only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <blockquote>, <a href="...">.
+   Never use markdown syntax (##, **, __, *, -, 1., >) inside a richText field value.
+   Example of a correct richText value:
+   "<h2>Introduction</h2><p>Fuel conservation is <strong>critical</strong> for both your wallet and the environment.</p><h2>Key Tips</h2><ul><li><strong>Drive smoothly</strong> — avoid rapid acceleration and hard braking.</li><li>Keep tires properly inflated.</li></ul>"
+7. PLAIN TEXT FIELDS: For fields of type 'text' or 'textarea', output plain text without any HTML tags.
+8. IMAGE GENERATION & TOOL CALLING: For any field in the schema that is of type 'upload' or represents an image/media (e.g. coverArt, backgroundImage, image, etc.), you MUST invoke the `image_generator` tool to obtain a generated image URL. NEVER hardcode an image URL or output markdown images (e.g. `![...](...)`) in the conversational text. Once you receive the tool's result, you MUST continue generating and complete the ENTIRE JSON object as your final response. NEVER stop to ask the user questions, offer feedback, or ask for adjustments during the drafting process. Insert the generated image URL into the appropriate field and output the full, complete JSON object matching the schema.
+9. NO PLACEHOLDERS: You must generate real, fully detailed, professional, and comprehensive content for all text and richText fields. Never write short summaries, empty templates, or lazy placeholder strings like 'Full article content with formatting goes here', 'Content goes here', or 'Insert text here'. Write the actual, complete paragraphs and ready-to-publish production copy matching the topic.
 
 {style_modifier_instructions}
 
@@ -50,6 +58,11 @@ GUIDELINES:
 2. MAINTAIN SCHEMA: Ensure the updated draft still adheres to the content type schema.
 3. LOCALE CONSISTENCY: Maintain the target locale: {locale}.
 4. STRUCTURED OUTPUT: Return raw JSON matching the draft format.
+5. RICH TEXT AS HTML: For richText fields, always output clean semantic HTML — NEVER markdown.
+   Use only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <blockquote>.
+   Never use markdown syntax (##, **, *, -, >) inside richText field values.
+6. IMAGE GENERATION & TOOL CALLING: For any field in the schema that is of type 'upload' or represents an image/media, you MUST invoke the `image_generator` tool to obtain a generated image URL. NEVER hardcode an image URL or output markdown images in the conversational text. Once you receive the tool's result, you MUST continue and output the complete updated JSON object. Do not stop to converse or ask questions mid-stream.
+7. NO PLACEHOLDERS: You must generate real, fully detailed, professional, and comprehensive content for all text and richText fields. Never write short summaries, empty templates, or lazy placeholder strings like 'Full article content with formatting goes here', 'Content goes here', or 'Insert text here'. Write the actual, complete paragraphs and ready-to-publish production copy matching the topic.
 
 {style_modifier_instructions}
 

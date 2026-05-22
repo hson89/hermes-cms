@@ -9,7 +9,7 @@ set -e
 cleanup() {
     echo ""
     echo "🛑 Shutting down Docker infrastructure..."
-    docker-compose stop postgres_cms postgres_authoring zookeeper kafka
+    docker compose stop postgres_cms postgres_authoring zookeeper kafka
     echo "✅ Done."
 }
 
@@ -57,7 +57,7 @@ if [ ! -d apps/content-authoring-service/venv ]; then
 fi
 
 echo "🚀 Starting Hermes AI Infrastructure inside Docker Compose..."
-docker-compose up -d postgres_cms postgres_authoring zookeeper kafka
+docker compose up -d postgres_cms postgres_authoring zookeeper kafka
 
 echo "📦 Installing local dependencies..."
 (cd apps/content-management-engine && pnpm install)

@@ -1,11 +1,12 @@
 import React from 'react'
 import type { AdminViewServerProps } from 'payload'
 import { DraftingWorkspaceClient } from './DraftingWorkspaceClient'
+import { AdminView } from '../admin/AdminView'
 
 export const DraftingWorkspace = (props: AdminViewServerProps) => {
   return (
-    <div className="custom-editor-view" style={{ marginTop: '5rem' }}>
+    <AdminView {...props} hideHeader={true}>
       <DraftingWorkspaceClient />
-    </div>
+    </AdminView>
   )
 }

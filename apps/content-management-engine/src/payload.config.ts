@@ -93,6 +93,7 @@ const configPromise = buildConfig({
   ],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
+    autoGenerate: false,
   },
 })
 

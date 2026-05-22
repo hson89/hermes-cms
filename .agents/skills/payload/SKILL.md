@@ -432,6 +432,12 @@ Before completing any Payload UI modification task:
 - [ ] Verify that parent wrapper overrides exist in `globals.css` matching your isolation class.
 - [ ] Standard headers or gutters from standard views have `display: none !important;` to prevent stacking when the custom view renders its own panels.
 - [ ] Absolutely no technical commentary, walkthrough notes, or markdown descriptions are left appended inside the `.ts` / `.tsx` source files.
+- [ ] Verify that standalone custom views registered under `admin.components.views` do not import layout templates (such as `DefaultTemplate` or from `@payloadcms/next/...`) to prevent circular compiler dependencies.
+- [ ] Under WSL 2 environments, verify that Next.js dev execution is configured with the `--webpack` compiler flag to bypass Turbopack dynamic watcher deadlocks.
+
+### 5. Compiler Stability & Acyclic Build Prevention (CRITICAL WSL 2)
+- **WSL 2 Webpack Opt-in**: The Next.js dev server defaults to Turbopack in v16, which exhibits compilation deadlocks when compiling catch-all views on WSL 2. Ensure `package.json` dev execution includes the `--webpack` flag in WSL contexts.
+- **Acyclic Import Graph**: Standalone custom views registered in `payload.config.ts` must NEVER import layout templates from `@payloadcms/next/templates` or `@payloadcms/next/views`. These templates import the core configuration recursively, creating an infinite bundler loop that hangs local resources. Use minimal wrapper layouts (such as `AdminView`) to render layout offsets.
 
 ## Reference Documentation
 

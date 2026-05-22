@@ -1,19 +1,19 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
+import {
+  useLocalRuntime,
+  AssistantRuntimeProvider,
+  ThreadPrimitive,
+  useThread,
+  useThreadRuntime,
+} from '@assistant-ui/react'
 import { Icon } from '../atoms/Icon'
 import { Heading } from '../atoms/Heading'
-import { Text } from '../atoms/Text'
-import { Button } from '../atoms/Button'
 import { Badge } from '../atoms/Badge'
-import { Label } from '../atoms/Label'
 import { Card } from '../molecules/Card'
-
-interface Message {
-  role: 'user' | 'assistant' | 'error'
-  content: string
-  timestamp: Date
-}
+import { CustomSseAdapter } from '../../../services/CustomSseAdapter'
 
 interface PresetAction {
   label: string
@@ -35,6 +35,28 @@ export interface ChatPanelProps {
   endpoint?: string
   additionalBody?: any
   isAiPaused?: boolean
+}
+
+// Custom Markdown components to match Alexandria Design System within chat bubbles
+const markdownComponents: any = {
+  p: ({ node, ...props }: any) => <p className="mb-2 last:mb-0 font-body leading-relaxed" {...props} />,
+  h1: ({ node, ...props }: any) => <h1 className="font-headline text-sm font-bold mb-1.5 text-on-surface" {...props} />,
+  h2: ({ node, ...props }: any) => <h2 className="font-headline text-xs font-bold mb-1.5 text-on-surface" {...props} />,
+  h3: ({ node, ...props }: any) => <h3 className="font-headline text-xs font-semibold mb-1 text-on-surface" {...props} />,
+  ul: ({ node, ...props }: any) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
+  ol: ({ node, ...props }: any) => <ol className="list-decimal pl-4 mb-2 space-y-1" {...props} />,
+  li: ({ node, ...props }: any) => <li className="mb-0.5" {...props} />,
+  strong: ({ node, ...props }: any) => <strong className="font-bold text-primary dark:text-inverse-primary" {...props} />,
+  em: ({ node, ...props }: any) => <em className="italic opacity-90" {...props} />,
+  code: ({ node, inline, ...props }: any) => (
+    <code 
+      className={`${inline ? 'bg-surface-container-high px-1 py-0.5 rounded text-[10px] font-mono text-primary' : 'block bg-surface-container-high/50 p-2 rounded-lg text-[10px] font-mono my-2 overflow-x-auto'}`} 
+      {...props} 
+    />
+  ),
+  blockquote: ({ node, ...props }: any) => (
+    <blockquote className="border-l-2 border-primary/30 pl-3 italic my-2 text-on-surface-variant/80" {...props} />
+  )
 }
 
 // Custom presets aligned with premium co-creation micro-actions
@@ -84,335 +106,65 @@ const DRAFT_PRESETS: PresetAction[] = [
   }
 ]
 
-export const ChatPanel: React.FC<ChatPanelProps> = ({
-  mode = 'draft',
-  isCard = false,
-  sessionId,
-  onSessionIdChange,
-  currentSchema,
-  onSchemaGenerated,
-  isGenerating: propIsGenerating,
-  setIsGenerating: propSetIsGenerating,
-  onEvent,
+// Custom Inner Component to consume the assistant-ui thread context safely
+const ThreadContainer: React.FC<{
+  mode: 'schema' | 'draft'
+  isGenerating: boolean
+  setIsGenerating: (is: boolean) => void
+  statusText: string | null
+  isAiPaused: boolean
+  presets: PresetAction[]
+  activeIcon: string
+  activeTitle: string
+  activeSubtitle: string
+  initialPrompt?: string | null
+  onEvent?: (event: any) => void
+}> = ({
+  mode,
+  isGenerating,
+  setIsGenerating,
+  statusText,
+  isAiPaused,
+  presets,
+  activeIcon,
+  activeTitle,
+  activeSubtitle,
   initialPrompt,
-  endpoint = '/api/ai/draft',
-  additionalBody = {},
-  isAiPaused = false,
+  onEvent,
 }) => {
-  // Controlled vs uncontrolled state for generating flag
-  const [localIsGenerating, setLocalIsGenerating] = useState(false)
-  const isGenerating = propIsGenerating !== undefined ? propIsGenerating : localIsGenerating
-  const setIsGenerating = propSetIsGenerating || setLocalIsGenerating
-
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputPrompt, setInputPrompt] = useState('')
-  const [tokens, setTokens] = useState('')
-  const [statusText, setStatusText] = useState<string | null>(null)
-  
+  const messages = useThread((s) => s.messages)
+  const isRunning = useThread((s) => s.isRunning)
+  const threadRuntime = useThreadRuntime()
+  const [inputValue, setInputValue] = useState('')
   const chatEndRef = useRef<HTMLDivElement | null>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Initialize welcome assistant message based on active mode
+  // Track the actual generating state and bubble it up to parent components
   useEffect(() => {
-    const welcomeText = mode === 'schema'
-      ? 'Hello! I am your Hermes AI Content Architect. Describe the additions, modifications, or localized structures you would like to apply to this schema, or use one of the quick actions below.'
-      : 'Hello! I am your Hermes AI Content Drafter. Describe the content you want to create or refine, and I will generate it for you step-by-step.'
-    
-    setMessages([
-      {
-        role: 'assistant',
-        content: welcomeText,
-        timestamp: new Date(),
-      },
-    ])
-  }, [mode])
+    setIsGenerating(isRunning)
+  }, [isRunning, setIsGenerating])
 
-  // Scroll chat container to bottom when messages or real-time tokens update
+  // Handle auto-scroll to bottom of conversation
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, tokens])
+  }, [messages, statusText])
 
-  // Process Initial Prompt (from router navigation or quick action)
+  // Process Initial Prompt exactly once when initialized
   const hasTriggeredRef = useRef<string | null>(null)
   useEffect(() => {
-    if (initialPrompt && messages.length > 0 && !isGenerating && hasTriggeredRef.current !== initialPrompt) {
+    if (initialPrompt && !isRunning && hasTriggeredRef.current !== initialPrompt) {
       hasTriggeredRef.current = initialPrompt
-      handleSendMessage(initialPrompt)
+      threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: initialPrompt }] })
     }
-  }, [initialPrompt, messages.length, isGenerating])
+  }, [initialPrompt, isRunning, threadRuntime])
 
-  // Abort running requests on unmount
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
-    }
-  }, [])
+  // Custom styling welcome message if thread is empty
+  const welcomeText = mode === 'schema'
+    ? 'Hello! I am your Hermes AI Content Architect. Describe the additions, modifications, or localized structures you would like to apply to this schema, or use one of the quick actions below.'
+    : 'Hello! I am your Hermes AI Content Drafter. Describe the content you want to create or refine, and I will generate it for you step-by-step.'
 
-  const handleSendMessage = async (customPrompt?: string) => {
-    const promptToSend = (customPrompt || inputPrompt).trim()
-    if (!promptToSend || isGenerating) return
-
-    setInputPrompt('')
-    setIsGenerating(true)
-    setTokens('')
-    setStatusText(mode === 'schema' ? 'Connecting to AI agent...' : 'Thinking...')
-
-    // Abort active stream request if running
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-    }
-    const controller = new AbortController()
-    abortControllerRef.current = controller
-
-    // Safety timeout of 120 seconds
-    const timeoutId = setTimeout(() => {
-      controller.abort()
-    }, 120000)
-
-    // Append User Bubble
-    const newUserMsg: Message = {
-      role: 'user',
-      content: promptToSend,
-      timestamp: new Date(),
-    }
-    setMessages((prev) => [...prev, newUserMsg])
-
-    try {
-      let activeSessionId = sessionId
-      let response: Response
-
-      if (mode === 'schema') {
-        // In schema mode, check if we need to initialize session first
-        if (!activeSessionId) {
-          setStatusText('Initializing architect session...')
-          const initRes = await fetch('/api/content-types/generate-schema', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            signal: controller.signal,
-            body: JSON.stringify({
-              prompt: promptToSend,
-              currentSchema: currentSchema || undefined,
-            }),
-          })
-
-          let initResult: any
-          try {
-            const initText = await initRes.text()
-            try {
-              initResult = JSON.parse(initText)
-            } catch (_) {
-              if (!initRes.ok) throw new Error(initText || 'Handshake failed.')
-              throw new Error('Failed to parse response from generation service.')
-            }
-          } catch (err: any) {
-            throw new Error(err.message || 'Failed to read response from generation service.')
-          }
-
-          if (!initRes.ok) {
-            throw new Error(initResult?.error || initResult?.message || 'Handshake with generation service failed.')
-          }
-
-          activeSessionId = initResult.sessionId
-          if (activeSessionId && onSessionIdChange) {
-            onSessionIdChange(activeSessionId)
-          } else {
-            throw new Error('Failed to resolve generation session ID.')
-          }
-        }
-
-        // Start SSE Streaming proxy request for schema co-creation
-        setStatusText('Generating content layout...')
-        response = await fetch(`/api/content-types/sessions/${activeSessionId}/message`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          signal: controller.signal,
-          body: JSON.stringify({
-            prompt: promptToSend,
-            currentSchema: currentSchema || undefined,
-          }),
-        })
-      } else {
-        // In drafting mode, start normal drafting proxy request
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          signal: controller.signal,
-          body: JSON.stringify({
-            prompt: promptToSend,
-            session_id: activeSessionId,
-            ...additionalBody,
-          }),
-        })
-      }
-
-      if (!response.ok) {
-        let errorMessage = 'Generation failed'
-        try {
-          const errText = await response.text()
-          if (errText) {
-            try {
-              const errData = JSON.parse(errText)
-              if (errData.detail) {
-                if (Array.isArray(errData.detail)) {
-                  errorMessage = errData.detail
-                    .map((d: any) => `${d.loc ? d.loc.join('.') + ': ' : ''}${d.msg || JSON.stringify(d)}`)
-                    .join(', ')
-                } else if (typeof errData.detail === 'string') {
-                  errorMessage = errData.detail
-                } else {
-                  errorMessage = JSON.stringify(errData.detail)
-                }
-              } else {
-                errorMessage = errData.error || errData.message || errorMessage
-              }
-            } catch (_) {
-              errorMessage = errText
-            }
-          }
-        } catch (_) {}
-        throw new Error(errorMessage)
-      }
-
-      const reader = response.body?.getReader()
-      if (!reader) {
-        throw new Error('Readable stream not supported in response.')
-      }
-
-      const decoder = new TextDecoder('utf-8')
-      let streamBuffer = ''
-      let explanationAccumulator = ''
-
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
-
-        streamBuffer += decoder.decode(value, { stream: true })
-        
-        // Parse event stream format (SSE)
-        const eventBoundary = '\n\n'
-        let boundaryIndex = streamBuffer.indexOf(eventBoundary)
-
-        while (boundaryIndex !== -1) {
-          const chunkStr = streamBuffer.substring(0, boundaryIndex).trim()
-          streamBuffer = streamBuffer.substring(boundaryIndex + eventBoundary.length)
-
-          const eventLines = chunkStr.split('\n')
-          let eventType = 'message'
-          let dataStr = ''
-
-          for (const line of eventLines) {
-            if (line.startsWith('event:')) {
-              eventType = line.replace('event:', '').trim()
-            } else if (line.startsWith('data:')) {
-              dataStr = line.replace('data:', '').trim()
-            }
-          }
-
-          if (dataStr) {
-            try {
-              if (eventType === 'ERROR') {
-                const data = JSON.parse(dataStr)
-                throw new Error(data.detail || data.message || JSON.stringify(data))
-              }
-
-              if (eventType === 'TEXT_DELTA') {
-                const delta = dataStr.startsWith('{') || dataStr.startsWith('[')
-                  ? JSON.parse(dataStr)
-                  : dataStr
-
-                const textSegment = typeof delta === 'string' ? delta : (delta.delta || '')
-                explanationAccumulator += textSegment
-                setTokens(explanationAccumulator)
-                
-                // Propagate event up for field-level updates in drafting
-                if (typeof delta === 'object' && delta.field) {
-                  onEvent?.({ event: eventType, data: delta })
-                }
-              } else if (eventType === 'STATE_DELTA') {
-                const schemaData = JSON.parse(dataStr)
-                if (schemaData && schemaData.fields && onSchemaGenerated) {
-                  onSchemaGenerated(schemaData)
-                }
-              } else if (eventType === 'STATUS_UPDATE') {
-                if (dataStr === 'completed') {
-                  setStatusText(null)
-                } else if (dataStr === 'validating') {
-                  setStatusText('Enforcing schema constraints...')
-                } else if (dataStr === 'self-correcting') {
-                  setStatusText('Self-healing JSON errors...')
-                } else if (dataStr === 'generating') {
-                  setStatusText('Thinking...')
-                }
-              } else {
-                // Propagate other general events (SCHEMA_UPDATED, FIELD_COMPLETE, etc.)
-                let parsed = dataStr
-                try {
-                  parsed = JSON.parse(dataStr)
-                } catch (_) {}
-                onEvent?.({ event: eventType, data: parsed })
-              }
-            } catch (err) {
-              console.error('Error parsing SSE data line:', err, chunkStr)
-            }
-          }
-
-          boundaryIndex = streamBuffer.indexOf(eventBoundary)
-        }
-      }
-
-      setMessages((prev) => [...prev, {
-        role: 'assistant',
-        content: explanationAccumulator,
-        timestamp: new Date(),
-      }])
-      setTokens('')
-      setStatusText(null)
-
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'error',
-            content: 'Generation request timed out or was cancelled.',
-            timestamp: new Date(),
-          }
-        ])
-      } else {
-        console.error(err)
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'error',
-            content: err.message || 'An unexpected error occurred. Please verify that the services are active.',
-            timestamp: new Date(),
-          }
-        ])
-      }
-      setStatusText(null)
-    } finally {
-      clearTimeout(timeoutId)
-      abortControllerRef.current = null
-      setIsGenerating(false)
-    }
-  }
-
-  const presets = mode === 'schema' ? SCHEMA_PRESETS : DRAFT_PRESETS
-  const activeIcon = mode === 'schema' ? 'psychiatry' : 'smart_toy'
-  const activeTitle = mode === 'schema' ? 'Architect Companion' : 'Alexandria AI'
-  const activeSubtitle = mode === 'schema' ? 'Hermes AI Co-Creation' : 'Content Strategist & Drafter'
-
-  // The base CSS layout of our chat interface
-  const innerContent = (
-    <>
+  return (
+    <div className="flex flex-col h-full bg-surface-container-lowest/30 overflow-hidden font-body">
+      
       {/* Premium Editorial Header */}
       <div className="flex items-center justify-between bg-surface-container-low/50 px-5 py-4 border-b border-outline-variant/15 select-none shrink-0">
         <div className="flex items-center gap-3">
@@ -441,52 +193,75 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       {/* Bubble Message List */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-surface-container-lowest/40 custom-scrollbar">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} w-full animate-fade-slide-up`}
-          >
-            {msg.role === 'error' ? (
-              <div className="max-w-[85%] bg-error-container text-on-error-container rounded-2xl p-4 border border-error/15 flex items-start gap-3 shadow-sm">
-                <Icon name="error_outline" className="text-error mt-0.5 flex-shrink-0" />
-                <div className="flex flex-col gap-1">
-                  <span className="font-label font-bold text-[8px] uppercase tracking-widest text-error">System Error</span>
-                  <p className="text-xs font-body leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                </div>
-              </div>
-            ) : (
-              <div
-                className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed transition-all duration-300 ${
-                  msg.role === 'user'
-                    ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-none shadow-sm'
-                    : 'bg-surface-container-low/60 text-on-surface border border-outline-variant/10 rounded-tl-none shadow-inner'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1.5 opacity-60">
-                  <span className="font-label text-[8px] font-bold uppercase tracking-widest">
-                    {msg.role === 'user' ? 'You' : 'Hermes Agent'}
-                  </span>
-                  <span className="text-[8px] font-mono">
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="whitespace-pre-wrap">{msg.content}</p>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {tokens && (
-          <div className="flex justify-start w-full">
-            <div className="max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed bg-surface-container-low/60 text-on-surface border border-outline-variant/10 rounded-tl-none shadow-inner typing-cursor">
+        
+        {/* Render Welcome message if there are no user messages */}
+        {messages.length === 0 && (
+          <div className="flex justify-start w-full animate-fade-slide-up">
+            <div className="max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed bg-surface-container-low/60 text-on-surface border border-outline-variant/10 rounded-tl-none shadow-inner">
               <div className="flex items-center gap-2 mb-1.5 opacity-60">
-                <span className="font-label text-[8px] font-bold uppercase tracking-widest">Hermes Agent</span>
+                <span className="font-label text-[8px] font-bold uppercase tracking-widest">
+                  Hermes Agent
+                </span>
               </div>
-              <p className="whitespace-pre-wrap">{tokens}</p>
+              <ReactMarkdown components={markdownComponents}>{welcomeText}</ReactMarkdown>
             </div>
           </div>
         )}
 
+        {/* Thread Messages */}
+        {messages.map((msg) => {
+          const textContent = msg.content
+            .filter((c: any) => c.type === 'text')
+            .map((c: any) => c.text)
+            .join('')
+
+          const isUser = msg.role === 'user'
+
+          // Handle stream error state if relevant
+          const isError = (msg as any).status?.type === 'failed'
+          const errorMsg = (msg as any).status?.reason || 'An error occurred during generation.'
+
+          return (
+            <div
+              key={msg.id}
+              className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full animate-fade-slide-up`}
+            >
+              {isError ? (
+                <div className="max-w-[85%] bg-error-container text-on-error-container rounded-2xl p-4 border border-error/15 flex items-start gap-3 shadow-sm">
+                  <Icon name="error_outline" className="text-error mt-0.5 flex-shrink-0" />
+                  <div className="flex flex-col gap-1">
+                    <span className="font-label font-bold text-[8px] uppercase tracking-widest text-error">System Error</span>
+                    <div className="text-xs font-body leading-relaxed">
+                      <ReactMarkdown components={markdownComponents}>{errorMsg}</ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed transition-all duration-300 ${
+                    isUser
+                      ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-none shadow-sm'
+                      : 'bg-surface-container-low/60 text-on-surface border border-outline-variant/10 rounded-tl-none shadow-inner'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1.5 opacity-60">
+                    <span className="font-label text-[8px] font-bold uppercase tracking-widest">
+                      {isUser ? 'You' : 'Hermes Agent'}
+                    </span>
+                    {msg.createdAt && (
+                      <span className="text-[8px] font-mono">
+                        {msg.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </div>
+                  <ReactMarkdown components={markdownComponents}>{textContent}</ReactMarkdown>
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {/* Custom generation pipeline checkpoints */}
         {isGenerating && (
           <div className="flex justify-start w-full animate-fade-slide-up">
             <div className="max-w-[85%] rounded-2xl p-4 bg-surface-container-lowest border border-outline-variant/15 rounded-tl-none shadow-sm flex flex-col gap-3">
@@ -550,7 +325,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               key={preset.label}
               type="button"
               disabled={isGenerating || isAiPaused}
-              onClick={() => handleSendMessage(preset.prompt)}
+              onClick={() => threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: preset.prompt }] })}
               className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:border-primary/50 text-outline hover:text-primary transition-all duration-300 text-[10px] font-medium cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
             >
               <span className="material-symbols-outlined text-xs">{preset.icon}</span>
@@ -565,12 +340,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <div className="bg-surface-container-lowest border border-outline-variant/15 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 rounded-2xl flex items-center gap-2 p-2 shadow-sm transition-all">
           <textarea
             rows={1}
-            value={inputPrompt}
-            onChange={(e) => setInputPrompt(e.target.value)}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
-                handleSendMessage()
+                if (inputValue.trim() && !isGenerating && !isAiPaused) {
+                  threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: inputValue }] })
+                  setInputValue('')
+                }
               }
             }}
             disabled={isGenerating || isAiPaused}
@@ -580,8 +358,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           
           <button
             type="button"
-            disabled={isGenerating || !inputPrompt.trim() || isAiPaused}
-            onClick={() => handleSendMessage()}
+            disabled={isGenerating || !inputValue.trim() || isAiPaused}
+            onClick={() => {
+              if (inputValue.trim() && !isGenerating && !isAiPaused) {
+                threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: inputValue }] })
+                setInputValue('')
+              }
+            }}
             className="size-9 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-center justify-center border-none flex-shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
           >
             {isGenerating ? (
@@ -592,7 +375,102 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           </button>
         </div>
       </div>
-    </>
+
+    </div>
+  )
+}
+
+export const ChatPanel: React.FC<ChatPanelProps> = ({
+  mode = 'draft',
+  isCard = false,
+  sessionId,
+  onSessionIdChange,
+  currentSchema,
+  onSchemaGenerated,
+  isGenerating: propIsGenerating,
+  setIsGenerating: propSetIsGenerating,
+  onEvent,
+  initialPrompt,
+  endpoint = '/api/ai/draft',
+  additionalBody = {},
+  isAiPaused = false,
+}) => {
+  // Controlled vs uncontrolled state for generating status text and state
+  const [localIsGenerating, setLocalIsGenerating] = useState(false)
+  const isGenerating = propIsGenerating !== undefined ? propIsGenerating : localIsGenerating
+  const setIsGenerating = propSetIsGenerating || setLocalIsGenerating
+
+  const [statusText, setStatusText] = useState<string | null>(null)
+
+  // 1. Memoize CustomSseAdapter instance to prevent reinstantiation on render
+  const customAdapter = useMemo(() => {
+    return new CustomSseAdapter({
+      sessionId,
+      endpoint,
+      additionalBody,
+      isAiPaused,
+      mode,
+      onEvent,
+      onSchemaGenerated,
+      onSessionIdChange,
+      currentSchema,
+      setStatusText,
+    })
+  }, [])
+
+  // 2. Proactively update adapter config as props change
+  useEffect(() => {
+    customAdapter.updateConfig({
+      sessionId,
+      endpoint,
+      additionalBody,
+      isAiPaused,
+      mode,
+      onEvent,
+      onSchemaGenerated,
+      onSessionIdChange,
+      currentSchema,
+      setStatusText,
+    })
+  }, [
+    sessionId,
+    endpoint,
+    additionalBody,
+    isAiPaused,
+    mode,
+    onEvent,
+    onSchemaGenerated,
+    onSessionIdChange,
+    currentSchema,
+    customAdapter,
+  ])
+
+  // 3. Initialize assistant-ui runtime using our customized adapter
+  const runtime = useLocalRuntime(customAdapter)
+
+  const presets = mode === 'schema' ? SCHEMA_PRESETS : DRAFT_PRESETS
+  const activeIcon = mode === 'schema' ? 'psychiatry' : 'smart_toy'
+  const activeTitle = mode === 'schema' ? 'Architect Companion' : 'Alexandria AI'
+  const activeSubtitle = mode === 'schema' ? 'Hermes AI Co-Creation' : 'Content Strategist & Drafter'
+
+  const innerContent = (
+    <AssistantRuntimeProvider runtime={runtime}>
+      <ThreadPrimitive.Root asChild>
+        <ThreadContainer
+          mode={mode}
+          isGenerating={isGenerating}
+          setIsGenerating={setIsGenerating}
+          statusText={statusText}
+          isAiPaused={!!isAiPaused}
+          presets={presets}
+          activeIcon={activeIcon}
+          activeTitle={activeTitle}
+          activeSubtitle={activeSubtitle}
+          initialPrompt={initialPrompt}
+          onEvent={onEvent}
+        />
+      </ThreadPrimitive.Root>
+    </AssistantRuntimeProvider>
   )
 
   if (isCard) {

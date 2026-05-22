@@ -215,7 +215,9 @@ export const DraftingWorkspaceClient: React.FC = () => {
         return { ...prev, contentType: newCT.id }
       })
       const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
-      router.replace(`/admin/draft/${newCT.id}${queryParam}`)
+      // Use window.history.replaceState to change URL without triggering unmount/remount
+      const targetUrl = `/admin/draft/${newCT.id}${queryParam}`
+      window.history.replaceState(null, '', targetUrl)
     } else if (eventType === 'FIELD_START') {
       setDraftingFields(prev => new Set(prev).add(data.field))
     } else if (eventType === 'TEXT_DELTA' && data.field) {
@@ -299,7 +301,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         body: JSON.stringify({
           prompt,
           current_draft_json: session.draftData,
-          content_schema: schema,
+          content_schema: contentType?.schema || { fields: schema || [] },
           style_modifier_id: selectedStyle,
           tenantId: activeTenantId
         }),
@@ -313,7 +315,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [session, schema, activeTenantId, selectedStyle])
+  }, [session, schema, contentType, activeTenantId, selectedStyle])
 
   const handleRefineField = useCallback(async (fieldName: string, instruction: string) => {
     if (!session?.id) return
@@ -329,7 +331,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         body: JSON.stringify({
           prompt: `For the field '${fieldName}', apply this change: ${instruction}`,
           current_draft_json: { [fieldName]: session.draftData?.[fieldName] || '' },
-          content_schema: schema,
+          content_schema: contentType?.schema || { fields: schema || [] },
           style_modifier_id: selectedStyle,
           tenantId: activeTenantId
         }),
@@ -357,7 +359,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         return next
       })
     }
-  }, [session, schema, activeTenantId, selectedStyle, handleSave])
+  }, [session, schema, contentType, activeTenantId, selectedStyle, handleSave])
 
   const handleRegenerateField = useCallback(async (fieldName: string) => {
     await handleRefineField(
@@ -617,7 +619,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               endpoint={session?.draftData && Object.keys(session.draftData).length > 0 ? '/api/ai/refine' : '/api/ai/draft'}
               additionalBody={{
                 current_draft_json: session?.draftData || {},
-                content_schema: schema,
+                content_schema: contentType?.schema || { fields: schema || [] },
                 content_type_slug: contentType?.slug,
                 locale: session?.activeLocale || 'en',
                 tenantId: activeTenantId,

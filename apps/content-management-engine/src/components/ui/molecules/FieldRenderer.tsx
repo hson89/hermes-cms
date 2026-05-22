@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react'
+import React from 'react'
+import { TipTapEditor } from './TipTapEditor'
 
 export const FieldRenderer: React.FC<{
   field: any
@@ -14,34 +15,7 @@ export const FieldRenderer: React.FC<{
   const isBody = field.type === 'richText' || field.name === 'body'
   const isMedia = field.type === 'upload'
 
-  const editorRef = useRef<HTMLDivElement>(null)
-  const localValueRef = useRef(value)
 
-  useEffect(() => {
-    localValueRef.current = value
-    if (editorRef.current && isBody && !isDrafting) {
-      if (editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value || ''
-      }
-    }
-  }, [value, isBody, isDrafting])
-
-  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    if (disabled) return
-    const html = e.currentTarget.innerHTML
-    localValueRef.current = html
-    onChange(html)
-  }
-
-  const execFormat = (command: string, arg: string | undefined = undefined) => {
-    if (disabled) return
-    document.execCommand(command, false, arg)
-    if (editorRef.current) {
-      const html = editorRef.current.innerHTML
-      localValueRef.current = html
-      onChange(html)
-    }
-  }
 
   if (isTitle) {
     return (
@@ -106,129 +80,14 @@ export const FieldRenderer: React.FC<{
   }
 
   if (isBody) {
-    if (isDrafting) {
-      return (
-        <div className={`prose max-w-none font-body text-on-surface leading-relaxed flex flex-col gap-6 text-lg relative p-6 rounded-xl transition-all bg-primary-fixed/30 border-l-2 border-primary -ml-4`}>
-          <div className="absolute -left-2 top-2 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-          </div>
-          <div className="typing-cursor" dangerouslySetInnerHTML={{ __html: value || '' }} />
-        </div>
-      )
-    }
-
     return (
-      <div className="w-full flex flex-col gap-3 group/editor">
-        {/* Glassmorphic WYSIWYG Toolbar conforming to Alexandria design specs */}
-        {!disabled && (
-          <div className="flex flex-wrap items-center gap-1 p-2 bg-surface-container-low/80 backdrop-blur-[20px] rounded-xl border border-outline-variant/15 transition-all">
-            <button
-              type="button"
-              title="Bold"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('bold'); }}
-              className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">format_bold</span>
-            </button>
-            <button
-              type="button"
-              title="Italic"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('italic'); }}
-              className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">format_italic</span>
-            </button>
-            <button
-              type="button"
-              title="Underline"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('underline'); }}
-              className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">format_underlined</span>
-            </button>
-
-            <div className="w-[1px] h-4 bg-outline-variant/20 mx-1" />
-
-            <button
-              type="button"
-              title="Heading 1"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('formatBlock', '<h1>'); }}
-              className="px-2 py-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center font-label text-xs font-bold"
-            >
-              H1
-            </button>
-            <button
-              type="button"
-              title="Heading 2"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('formatBlock', '<h2>'); }}
-              className="px-2 py-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center font-label text-xs font-bold"
-            >
-              H2
-            </button>
-
-            <div className="w-[1px] h-4 bg-outline-variant/20 mx-1" />
-
-            <button
-              type="button"
-              title="Bullet List"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('insertUnorderedList'); }}
-              className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">format_list_bulleted</span>
-            </button>
-            <button
-              type="button"
-              title="Numbered List"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('insertOrderedList'); }}
-              className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">format_list_numbered</span>
-            </button>
-            <button
-              type="button"
-              title="Quote"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('formatBlock', '<blockquote>'); }}
-              className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">format_quote</span>
-            </button>
-
-            <div className="w-[1px] h-4 bg-outline-variant/20 mx-1" />
-
-            <button
-              type="button"
-              title="Insert Link"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                const url = prompt('Enter the link URL:');
-                if (url) execFormat('createLink', url);
-              }}
-              className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">link</span>
-            </button>
-            <button
-              type="button"
-              title="Clear Formatting"
-              onMouseDown={(e) => { e.preventDefault(); execFormat('removeFormat'); }}
-              className="p-2 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined !text-lg">format_clear</span>
-            </button>
-          </div>
-        )}
-
-        {/* Contenteditable Rich Text Editor Area */}
-        <div
-          ref={editorRef}
-          contentEditable={!disabled}
-          suppressContentEditableWarning
-          onInput={disabled ? undefined : handleInput}
-          className={`prose max-w-none font-body text-on-surface leading-relaxed min-h-[250px] p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/15 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-lg ${disabled ? 'opacity-75 cursor-not-allowed bg-surface-container-low/50 select-none' : ''}`}
-          data-placeholder="Start writing or let AI draft content for you..."
-        />
-      </div>
+      <TipTapEditor
+        value={value || ''}
+        onChange={onChange}
+        isDrafting={isDrafting}
+        disabled={disabled}
+        placeholder="Start writing or let AI draft content for you..."
+      />
     )
   }
 

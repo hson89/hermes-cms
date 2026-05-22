@@ -160,7 +160,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Dynamic Style Stylesheet for Drop Caps and Progress animations */}
       <style dangerouslySetInnerHTML={{ __html: `
-        .editorial-drop-cap p:first-of-type::first-letter {
+        .editorial-drop-cap .ProseMirror > p:first-of-type::first-letter,
+        .editorial-drop-cap .typing-cursor > p:first-of-type::first-letter {
           float: left;
           font-family: 'Noto Serif', Georgia, serif;
           font-size: 3.5rem;

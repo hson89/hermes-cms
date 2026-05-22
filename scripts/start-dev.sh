@@ -9,7 +9,7 @@ set -e
 cleanup() {
     echo ""
     echo "🛑 Shutting down services..."
-    docker-compose stop
+    docker compose stop
     echo "✅ Done."
 }
 
@@ -46,7 +46,7 @@ if [ ! -f apps/content-authoring-service/.env ]; then
 fi
 
 echo "🚀 Starting Hermes AI Stack inside Docker Compose..."
-docker-compose up -d --build
+docker compose up -d --build
 
 echo ""
 echo "✨ All services are running!"
@@ -64,4 +64,4 @@ echo "📋 Showing live logs from CMS engine and site templates..."
 echo ""
 
 # Tail the logs of our web/node-based apps
-docker-compose logs -f content_management_engine nextjs_blog astro_portfolio
+docker compose logs -f content_management_engine nextjs_blog astro_portfolio

@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     IMAGE_MODEL_PROVIDER: str = "openai"
     IMAGE_MODEL: str = "dall-e-3"
     IMAGE_ENDPOINT_URL: str | None = None
+    FALLBACK_IMAGE_URL: str = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1024&auto=format&fit=crop&q=80"
 
     # NVIDIA Configuration
     NVIDIA_TEMPERATURE: float = 0.6
