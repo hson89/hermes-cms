@@ -32,6 +32,8 @@ export interface ChatPanelProps {
   setIsGenerating?: (is: boolean) => void
   onEvent?: (event: any) => void
   initialPrompt?: string | null
+  /** Called once the initialPrompt has been dispatched to the thread. */
+  onInitialPromptSent?: () => void
   endpoint?: string
   additionalBody?: any
   isAiPaused?: boolean
@@ -118,6 +120,7 @@ const ThreadContainer: React.FC<{
   activeTitle: string
   activeSubtitle: string
   initialPrompt?: string | null
+  onInitialPromptSent?: () => void
   onEvent?: (event: any) => void
 }> = ({
   mode,
@@ -130,6 +133,7 @@ const ThreadContainer: React.FC<{
   activeTitle,
   activeSubtitle,
   initialPrompt,
+  onInitialPromptSent,
   onEvent,
 }) => {
   const messages = useThread((s) => s.messages)
@@ -154,6 +158,7 @@ const ThreadContainer: React.FC<{
     if (initialPrompt && !isRunning && hasTriggeredRef.current !== initialPrompt) {
       hasTriggeredRef.current = initialPrompt
       threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: initialPrompt }] })
+      onInitialPromptSent?.()
     }
   }, [initialPrompt, isRunning, threadRuntime])
 
@@ -391,6 +396,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   setIsGenerating: propSetIsGenerating,
   onEvent,
   initialPrompt,
+  onInitialPromptSent,
   endpoint = '/api/ai/draft',
   additionalBody = {},
   isAiPaused = false,
@@ -467,6 +473,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           activeTitle={activeTitle}
           activeSubtitle={activeSubtitle}
           initialPrompt={initialPrompt}
+          onInitialPromptSent={onInitialPromptSent}
           onEvent={onEvent}
         />
       </ThreadPrimitive.Root>

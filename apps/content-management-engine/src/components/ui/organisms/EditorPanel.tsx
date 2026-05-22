@@ -18,6 +18,7 @@ export interface EditorPanelProps {
   selectedStyle?: string | null
   onStyleChange?: (id: string | null) => void
   onPromote?: () => void
+  tenantId?: string | number
   
   // Field Actions
   onRefineField?: (fieldName: string, instruction: string) => void
@@ -42,6 +43,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   selectedStyle = null, 
   onStyleChange,
   onPromote,
+  tenantId,
   
   onRefineField,
   onRegenerateField,
@@ -50,7 +52,31 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   versions = [],
   onViewHistoryToggle
 }) => {
-  const [data, setData] = useState(draftData)
+  const normalizeDraftData = React.useCallback((rawDraft: any, currentSchema: any[]) => {
+    if (!rawDraft || typeof rawDraft !== 'object' || !currentSchema || !Array.isArray(currentSchema)) {
+      return rawDraft
+    }
+    const normalized: any = { ...rawDraft }
+    currentSchema.forEach((field: any) => {
+      if (!field?.name) return
+      const fieldNameLower = field.name.toLowerCase()
+      const matchingKey = Object.keys(rawDraft).find(k => k.toLowerCase() === fieldNameLower)
+      if (matchingKey && matchingKey !== field.name) {
+        normalized[field.name] = rawDraft[matchingKey]
+        delete normalized[matchingKey]
+      }
+    })
+    return normalized
+  }, [])
+
+  const getCaseInsensitiveVal = React.useCallback((obj: any, key: string) => {
+    if (!obj || typeof obj !== 'object') return undefined
+    const lowercaseKey = key.toLowerCase()
+    const matchingKey = Object.keys(obj).find(k => k.toLowerCase() === lowercaseKey)
+    return matchingKey ? obj[matchingKey] : undefined
+  }, [])
+
+  const [data, setData] = useState(() => normalizeDraftData(draftData, schema))
   const [modifiedFields, setModifiedFields] = useState<Set<string>>(new Set())
   
   // Field-level states
@@ -63,16 +89,19 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   const [showMoreDropdown, setShowMoreDropdown] = useState(false)
 
   useEffect(() => {
-    setData(draftData)
-  }, [draftData])
+    setData(normalizeDraftData(draftData, schema))
+  }, [draftData, schema, normalizeDraftData])
 
-  const handleChange = (name: string, value: any) => {
-    if (approvedFields.has(name)) return // locked
-    const newData = { ...data, [name]: value }
-    setData(newData)
+  const handleChange = React.useCallback((name: string, value: any) => {
+    const lowercaseName = name.toLowerCase()
+    setData(prev => {
+      const matchingKey = Object.keys(prev).find(k => k.toLowerCase() === lowercaseName) || name
+      const newData = { ...prev, [matchingKey]: value }
+      onSave?.(newData)
+      return newData
+    })
     setModifiedFields(prev => new Set(prev).add(name))
-    onSave?.(newData)
-  }
+  }, [onSave])
 
   const handleToggleApprove = (fieldName: string) => {
     setApprovedFields(prev => {
@@ -104,7 +133,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     md += `----\n\n`
     
     schema.forEach((field: any) => {
-      const val = data[field.name]
+      const val = getCaseInsensitiveVal(data, field.name)
       md += `## ${field.label || field.name}\n`
       if (typeof val === 'object' && val !== null) {
         md += `\`\`\`json\n${JSON.stringify(val, null, 2)}\n\`\`\`\n\n`
@@ -152,9 +181,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     )
   }
 
-  const coverArtField = schema.find((f: any) => f.name === 'coverArt' || f.name === 'cover_art' || f.type === 'upload')
-  const titleField = schema.find((f: any) => f.name === 'title')
-  const hasMetaFields = schema.some((f: any) => f.name === 'slug' || f.name === 'author')
+  const coverArtField = schema.find((f: any) => f.name?.toLowerCase() === 'coverart' || f.name?.toLowerCase() === 'cover_art' || f.type === 'upload')
+  const titleField = schema.find((f: any) => f.name?.toLowerCase() === 'title')
+  const hasMetaFields = schema.some((f: any) => f.name?.toLowerCase() === 'slug' || f.name?.toLowerCase() === 'author')
 
   return (
     <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -211,7 +240,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       {hasMetaFields && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-container-lowest/50 p-6 rounded-2xl border border-outline-variant/15">
           {schema
-            .filter((f: any) => f.name === 'slug' || f.name === 'author')
+            .filter((f: any) => f.name?.toLowerCase() === 'slug' || f.name?.toLowerCase() === 'author')
             .map((field: any) => {
               const isDrafting = draftingFields.has(field.name)
               const isModified = modifiedFields.has(field.name)
@@ -236,9 +265,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                   </div>
                   <FieldRenderer 
                     field={field} 
-                    value={data[field.name]} 
+                    value={getCaseInsensitiveVal(data, field.name)} 
                     isDrafting={isDrafting}
                     disabled={isApproved}
+                    tenantId={tenantId}
                     onChange={(val) => handleChange(field.name, val)} 
                   />
                 </div>
@@ -319,9 +349,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
             <div className="relative">
               <FieldRenderer 
                 field={field} 
-                value={data[field.name]} 
+                value={getCaseInsensitiveVal(data, field.name)} 
                 isDrafting={isDrafting}
                 disabled={isApproved}
+                tenantId={tenantId}
                 onChange={(val) => handleChange(field.name, val)} 
               />
             </div>
@@ -359,10 +390,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                     <div className="h-full bg-gradient-to-r from-primary to-primary-container animate-[loading-bar_2s_infinite_linear] w-[70%]" />
                   </div>
                 </div>
-              ) : data[field.name] ? (
+              ) : getCaseInsensitiveVal(data, field.name) ? (
                 <div className="relative w-full h-full">
                   <img 
-                    src={typeof data[field.name] === 'string' ? data[field.name] : (data[field.name]?.url || '')} 
+                    src={typeof getCaseInsensitiveVal(data, field.name) === 'string' ? getCaseInsensitiveVal(data, field.name) : (getCaseInsensitiveVal(data, field.name)?.url || '')} 
                     alt="Cover Art" 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover/cover:scale-[1.03]"
                   />
@@ -404,7 +435,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         {!isAiPaused && <FloatingAIBar onRefine={onRefine || (() => {})} />}
         
         {schema
-          .filter((field: any) => field.name !== 'title' && field.name !== 'slug' && field.name !== 'author' && field.name !== coverArtField?.name)
+          .filter((field: any) => field.name?.toLowerCase() !== 'title' && field.name?.toLowerCase() !== 'slug' && field.name?.toLowerCase() !== 'author' && field.name?.toLowerCase() !== coverArtField?.name?.toLowerCase())
           .map((field: any) => {
             const isDrafting = draftingFields.has(field.name)
             const isModified = modifiedFields.has(field.name)
@@ -529,9 +560,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 <div className={isBody ? "editorial-drop-cap prose prose-lg font-serif" : ""}>
                   <FieldRenderer 
                     field={field} 
-                    value={data[field.name]} 
+                    value={getCaseInsensitiveVal(data, field.name)} 
                     isDrafting={isDrafting}
                     disabled={isApproved}
+                    tenantId={tenantId}
                     onChange={(val) => handleChange(field.name, val)} 
                   />
                 </div>

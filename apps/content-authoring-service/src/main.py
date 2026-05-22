@@ -142,13 +142,44 @@ class DraftRequest(BaseModel):
     locale: str = "en"
     style_modifier_id: str | None = None
     style_modifier_prompt: str | None = None
+    model_override: str | None = None
+    # Accept both camelCase (from CMS proxy) and snake_case variants
+    modelOverride: str | None = None
+    session_id: str | None = None
 
-    @field_validator("tenant_id", "user_id", mode="before")
+    @field_validator("tenant_id", "user_id", "session_id", "content_type_slug", mode="before")
     @classmethod
     def coerce_id_to_str(cls, v: Any) -> str:
         if v is None:
             return v
         return str(v)
+
+
+    def resolved_model_override(self) -> str | None:
+        """
+        Return the model override only when the requested provider has credentials
+        configured in the environment.  Prevents a tenant-configured openai model
+        from overriding the service's own provider settings (e.g. nvidia) when the
+        OpenAI key is not available.
+        """
+        import os
+        raw = self.model_override or self.modelOverride
+        if not raw:
+            return None
+
+        provider = raw.split("/")[0].lower() if "/" in raw else ""
+        key_map = {
+            "openai":    os.environ.get("OPENAI_API_KEY", ""),
+            "anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
+            "google":    os.environ.get("GOOGLE_API_KEY", ""),
+            "mistral":   os.environ.get("MISTRAL_API_KEY", ""),
+            "nvidia":    os.environ.get("NVIDIA_API_KEY", ""),
+        }
+        # Placeholder / missing keys start with "your-" or are empty
+        api_key = key_map.get(provider, "")
+        if not api_key or api_key.startswith("your-"):
+            return None
+        return raw
 
 
 class RefineRequest(BaseModel):
@@ -210,6 +241,8 @@ async def generate_draft(
                 locale=body.locale,
                 style_modifier_id=body.style_modifier_id,
                 style_modifier_prompt=body.style_modifier_prompt,
+                model_override=body.resolved_model_override(),
+                session_id=body.session_id,
             ):
                 if await request.is_disconnected():
                     break

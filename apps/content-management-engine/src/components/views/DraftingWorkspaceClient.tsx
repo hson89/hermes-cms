@@ -25,6 +25,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
     return (user as any)?.tenants?.[0]?.tenant?.id || (user as any)?.tenants?.[0]?.tenant
   }, [user])
 
+  const [currentTenantId, setCurrentTenantId] = useState<string | number | undefined>(undefined)
+
   const [session, setSession] = useState<any>(null)
   const [showRecovery, setShowRecovery] = useState(false)
   const [recoveredSession, setRecoveredSession] = useState<any>(null)
@@ -35,9 +37,16 @@ export const DraftingWorkspaceClient: React.FC = () => {
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null)
   const [draftingFields, setDraftingFields] = useState<Set<string>>(new Set())
   const [isAiPaused, setIsAiPaused] = useState(false)
+  // Track whether the ?prompt= URL param has already been consumed by the ChatPanel.
+  // Until it fires, always use /api/ai/draft so creation prompts hit the right endpoint.
+  const [initialPromptSent, setInitialPromptSent] = useState(!initialPrompt)
   const [versions, setVersions] = useState<Array<{ timestamp: Date; label: string; data: any }>>([])
   const [showVersionsDropdown, setShowVersionsDropdown] = useState(false)
   const [showStyleHelp, setShowStyleHelp] = useState(false)
+
+  const effectiveTenantId = useMemo(() => {
+    return session?.tenant?.id || session?.tenant || currentTenantId || activeTenantId
+  }, [session, currentTenantId, activeTenantId])
 
   // 1. Initial Session Setup / Recovery
   useEffect(() => {
@@ -46,6 +55,22 @@ export const DraftingWorkspaceClient: React.FC = () => {
       
       try {
         const isEditingItem = id && id !== 'new' && id !== 'undefined'
+        
+        let resolvedTenantId = activeTenantId
+        if (!resolvedTenantId && user.role === 'super-admin') {
+          try {
+            const tenantsRes = await fetch('/api/tenants?limit=1')
+            if (tenantsRes.ok) {
+              const tenantsData = await tenantsRes.json()
+              if (tenantsData?.docs?.[0]) {
+                resolvedTenantId = tenantsData.docs[0].id
+                setCurrentTenantId(resolvedTenantId)
+              }
+            }
+          } catch (err) {
+            console.error('Failed to fetch fallback tenant for super-admin:', err)
+          }
+        }
         
         if (isEditingItem) {
           // Fetch existing ContentItem
@@ -73,14 +98,14 @@ export const DraftingWorkspaceClient: React.FC = () => {
           
           // Determine the Tenant ID from the document itself
           const itemTenantId = typeof itemData.tenant === 'object' ? itemData.tenant.id : itemData.tenant
-          const effectiveTenantId = itemTenantId || activeTenantId
+          const finalTenantId = itemTenantId || resolvedTenantId
 
-          if (!effectiveTenantId) {
+          if (!finalTenantId) {
             throw new Error('No tenant ID available')
           }
 
           // Fetch or create drafting session
-          const sessionRes = await fetch(`/api/ai-drafting/sessions?contentType=${ctId}&tenantId=${effectiveTenantId}`)
+          const sessionRes = await fetch(`/api/ai-drafting/sessions?contentType=${ctId}&tenantId=${finalTenantId}`)
           const sessionData = await sessionRes.json()
           
           if (sessionData.activeSession) {
@@ -93,7 +118,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
                 contentType: ctId, 
-                tenantId: effectiveTenantId 
+                tenantId: finalTenantId 
               }),
             })
             const newSession = await createRes.json()
@@ -106,13 +131,13 @@ export const DraftingWorkspaceClient: React.FC = () => {
               body: JSON.stringify({ 
                 draftData: mergedDraftData, 
                 contentType: ctId,
-                tenantId: effectiveTenantId 
+                tenantId: finalTenantId 
               }),
             })
             setSession(newSession)
           }
         } else {
-          if (!activeTenantId) return
+          if (!resolvedTenantId) return
 
           // New draft bootstrapping logic
           const isBootstrap = !contentTypeId || contentTypeId === 'new' || contentTypeId === 'undefined'
@@ -125,8 +150,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
           }
 
           const query = (contentTypeId && !isBootstrap)
-            ? `contentType=${contentTypeId}&tenantId=${activeTenantId}`
-            : `tenantId=${activeTenantId}&status=active`
+            ? `contentType=${contentTypeId}&tenantId=${resolvedTenantId}`
+            : `tenantId=${resolvedTenantId}&status=active`
           
           const sessionRes = await fetch(`/api/ai-drafting/sessions?${query}`)
           const sessionData = await sessionRes.json()
@@ -147,7 +172,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
                 contentType: isBootstrap ? null : contentTypeId, 
-                tenantId: activeTenantId 
+                tenantId: resolvedTenantId 
               }),
             })
             const newSession = await createRes.json()
@@ -219,7 +244,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
           fetch(`/api/ai-drafting/sessions/${prev.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contentType: newCT.id, tenantId: activeTenantId }),
+            body: JSON.stringify({ contentType: newCT.id, tenantId: effectiveTenantId }),
           }).catch(err => console.error('Failed to persist schema update to session:', err))
         }
         return { ...prev, contentType: newCT.id }
@@ -293,13 +318,13 @@ export const DraftingWorkspaceClient: React.FC = () => {
         body: JSON.stringify({ 
           draftData, 
           contentType: session.contentType,
-          tenantId: activeTenantId 
+          tenantId: effectiveTenantId 
         }),
       })
     } catch (err) {
       console.error('Failed to auto-save draft:', err)
     }
-  }, [id, session?.id, session?.contentType, activeTenantId])
+  }, [id, session?.id, session?.contentType, effectiveTenantId])
 
   const handleRefineAll = useCallback(async (prompt: string) => {
     if (!session?.id) return
@@ -313,7 +338,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
           current_draft_json: session.draftData,
           content_schema: contentType?.schema || { fields: schema || [] },
           style_modifier_id: selectedStyle,
-          tenantId: activeTenantId
+          tenantId: effectiveTenantId
         }),
       })
       const data = await res.json()
@@ -325,7 +350,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [session, schema, contentType, activeTenantId, selectedStyle])
+  }, [session, schema, contentType, effectiveTenantId, selectedStyle])
 
   const handleRefineField = useCallback(async (fieldName: string, instruction: string) => {
     if (!session?.id) return
@@ -343,7 +368,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
           current_draft_json: { [fieldName]: session.draftData?.[fieldName] || '' },
           content_schema: contentType?.schema || { fields: schema || [] },
           style_modifier_id: selectedStyle,
-          tenantId: activeTenantId
+          tenantId: effectiveTenantId
         }),
       })
       const data = await res.json()
@@ -369,7 +394,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         return next
       })
     }
-  }, [session, schema, contentType, activeTenantId, selectedStyle, handleSave])
+  }, [session, schema, contentType, effectiveTenantId, selectedStyle, handleSave])
 
   const handleRegenerateField = useCallback(async (fieldName: string) => {
     await handleRefineField(
@@ -404,7 +429,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         const res = await fetch(`/api/ai-drafting/sessions/${session.id}/promote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tenantId: activeTenantId }),
+          body: JSON.stringify({ tenantId: effectiveTenantId }),
         })
         const data = await res.json()
         if (!res.ok) {
@@ -422,7 +447,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [id, session?.id, session?.draftData, activeTenantId, router])
+  }, [id, session?.id, session?.draftData, effectiveTenantId, router])
 
   const handleResume = async () => {
     if (!recoveredSession) return
@@ -430,7 +455,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
       await fetch(`/api/ai-drafting/sessions/${recoveredSession.id}/lock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'active', tenantId: activeTenantId }),
+        body: JSON.stringify({ status: 'active', tenantId: effectiveTenantId }),
       })
       setSession(recoveredSession)
       setShowRecovery(false)
@@ -449,7 +474,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           contentType: isBootstrap ? null : contentTypeId, 
-          tenantId: activeTenantId 
+          tenantId: effectiveTenantId 
         }),
       })
       const newSession = await createRes.json()
@@ -625,14 +650,24 @@ export const DraftingWorkspaceClient: React.FC = () => {
               isCard={false}
               sessionId={session?.id} 
               onEvent={handleAIEvent} 
-              initialPrompt={initialPrompt}
-              endpoint={session?.draftData && Object.keys(session.draftData).length > 0 ? '/api/ai/refine' : '/api/ai/draft'}
+              initialPrompt={loading ? null : initialPrompt}
+              onInitialPromptSent={() => setInitialPromptSent(true)}
+              endpoint={
+                // If the URL had a ?prompt= and it hasn't been sent yet,
+                // always use the draft endpoint (creation) regardless of existing draftData.
+                // Once the initial prompt fires, switch to refine for subsequent messages.
+                !initialPromptSent
+                  ? '/api/ai/draft'
+                  : (session?.draftData && Object.keys(session.draftData).length > 0
+                      ? '/api/ai/refine'
+                      : '/api/ai/draft')
+              }
               additionalBody={{
                 current_draft_json: session?.draftData || {},
                 content_schema: contentType?.schema || { fields: schema || [] },
                 content_type_slug: contentType?.slug,
                 locale: session?.activeLocale || 'en',
-                tenantId: activeTenantId,
+                tenantId: effectiveTenantId,
                 style_modifier_id: selectedStyle
               }}
               isAiPaused={isAiPaused}
@@ -649,6 +684,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               selectedStyle={selectedStyle}
               onStyleChange={setSelectedStyle}
               onPromote={handlePromote}
+              tenantId={effectiveTenantId}
               onRefineField={handleRefineField}
               onRegenerateField={handleRegenerateField}
               isAiPaused={isAiPaused}

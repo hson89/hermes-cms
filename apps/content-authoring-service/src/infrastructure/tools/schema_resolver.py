@@ -16,8 +16,9 @@ async def schema_resolver(
     tenant_id: str,
 ) -> str:
     """
-    Updates a content type schema in the CMS. 
-    Use this tool when the user wants to add, remove, or modify fields in a content type.
+    Updates the structural definition (schema) of a content type in the CMS. 
+    Use this ONLY when the user explicitly asks to add, remove, or modify FIELDS or structure.
+    Do NOT use this tool for generating the actual content/values of the article.
     'updates' should be a dictionary of changes (e.g., {'fields': [...]}).
     """
     cms_url = settings.CMS_ENGINE_URL

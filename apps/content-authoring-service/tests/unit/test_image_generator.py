@@ -18,3 +18,24 @@ async def test_image_generator_returns_url():
         
         assert "http://example.com/image.png" in result
         assert mock_client.images.generate.called
+
+
+@pytest.mark.asyncio
+async def test_image_generator_bypass():
+    import sys
+    modules_copy = sys.modules.copy()
+    modules_copy.pop("pytest", None)
+    modules_copy.pop("unittest", None)
+    with patch("src.infrastructure.tools.image_generator.sys.modules", modules_copy):
+        with patch("src.infrastructure.tools.image_generator.settings") as mock_settings:
+            mock_settings.BYPASS_IMAGE_GENERATION = True
+            mock_settings.FALLBACK_IMAGE_URL = "http://example.com/placeholder.png"
+            
+            result = await image_generator.ainvoke({
+                "prompt": "A beautiful sunset",
+                "aspect_ratio": "16:9"
+            })
+            
+            assert "http://example.com/placeholder.png" in result
+
+

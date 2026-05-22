@@ -38,3 +38,19 @@ def test_settings_load_endpoint_url():
     }):
         settings = Settings()
         assert settings.LANGCHAIN_ENDPOINT_URL == "http://localhost:11434/v1"
+
+
+def test_settings_bypass_image_generation():
+    """Verify that BYPASS_IMAGE_GENERATION can be loaded from env."""
+    with patch.dict(os.environ, {
+        "BYPASS_IMAGE_GENERATION": "false"
+    }):
+        settings = Settings()
+        assert settings.BYPASS_IMAGE_GENERATION is False
+
+    with patch.dict(os.environ, {
+        "BYPASS_IMAGE_GENERATION": "true"
+    }):
+        settings = Settings()
+        assert settings.BYPASS_IMAGE_GENERATION is True
+

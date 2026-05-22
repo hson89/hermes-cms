@@ -137,14 +137,53 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                 }
             else:
                 yield {"event": "TEXT_DELTA", "data": "No matching content type found. Creating a new one...\n\n"}
-                # Generate new schema
-                schema_result = await self.ai_service.generate_schema(
+                yield {"event": "TEXT_DELTA", "data": "Designing schema structure for your content...\n\n"}
+                
+                # Run generate_schema with a heartbeat loop so the SSE stream stays alive
+                # while the LLM is working (it's a blocking non-streaming call internally).
+                import asyncio
+                schema_task = asyncio.ensure_future(self.ai_service.generate_schema(
                     prompt=prompt,
                     tenant_id=tenant_id,
                     user_id=user_id,
                     current_schema=schema_json,
                     db=db,
-                )
+                ))
+                
+                heartbeat_messages = [
+                    "Analyzing content requirements...\n\n",
+                    "Mapping fields and data types...\n\n",
+                    "Finalizing schema structure...\n\n",
+                ]
+                heartbeat_idx = 0
+                timeout_seconds = settings.SCHEMA_GENERATION_TIMEOUT
+                elapsed = 0
+                poll_interval = settings.SCHEMA_GENERATION_POLL_INTERVAL
+                
+                while not schema_task.done():
+                    try:
+                        await asyncio.wait_for(asyncio.shield(schema_task), timeout=poll_interval)
+                    except asyncio.TimeoutError:
+                        elapsed += poll_interval
+                        if elapsed >= timeout_seconds:
+                            schema_task.cancel()
+                            yield {"event": "ERROR", "data": {"detail": f"Schema generation timed out after {timeout_seconds} seconds. Please try again."}}
+                            return
+                        # Emit a progress heartbeat so the client knows we're still working
+                        msg = heartbeat_messages[heartbeat_idx % len(heartbeat_messages)]
+                        heartbeat_idx += 1
+                        yield {"event": "TEXT_DELTA", "data": msg}
+                    except Exception:
+                        break
+                
+                if schema_task.cancelled():
+                    return
+                
+                try:
+                    schema_result = schema_task.result()
+                except Exception as exc:
+                    yield {"event": "ERROR", "data": {"detail": f"Schema generation failed: {exc}"}}
+                    return
                 
                 schema_json = schema_result["schema"]
                 content_type_slug = schema_json.get("slug", schema_json.get("name", "Generated Type"))
@@ -152,6 +191,7 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                 
                 if schema_result.get("message"):
                     yield {"event": "TEXT_DELTA", "data": schema_result["message"] + "\n\n"}
+
                 
                 if not schema_json.get("slug") and schema_json.get("name"):
                     schema_json["slug"] = slugify(schema_json["name"])

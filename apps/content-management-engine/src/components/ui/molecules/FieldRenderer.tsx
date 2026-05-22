@@ -1,5 +1,6 @@
 import React from 'react'
 import { TipTapEditor } from './TipTapEditor'
+import { useAuth } from '@payloadcms/ui'
 
 export const FieldRenderer: React.FC<{
   field: any
@@ -7,15 +8,159 @@ export const FieldRenderer: React.FC<{
   onChange: (val: any) => void
   isDrafting?: boolean
   disabled?: boolean
-}> = ({ field, value, onChange, isDrafting, disabled }) => {
+  tenantId?: string | number
+}> = ({ field, value, onChange, isDrafting, disabled, tenantId }) => {
+  const { user } = useAuth()
   const commonClasses = `w-full bg-surface-container-lowest border-none rounded-xl p-5 font-body text-sm focus:outline-none transition-all ghost-border ghost-border-focus ${disabled ? 'opacity-75 cursor-not-allowed bg-surface-container-low/50 select-none' : ''}`
   
-  const isTitle = field.name === 'title'
-  const isSlug = field.name === 'slug'
-  const isBody = field.type === 'richText' || field.name === 'body'
-  const isMedia = field.type === 'upload'
+  const isAuthor = field.name?.toLowerCase() === 'author'
+  const effectiveField = isAuthor ? { ...field, type: 'relationship', relationTo: 'users' } : field
 
+  const isTitle = effectiveField.name?.toLowerCase() === 'title'
+  const isSlug = effectiveField.name?.toLowerCase() === 'slug'
+  const isBody = effectiveField.type === 'richText' || effectiveField.name === 'body'
+  const isMedia = effectiveField.type === 'upload'
 
+  // Lifted Hooks & States for Relationship Field
+  const relationTo = effectiveField.type === 'relationship' ? effectiveField.relationTo : undefined
+  const isUsersRelation = React.useMemo(() => {
+    if (!relationTo) return false
+    return typeof relationTo === 'string'
+      ? relationTo === 'users'
+      : Array.isArray(relationTo) && relationTo[0] === 'users'
+  }, [relationTo])
+
+  const [relOptions, setRelOptions] = React.useState<Array<{ id: any; label: string }>>([])
+  const [loading, setLoading] = React.useState(false)
+
+  const selectedVal = React.useMemo(() => {
+    if (!value) return ''
+    if (typeof value === 'object') {
+      if (value.id !== undefined && value.id !== null) {
+        return String(value.id)
+      }
+      return ''
+    }
+    return String(value)
+  }, [value])
+
+  // Keep a stable ref to onChange to avoid infinite re-render loops caused by
+  // the unstable inline arrow function that changes on every EditorPanel render.
+  const onChangeRef = React.useRef(onChange)
+  React.useLayoutEffect(() => {
+    onChangeRef.current = onChange
+  })
+
+  // Pre-seed options with the current logged-in user IMMEDIATELY — before any
+  // async fetch — so the select always has at least one valid option to display.
+  React.useEffect(() => {
+    if (!isUsersRelation || !user?.id) return
+    setRelOptions((prev) => {
+      if (prev.some((opt) => String(opt.id) === String(user.id))) return prev
+      const userLabel = (user as any).name || user.email || String(user.id)
+      return [{ id: user.id, label: `${userLabel} (You)` }, ...prev]
+    })
+  }, [isUsersRelation, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch full relationship options.
+  // For users we intentionally omit the tenant filter so the request never
+  // returns zero rows (which would leave the select blank even after the fetch).
+  // The current user is always guaranteed to be in the list via the effect above.
+  React.useEffect(() => {
+    if (effectiveField.type !== 'relationship' || !relationTo) return
+    let active = true
+    setLoading(true)
+
+    const targetUrl =
+      typeof relationTo === 'string'
+        ? `/api/${relationTo}?limit=100`
+        : `/api/${relationTo[0]}?limit=100`
+
+    fetch(targetUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`)
+        return res.json()
+      })
+      .then((data) => {
+        if (active && data && Array.isArray(data.docs)) {
+          const parsed: Array<{ id: any; label: string }> = data.docs.map((doc: any) => {
+            const label =
+              doc.name || doc.title || doc.label || doc.email || doc.username || String(doc.id)
+            return { id: doc.id, label }
+          })
+
+          // Merge fetched options with pre-seeded ones; never drop the current user.
+          setRelOptions((prev) => {
+            const merged = [...prev]
+            for (const opt of parsed) {
+              if (!merged.some((m) => String(m.id) === String(opt.id))) {
+                merged.push(opt)
+              }
+            }
+            // Guarantee current user stays in the list with "(You)" suffix.
+            if (user && !merged.some((m) => String(m.id) === String(user.id))) {
+              const userLabel = (user as any).name || user.email || String(user.id)
+              merged.unshift({ id: user.id, label: `${userLabel} (You)` })
+            }
+            return merged
+          })
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load relationship options for:', relationTo, err)
+        // The pre-seeded current-user option is still present — field is not lost.
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [relationTo, user?.id, effectiveField.type]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-default / map the author value.
+  // NOTE: `onChange` is intentionally accessed via `onChangeRef.current`
+  // to prevent infinite re-render loops caused by potentially unstable references.
+  React.useEffect(() => {
+    if (effectiveField.type !== 'relationship' || !isUsersRelation || !user?.id) return
+
+    if (!selectedVal) {
+      onChangeRef.current(user.id)
+      return
+    }
+
+    // If a value exists but doesn't match any option (e.g. AI returned a name
+    // string like "John Doe"), try to resolve by label or fall back to current user.
+    if (!loading && relOptions.length > 0) {
+      const hasOption = relOptions.some((opt) => String(opt.id) === selectedVal)
+      if (!hasOption) {
+        // If it's a string that doesn't look like an ID (numeric or UUID-ish), try label match.
+        // This handles cases where AI returns "John Doe" instead of the ID.
+        const looksLikeId = typeof value === 'number' || (typeof value === 'string' && /^[0-9a-f-]{8,}$/i.test(value))
+        
+        const matchedOpt =
+          value && typeof value === 'string' && !looksLikeId
+            ? relOptions.find((opt) => {
+                const labelNorm = opt.label.toLowerCase()
+                const valNorm = value.toLowerCase()
+                return (
+                  labelNorm === valNorm ||
+                  labelNorm.includes(valNorm) ||
+                  valNorm.includes(labelNorm)
+                )
+              })
+            : null
+
+        if (matchedOpt) {
+          onChangeRef.current(matchedOpt.id)
+        } else {
+          onChangeRef.current(user.id)
+        }
+      }
+    }
+  }, [isUsersRelation, selectedVal, loading, relOptions, user?.id, value, effectiveField.type])
+  // ^ onChange intentionally omitted — using onChangeRef.current instead
 
   if (isTitle) {
     return (
@@ -32,12 +177,12 @@ export const FieldRenderer: React.FC<{
 
   if (isSlug) {
     return (
-      <div className="relative group">
+      <div className="relative w-full">
         <input 
           type="text" 
           value={value || ''} 
           readOnly
-          className="w-full bg-transparent border-0 border-b border-outline-variant/30 px-0 py-2 font-body text-on-surface focus:ring-0 focus:border-primary transition-colors cursor-default opacity-75"
+          className={commonClasses}
         />
       </div>
     )
@@ -91,7 +236,7 @@ export const FieldRenderer: React.FC<{
     )
   }
 
-  switch (field.type) {
+  switch (effectiveField.type) {
     case 'text':
       return (
         <input 
@@ -160,14 +305,14 @@ export const FieldRenderer: React.FC<{
     case 'select':
       return (
         <select
-          value={value || ''}
+          value={value !== undefined && value !== null ? String(value) : ''}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
           className={`${commonClasses} appearance-none bg-no-repeat bg-[right_1.25rem_center]`}
           style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundSize: '1.25rem' }}
         >
           <option value="" disabled>Select an option...</option>
-          {field.options?.map((opt: any) => {
+          {effectiveField.options?.map((opt: any) => {
             const optVal = typeof opt === 'string' ? opt : opt.value
             const optLabel = typeof opt === 'string' ? opt : opt.label
             return (
@@ -177,45 +322,10 @@ export const FieldRenderer: React.FC<{
         </select>
       )
     case 'relationship': {
-      const relationTo = field.relationTo
-      const [relOptions, setRelOptions] = React.useState<Array<{ id: any; label: string }>>([])
-      const [loading, setLoading] = React.useState(false)
-
-      React.useEffect(() => {
-        if (!relationTo) return
-        setLoading(true)
-        const targetUrl = typeof relationTo === 'string' 
-          ? `/api/${relationTo}?limit=100` 
-          : `/api/${relationTo[0]}?limit=100`
-
-        fetch(targetUrl)
-          .then((res) => {
-            if (!res.ok) throw new Error()
-            return res.json()
-          })
-          .then((data) => {
-            if (data && Array.isArray(data.docs)) {
-              const parsed = data.docs.map((doc: any) => {
-                const label = doc.title || doc.name || doc.label || doc.email || doc.username || String(doc.id)
-                return { id: doc.id, label }
-              })
-              setRelOptions(parsed)
-            }
-          })
-          .catch((err) => {
-            console.error('Failed to load relationship options for:', relationTo, err)
-          })
-          .finally(() => {
-            setLoading(false)
-          })
-      }, [relationTo])
-
-      const selectedVal = value && typeof value === 'object' ? value.id : value
-
       return (
         <div className="relative w-full">
           <select
-            value={selectedVal || ''}
+            value={selectedVal}
             disabled={disabled || loading}
             onChange={(e) => {
               const val = e.target.value
@@ -228,9 +338,11 @@ export const FieldRenderer: React.FC<{
               backgroundSize: '1.25rem' 
             }}
           >
-            <option value="" disabled>
-              {loading ? 'Loading options...' : 'Select related item...'}
-            </option>
+            {relOptions.length === 0 && (
+              <option value="" disabled>
+                {loading ? 'Loading options...' : 'Select related item...'}
+              </option>
+            )}
             {relOptions.map((opt) => (
               <option key={String(opt.id)} value={String(opt.id)}>
                 {opt.label}
@@ -270,7 +382,7 @@ export const FieldRenderer: React.FC<{
                 )}
               </div>
               <div className="flex flex-col gap-4">
-                {field.fields?.map((subField: any) => (
+                {effectiveField.fields?.map((subField: any) => (
                   <div key={subField.name} className="flex flex-col gap-1.5">
                     <label className="font-label text-[10px] uppercase tracking-widest text-outline">
                       {subField.label || subField.name}
@@ -308,7 +420,7 @@ export const FieldRenderer: React.FC<{
     default:
       return (
         <div className={`${commonClasses} bg-surface-container-low italic text-on-surface-variant/40`}>
-          Field type "{field.type}" renderer not implemented yet.
+          Field type "{effectiveField.type}" renderer not implemented yet.
         </div>
       )
   }

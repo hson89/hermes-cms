@@ -16,15 +16,20 @@ async def image_generator(
     aspect_ratio: str = "1:1",
 ) -> str:
     """
-    Generates an image based on a prompt.
-    Returns the URL of the generated image.
-    Uses the provider and model configured in environment variables.
+    Generates a professional image based on a prompt. 
+    You MUST call this tool for every image, coverArt, or media field in the schema.
+    Returns the URL of the generated image (or a high-quality placeholder URL if real generation is disabled).
+    After receiving the URL, you MUST continue and complete the JSON draft.
     """
     # Check if we are running unit tests
     is_testing = "pytest" in sys.modules or "unittest" in sys.modules
     
     # Check if we should bypass real image generation (enabled by default for local development)
-    bypass = os.environ.get("BYPASS_IMAGE_GENERATION", "true").lower() == "true"
+    # Also bypass if the API key is the default placeholder string
+    api_key = settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY", "")
+    is_placeholder_key = not api_key or api_key.startswith("your-") or "nvapi-" not in api_key and api_key == "sk-..."
+    
+    bypass = settings.BYPASS_IMAGE_GENERATION or is_placeholder_key
     
     if bypass and not is_testing:
         # Return a premium Alexandria-themed abstract gradient placeholder
