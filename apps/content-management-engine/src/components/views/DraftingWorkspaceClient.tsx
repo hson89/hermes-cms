@@ -231,68 +231,6 @@ export const DraftingWorkspaceClient: React.FC = () => {
     })
   }, [session?.draftData, draftingFields])
 
-  // 3. Handle AI Events
-  const handleAIEvent = useCallback(async (event: any) => {
-    const { event: eventType, data } = event
-
-    if (eventType === 'SCHEMA_UPDATED') {
-      const { contentType: newCT, prompt: carryPrompt } = data
-      setContentType(newCT)
-      setSchema(newCT.fields || [])
-      setSession((prev: any) => {
-        if (prev?.id) {
-          fetch(`/api/ai-drafting/sessions/${prev.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contentType: newCT.id, tenantId: effectiveTenantId }),
-          }).catch(err => console.error('Failed to persist schema update to session:', err))
-        }
-        return { ...prev, contentType: newCT.id }
-      })
-      const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
-      // Use window.history.replaceState to change URL without triggering unmount/remount
-      const targetUrl = `/admin/draft/${newCT.id}${queryParam}`
-      window.history.replaceState(null, '', targetUrl)
-    } else if (eventType === 'FIELD_START') {
-      setDraftingFields(prev => new Set(prev).add(data.field))
-    } else if (eventType === 'TEXT_DELTA' && data.field) {
-      setSession((prev: any) => ({
-        ...prev,
-        draftData: {
-          ...prev.draftData,
-          [data.field]: (prev.draftData?.[data.field] || '') + data.delta
-        }
-      }))
-    } else if (eventType === 'FIELD_COMPLETE') {
-      setDraftingFields(prev => {
-        const next = new Set(prev)
-        next.delete(data.field)
-        return next
-      })
-      setSession((prev: any) => ({
-        ...prev,
-        draftData: { ...prev.draftData, [data.field]: data.value }
-      }))
-    } else if (eventType === 'IMAGE_READY') {
-      setDraftingFields(prev => {
-        const next = new Set(prev)
-        next.delete(data.field)
-        return next
-      })
-      setSession((prev: any) => ({
-        ...prev,
-        draftData: { ...prev.draftData, [data.field]: data.url }
-      }))
-    } else if (eventType === 'DRAFT_COMPLETE' || eventType === 'REFINE_COMPLETE') {
-      setDraftingFields(new Set())
-      const { draft } = data
-      setSession((prev: any) => ({
-        ...prev,
-        draftData: { ...prev.draftData, ...draft },
-      }))
-    }
-  }, [router])
-
   const handleSave = useCallback(async (draftData: any) => {
     if (!session?.id) return
     setSession((prev: any) => ({ ...prev, draftData }))
@@ -343,14 +281,18 @@ export const DraftingWorkspaceClient: React.FC = () => {
       })
       const data = await res.json()
       if (data.draft) {
-        setSession((prev: any) => ({ ...prev, draftData: data.draft }))
+        setSession((prev: any) => {
+          const updated = { ...prev, draftData: data.draft }
+          handleSave(updated.draftData)
+          return updated
+        })
       }
     } catch (err) {
       console.error('Failed to refine all:', err)
     } finally {
       setLoading(false)
     }
-  }, [session, schema, contentType, effectiveTenantId, selectedStyle])
+  }, [session, schema, contentType, effectiveTenantId, selectedStyle, handleSave])
 
   const handleRefineField = useCallback(async (fieldName: string, instruction: string) => {
     if (!session?.id) return
@@ -403,7 +345,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
     )
   }, [handleRefineField])
 
-  const handlePromote = useCallback(async () => {
+  const handlePromote = useCallback(async (status: 'draft' | 'published' = 'published') => {
     if (!session?.id) return
     setLoading(true)
     try {
@@ -418,18 +360,18 @@ export const DraftingWorkspaceClient: React.FC = () => {
             title,
             content,
             fieldsData: session.draftData,
-            status: 'published',
+            status,
           }),
         })
         if (!res.ok) {
-          throw new Error('Failed to publish content item')
+          throw new Error(`Failed to ${status} content item`)
         }
         router.push(`/admin/collections/content-items`)
       } else {
         const res = await fetch(`/api/ai-drafting/sessions/${session.id}/promote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tenantId: effectiveTenantId }),
+          body: JSON.stringify({ tenantId: effectiveTenantId, status }),
         })
         const data = await res.json()
         if (!res.ok) {
@@ -442,12 +384,77 @@ export const DraftingWorkspaceClient: React.FC = () => {
         }
       }
     } catch (err: any) {
-      console.error('Failed to promote draft:', err)
-      alert(`Promotion Failed: ${err.message}`)
+      console.error(`Failed to ${status} draft:`, err)
+      alert(`${status.charAt(0).toUpperCase() + status.slice(1)} Failed: ${err.message}`)
     } finally {
       setLoading(false)
     }
   }, [id, session?.id, session?.draftData, effectiveTenantId, router])
+
+  // 3. Handle AI Events
+  const handleAIEvent = useCallback(async (event: any) => {
+    const { event: eventType, data } = event
+
+    if (eventType === 'SCHEMA_UPDATED') {
+      const { contentType: newCT, prompt: carryPrompt } = data
+      setContentType(newCT)
+      setSchema(newCT.fields || [])
+      setSession((prev: any) => {
+        if (prev?.id) {
+          fetch(`/api/ai-drafting/sessions/${prev.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contentType: newCT.id, tenantId: effectiveTenantId }),
+          }).catch(err => console.error('Failed to persist schema update to session:', err))
+        }
+        return { ...prev, contentType: newCT.id }
+      })
+      const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
+      // Use window.history.replaceState to change URL without triggering unmount/remount
+      const targetUrl = `/admin/draft/${newCT.id}${queryParam}`
+      window.history.replaceState(null, '', targetUrl)
+    } else if (eventType === 'FIELD_START') {
+      setDraftingFields(prev => new Set(prev).add(data.field))
+    } else if (eventType === 'TEXT_DELTA' && data.field) {
+      setSession((prev: any) => ({
+        ...prev,
+        draftData: {
+          ...prev.draftData,
+          [data.field]: (prev.draftData?.[data.field] || '') + data.delta
+        }
+      }))
+    } else if (eventType === 'FIELD_COMPLETE') {
+      setDraftingFields(prev => {
+        const next = new Set(prev)
+        next.delete(data.field)
+        return next
+      })
+      setSession((prev: any) => {
+        const updated = { ...prev, draftData: { ...prev.draftData, [data.field]: data.value } }
+        handleSave(updated.draftData)
+        return updated
+      })
+    } else if (eventType === 'IMAGE_READY') {
+      setDraftingFields(prev => {
+        const next = new Set(prev)
+        next.delete(data.field)
+        return next
+      })
+      setSession((prev: any) => {
+        const updated = { ...prev, draftData: { ...prev.draftData, [data.field]: data.url } }
+        handleSave(updated.draftData)
+        return updated
+      })
+    } else if (eventType === 'DRAFT_COMPLETE' || eventType === 'REFINE_COMPLETE') {
+      setDraftingFields(new Set())
+      const { draft } = data
+      setSession((prev: any) => {
+        const updated = { ...prev, draftData: { ...prev.draftData, ...draft } }
+        handleSave(updated.draftData)
+        return updated
+      })
+    }
+  }, [router, effectiveTenantId, handleSave])
 
   const handleResume = async () => {
     if (!recoveredSession) return
@@ -626,14 +633,20 @@ export const DraftingWorkspaceClient: React.FC = () => {
           <div className="h-6 w-px bg-surface-dim mx-2"></div>
           
           <button 
-            onClick={() => handleSave(session?.draftData)}
+            onClick={() => {
+              if (id && id !== 'new' && id !== 'undefined') {
+                handleSave(session?.draftData)
+              } else {
+                handlePromote('draft')
+              }
+            }}
             className="text-primary font-label uppercase tracking-widest text-xs font-bold hover:underline px-4 py-2 border-none bg-transparent cursor-pointer"
           >
             Save
           </button>
           
           <button 
-            onClick={handlePromote}
+            onClick={() => handlePromote('published')}
             className="bg-gradient-to-r from-primary to-surface-tint text-on-primary font-label uppercase tracking-widest text-xs font-bold px-6 py-2 rounded-full hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all border-none cursor-pointer shadow-sm"
           >
             Publish

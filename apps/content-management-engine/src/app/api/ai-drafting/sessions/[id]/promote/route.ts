@@ -29,9 +29,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Session not found or access denied' }, { status: 404 })
     }
 
-    const tenantId = session.tenant 
+    // Extract status and optional tenantId from request body
+    const { status = 'draft', tenantId: requestedTenantId } = await req.json()
+
+    const tenantId = requestedTenantId || (session.tenant 
       ? (typeof session.tenant === 'object' ? (session.tenant as any).id : session.tenant)
-      : null;
+      : null);
 
     if (!tenantId) {
       return NextResponse.json(
@@ -101,7 +104,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         fieldsData: draftData,
         contentType: contentTypeId,
         tenant: tenantId,
-        status: 'draft',
+        status,
       },
     })
 
