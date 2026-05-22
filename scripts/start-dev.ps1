@@ -27,7 +27,11 @@ Write-Host "🧹 Cleaning up any conflicting local port processes..." -Foregroun
 Kill-Port 3000
 Kill-Port 3001
 Kill-Port 3002
+Kill-Port 3003
 Kill-Port 8000
+
+# Parse arguments
+$skipLangfuse = $args -contains "--no-langfuse" -or $args -contains "-NoLangfuse"
 
 # Setup Environment Variables if missing
 Write-Host "📝 Checking environment variables..." -ForegroundColor Gray
@@ -48,6 +52,11 @@ if (-not (Test-Path $authoringEnv)) {
     Write-Host "⚠️ Please update apps/content-authoring-service/.env with your API keys" -ForegroundColor Yellow
 }
 
+if (-not $skipLangfuse) {
+    Write-Host "🚀 Starting Langfuse Observability Stack..." -ForegroundColor Cyan
+    docker-compose -f docker-compose.langfuse.yml up -d
+}
+
 Write-Host "🚀 Starting Hermes AI Stack inside Docker Compose..." -ForegroundColor Green
 docker-compose up -d --build
 
@@ -58,6 +67,9 @@ Write-Host "💻 Engine Admin:    http://localhost:3000/admin" -ForegroundColor 
 Write-Host "✍️  Authoring:       http://localhost:8000/health" -ForegroundColor Cyan
 Write-Host "📄 Next.js Blog:    http://localhost:3001" -ForegroundColor Cyan
 Write-Host "🎨 Astro Portfolio: http://localhost:3002" -ForegroundColor Cyan
+if (-not $skipLangfuse) {
+    Write-Host "📊 Langfuse UI:     http://localhost:3003" -ForegroundColor Cyan
+}
 Write-Host "📊 Kafka UI:        http://localhost:9092 (broker)" -ForegroundColor Cyan
 Write-Host "🗄️  Engine DB:      localhost:5432" -ForegroundColor Cyan
 Write-Host "🗄️  Authoring DB:   localhost:5433" -ForegroundColor Cyan
@@ -74,5 +86,6 @@ finally {
     Write-Host ""
     Write-Host "🛑 Shutting down services..." -ForegroundColor Red
     docker-compose stop
+    docker-compose -f docker-compose.langfuse.yml stop 2>$null
     Write-Host "✅ Done." -ForegroundColor Green
 }

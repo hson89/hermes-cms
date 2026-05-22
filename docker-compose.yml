@@ -98,6 +98,10 @@ services:
     depends_on:
       - content_management_engine
 
+networks:
+  default:
+    name: hermes-net
+
 volumes:
   postgres_cms_data:
   postgres_authoring_data:

@@ -10,6 +10,7 @@ cleanup() {
     echo ""
     echo "🛑 Shutting down Docker infrastructure..."
     docker compose stop postgres_cms postgres_authoring zookeeper kafka
+    docker compose -f docker-compose.langfuse.yml stop 2>/dev/null || true
     echo "✅ Done."
 }
 
@@ -29,7 +30,16 @@ echo "🧹 Cleaning up any conflicting local port processes..."
 kill_port 3000
 kill_port 3001
 kill_port 3002
+kill_port 3003
 kill_port 8000
+
+# Parse arguments
+SKIP_LANGFUSE=false
+for arg in "$@"; do
+    if [ "$arg" == "--no-langfuse" ]; then
+        SKIP_LANGFUSE=true
+    fi
+done
 
 # Setup Environment Variables if missing
 echo "📝 Checking environment variables..."
@@ -56,6 +66,11 @@ if [ ! -d apps/content-authoring-service/venv ]; then
     exit 1
 fi
 
+if [ "$SKIP_LANGFUSE" = false ]; then
+    echo "🚀 Starting Langfuse Observability Stack..."
+    docker compose -f docker-compose.langfuse.yml up -d
+fi
+
 echo "🚀 Starting Hermes AI Infrastructure inside Docker Compose..."
 docker compose up -d postgres_cms postgres_authoring zookeeper kafka
 
@@ -71,6 +86,9 @@ echo "💻 Engine Admin:    http://localhost:3000/admin"
 echo "✍️  Authoring:       http://localhost:8000/health"
 echo "📄 Next.js Blog:    http://localhost:3001"
 echo "🎨 Astro Portfolio: http://localhost:3002"
+if [ "$SKIP_LANGFUSE" = false ]; then
+echo "📊 Langfuse UI:     http://localhost:3003"
+fi
 echo "--------------------------------------------------"
 echo "Press Ctrl+C to stop all services."
 echo ""

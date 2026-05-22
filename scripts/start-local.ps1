@@ -26,7 +26,11 @@ Write-Host "🧹 Cleaning up any conflicting local port processes..." -Foregroun
 Kill-Port 3000
 Kill-Port 3001
 Kill-Port 3002
+Kill-Port 3003
 Kill-Port 8000
+
+# Parse arguments
+$skipLangfuse = $args -contains "--no-langfuse" -or $args -contains "-NoLangfuse"
 
 # Setup Environment Variables if missing
 Write-Host "📝 Checking environment variables..." -ForegroundColor Gray
@@ -59,6 +63,11 @@ if (-not (Test-Path $venvPath)) {
     exit 1
 }
 
+if (-not $skipLangfuse) {
+    Write-Host "🚀 Starting Langfuse Observability Stack..." -ForegroundColor Cyan
+    docker-compose -f docker-compose.langfuse.yml up -d
+}
+
 Write-Host "🚀 Starting Hermes AI Infrastructure inside Docker Compose..." -ForegroundColor Green
 docker-compose up -d postgres_cms postgres_authoring zookeeper kafka
 
@@ -74,6 +83,9 @@ Write-Host "💻 Engine Admin:    http://localhost:3000/admin" -ForegroundColor 
 Write-Host "✍️  Authoring:       http://localhost:8000/health" -ForegroundColor Cyan
 Write-Host "📄 Next.js Blog:    http://localhost:3001" -ForegroundColor Cyan
 Write-Host "🎨 Astro Portfolio: http://localhost:3002" -ForegroundColor Cyan
+if (-not $skipLangfuse) {
+    Write-Host "📊 Langfuse UI:     http://localhost:3003" -ForegroundColor Cyan
+}
 Write-Host "--------------------------------------------------" -ForegroundColor DarkGray
 Write-Host "Press Ctrl+C to stop all services." -ForegroundColor Yellow
 Write-Host ""
@@ -93,5 +105,6 @@ finally {
     Write-Host ""
     Write-Host "🛑 Shutting down Docker infrastructure..." -ForegroundColor Red
     docker-compose stop postgres_cms postgres_authoring zookeeper kafka
+    docker-compose -f docker-compose.langfuse.yml stop 2>$null
     Write-Host "✅ Done." -ForegroundColor Green
 }

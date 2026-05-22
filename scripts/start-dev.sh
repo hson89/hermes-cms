@@ -10,6 +10,7 @@ cleanup() {
     echo ""
     echo "🛑 Shutting down services..."
     docker compose stop
+    docker compose -f docker-compose.langfuse.yml stop 2>/dev/null || true
     echo "✅ Done."
 }
 
@@ -29,7 +30,16 @@ echo "🧹 Cleaning up any conflicting local port processes..."
 kill_port 3000
 kill_port 3001
 kill_port 3002
+kill_port 3003
 kill_port 8000
+
+# Parse arguments
+SKIP_LANGFUSE=false
+for arg in "$@"; do
+    if [ "$arg" == "--no-langfuse" ]; then
+        SKIP_LANGFUSE=true
+    fi
+done
 
 # Setup Environment Variables if missing
 echo "📝 Checking environment variables..."
@@ -45,6 +55,11 @@ if [ ! -f apps/content-authoring-service/.env ]; then
     echo "⚠️  Please update apps/content-authoring-service/.env with your API keys"
 fi
 
+if [ "$SKIP_LANGFUSE" = false ]; then
+    echo "🚀 Starting Langfuse Observability Stack..."
+    docker compose -f docker-compose.langfuse.yml up -d
+fi
+
 echo "🚀 Starting Hermes AI Stack inside Docker Compose..."
 docker compose up -d --build
 
@@ -55,6 +70,9 @@ echo "💻 Engine Admin:    http://localhost:3000/admin"
 echo "✍️  Authoring:       http://localhost:8000/health"
 echo "📄 Next.js Blog:    http://localhost:3001"
 echo "🎨 Astro Portfolio: http://localhost:3002"
+if [ "$SKIP_LANGFUSE" = false ]; then
+echo "📊 Langfuse UI:     http://localhost:3003"
+fi
 echo "📊 Kafka UI:        http://localhost:9092 (broker)"
 echo "🗄️  Engine DB:      localhost:5432"
 echo "🗄️  Authoring DB:   localhost:5433"

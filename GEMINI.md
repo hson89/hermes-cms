@@ -67,12 +67,17 @@ hermes-cms/
 
 ```bash
 # Full Docker stack
-./scripts/start-dev.sh                # Unix
+./scripts/start-dev.sh                # Unix (includes Langfuse by default)
+./scripts/start-dev.sh --no-langfuse  # Unix (skips Langfuse)
 .\scripts\start-dev.ps1               # Windows (PowerShell)
 
 # Local-first (Infra in Docker + Apps locally - Better for hot reload)
-./scripts/start-local.sh              # Unix
+./scripts/start-local.sh              # Unix (includes Langfuse by default)
+./scripts/start-local.sh --no-langfuse# Unix (skips Langfuse)
 .\scripts\start-local.ps1             # Windows (PowerShell)
+
+# Langfuse only
+./scripts/start-langfuse.sh           # :3003
 
 # CMS only
 cd apps/content-management-engine && pnpm dev          # :3000
