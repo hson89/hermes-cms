@@ -15,9 +15,10 @@ const beforeValidateHook: CollectionBeforeValidateHook = async ({
 }) => {
   const { payload } = req
 
-  const contentTypeId = data?.contentType || originalDoc?.contentType
+  const getCleanId = (val: any) => (val && typeof val === 'object' ? val.id : val)
+  const contentTypeId = getCleanId(data?.contentType || originalDoc?.contentType)
   const fieldsData = data?.fieldsData || originalDoc?.fieldsData || {}
-  const tenantId = data?.tenant || originalDoc?.tenant
+  const tenantId = getCleanId(data?.tenant || originalDoc?.tenant)
 
   if (!contentTypeId || !tenantId) {
     return data

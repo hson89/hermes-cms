@@ -73,7 +73,7 @@ describe('AI Drafting Session Promotion Integration Tests', () => {
     })
 
     // Call the promotion logic (which we mimic/import or test directly via mock handler or code path)
-    const contentTypeId = bootstrapSession.contentType 
+    const contentTypeId = bootstrapSession.contentType
       ? (typeof bootstrapSession.contentType === 'object' ? (bootstrapSession.contentType as any).id : bootstrapSession.contentType)
       : null;
 
@@ -106,12 +106,12 @@ describe('AI Drafting Session Promotion Integration Tests', () => {
     const sessionUserId = typeof activeSession.user === 'object' ? (activeSession.user as any).id : activeSession.user
     expect(String(sessionUserId)).toBe(String(user.id))
 
-    const resolvedContentTypeId = activeSession.contentType 
+    const resolvedContentTypeId = activeSession.contentType
       ? (typeof activeSession.contentType === 'object' ? (activeSession.contentType as any).id : activeSession.contentType)
       : null;
     expect(resolvedContentTypeId).toBe(contentType.id)
 
-    const resolvedTenantId = activeSession.tenant 
+    const resolvedTenantId = activeSession.tenant
       ? (typeof activeSession.tenant === 'object' ? (activeSession.tenant as any).id : activeSession.tenant)
       : null;
     expect(resolvedTenantId).toBe(tenant.id)
@@ -138,7 +138,7 @@ describe('AI Drafting Session Promotion Integration Tests', () => {
     expect(contentItem.title).toBe('Contact Us Now')
     expect(contentItem.fieldsData.contactEmail).toBe('support@brand.com')
     expect(contentItem.fieldsData.contactMessage).toBe('I have an issue with the product.')
-    
+
     const itemContentTypeId = typeof contentItem.contentType === 'object' ? (contentItem.contentType as any).id : contentItem.contentType
     expect(itemContentTypeId).toBe(contentType.id)
 
@@ -160,6 +160,50 @@ describe('AI Drafting Session Promotion Integration Tests', () => {
     ).rejects.toThrow()
 
     // Clean up created ContentItem
+    await payload.delete({
+      collection: 'content-items',
+      id: contentItem.id,
+    })
+  })
+
+  it('should successfully update ContentItem when contentType and tenant are provided as populated objects', async () => {
+    // Create initial content item with primitive IDs
+    const contentItem = await payload.create({
+      collection: 'content-items',
+      data: {
+        title: 'Initial Hook Test',
+        contentType: contentType.id,
+        tenant: tenant.id,
+        status: 'draft',
+        fieldsData: {
+          contactEmail: 'initial@brand.com',
+          contactMessage: 'Initial message',
+        },
+      },
+    })
+
+    expect(contentItem.id).toBeDefined()
+
+    // Perform an update where the data fields contain populated objects instead of primitive IDs.
+    // This mimics how hook propagation or custom REST requests with depth might deliver populated relation data.
+    const updatedItem = await payload.update({
+      collection: 'content-items',
+      id: contentItem.id,
+      data: {
+        title: 'Updated Hook Test',
+        contentType: contentType, // fully populated object
+        tenant: tenant, // fully populated object
+        fieldsData: {
+          contactEmail: 'updated@brand.com',
+          contactMessage: 'Updated message',
+        },
+      },
+    })
+
+    expect(updatedItem.title).toBe('Updated Hook Test')
+    expect(updatedItem.fieldsData.contactEmail).toBe('updated@brand.com')
+
+    // Clean up
     await payload.delete({
       collection: 'content-items',
       id: contentItem.id,

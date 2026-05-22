@@ -42,7 +42,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
   // 1. Initial Session Setup / Recovery
   useEffect(() => {
     async function initWorkspace() {
-      if (!user || !activeTenantId) return
+      if (!user) return
       
       try {
         const isEditingItem = id && id !== 'new' && id !== 'undefined'
@@ -71,8 +71,16 @@ export const DraftingWorkspaceClient: React.FC = () => {
             ...itemData.fieldsData,
           }
           
+          // Determine the Tenant ID from the document itself
+          const itemTenantId = typeof itemData.tenant === 'object' ? itemData.tenant.id : itemData.tenant
+          const effectiveTenantId = itemTenantId || activeTenantId
+
+          if (!effectiveTenantId) {
+            throw new Error('No tenant ID available')
+          }
+
           // Fetch or create drafting session
-          const sessionRes = await fetch(`/api/ai-drafting/sessions?contentType=${ctId}&tenantId=${activeTenantId}`)
+          const sessionRes = await fetch(`/api/ai-drafting/sessions?contentType=${ctId}&tenantId=${effectiveTenantId}`)
           const sessionData = await sessionRes.json()
           
           if (sessionData.activeSession) {
@@ -85,7 +93,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
                 contentType: ctId, 
-                tenantId: activeTenantId 
+                tenantId: effectiveTenantId 
               }),
             })
             const newSession = await createRes.json()
@@ -98,12 +106,14 @@ export const DraftingWorkspaceClient: React.FC = () => {
               body: JSON.stringify({ 
                 draftData: mergedDraftData, 
                 contentType: ctId,
-                tenantId: activeTenantId 
+                tenantId: effectiveTenantId 
               }),
             })
             setSession(newSession)
           }
         } else {
+          if (!activeTenantId) return
+
           // New draft bootstrapping logic
           const isBootstrap = !contentTypeId || contentTypeId === 'new' || contentTypeId === 'undefined'
 

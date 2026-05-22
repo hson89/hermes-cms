@@ -183,9 +183,12 @@ export class CustomSseAdapter implements ChatModelAdapter {
             }
 
             if (eventType === 'TEXT_DELTA') {
-              const delta = dataStr.startsWith('{') || dataStr.startsWith('[')
-                ? JSON.parse(dataStr)
-                : dataStr
+              let delta: any = dataStr
+              try {
+                delta = JSON.parse(dataStr)
+              } catch (_) {
+                // Parse failed, keep it as raw string
+              }
 
               const textSegment = typeof delta === 'string' ? delta : (delta.delta || '')
               explanationAccumulator += textSegment

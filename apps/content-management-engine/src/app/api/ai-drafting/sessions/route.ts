@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
 
   // Security: Verify user has access to requested tenant
   const userTenants = (user as any).tenants?.map((t: any) => t.tenant?.id || t.tenant) || []
-  const hasAccess = (user as any).role === 'super-admin' || userTenants.includes(requestedTenantId)
+  const hasAccess = (user as any).role === 'super-admin' || 
+    userTenants.some((tid: any) => String(tid) === String(requestedTenantId))
   
   if (!hasAccess && requestedTenantId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -107,7 +108,8 @@ export async function POST(req: NextRequest) {
   
   // Security check
   const userTenants = (user as any).tenants?.map((t: any) => t.tenant?.id || t.tenant) || []
-  const hasAccess = (user as any).role === 'super-admin' || userTenants.includes(requestedTenantId)
+  const hasAccess = (user as any).role === 'super-admin' || 
+    userTenants.some((tid: any) => String(tid) === String(requestedTenantId))
   
   if (!hasAccess && requestedTenantId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
