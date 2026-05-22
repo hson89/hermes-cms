@@ -1,6 +1,7 @@
 import type { Endpoint, PayloadRequest } from 'payload'
 import { getPrimaryTenantId } from '../Users/utils'
 import { generatePayloadTS } from '../../services/export-service'
+import { langfuse } from '../../services/langfuse'
 
 /**
  * Resolves the primary tenant ID for a user.
@@ -85,6 +86,17 @@ export const generateSchemaEndpoint: Endpoint = {
       return Response.json({ error: 'prompt is required.' }, { status: 400 })
     }
 
+    // Initialize Langfuse Trace
+    const trace = langfuse?.trace({
+      name: 'generate-schema',
+      userId: String(user.id),
+      metadata: {
+        tenantId: String(tenantId),
+        hasCurrentSchema: !!currentSchema,
+      },
+      input: { prompt },
+    })
+
     try {
       // Dispatch to Content Authoring Microservice
       const contentAuthoringServiceUrl =
@@ -103,12 +115,16 @@ export const generateSchemaEndpoint: Endpoint = {
           tenant_id: tenantId,
           user_id: user.id,
           current_schema: currentSchema || null,
+          langfuse_trace_id: trace?.id,
         }),
       })
 
       if (!response.ok) {
         const errorBody = await response.text()
         console.error('[generate-schema] AI service error:', errorBody)
+        trace?.update({
+          output: { error: errorBody },
+        })
         return Response.json(
           { error: 'AI service failed to process request.' },
           { status: 502 },
@@ -116,6 +132,12 @@ export const generateSchemaEndpoint: Endpoint = {
       }
 
       const result = await response.json()
+      trace?.update({
+        output: {
+          sessionId: result.sessionId || result.session_id,
+          status: result.status,
+        },
+      })
 
       // Log the natural language prompt and generated schema outcome to AIPromptHistory (T007b)
       try {
@@ -143,10 +165,17 @@ export const generateSchemaEndpoint: Endpoint = {
       )
     } catch (err) {
       console.error('[generate-schema] Unexpected error:', err)
+      trace?.update({
+        output: { error: String(err) },
+      })
       return Response.json(
         { error: 'Internal server error.' },
         { status: 500 },
       )
+    } finally {
+      if (langfuse) {
+        await langfuse.flushAsync()
+      }
     }
   },
 }
@@ -274,6 +303,17 @@ export const postSessionMessageEndpoint: Endpoint = {
       return Response.json({ error: 'prompt is required.' }, { status: 400 })
     }
 
+    // Initialize Langfuse Trace
+    const trace = langfuse?.trace({
+      name: 'session-message',
+      userId: String(user.id),
+      metadata: {
+        sessionId,
+        hasCurrentSchema: !!currentSchema,
+      },
+      input: { prompt },
+    })
+
     try {
       const contentAuthoringServiceUrl =
         process.env.CONTENT_AUTHORING_SERVICE_URL ??
@@ -288,12 +328,16 @@ export const postSessionMessageEndpoint: Endpoint = {
         body: JSON.stringify({
           prompt: prompt.trim(),
           current_schema: currentSchema || null,
+          langfuse_trace_id: trace?.id,
         }),
       })
 
       if (!response.ok) {
         const errorBody = await response.text()
         console.error('[session-message] AI service streaming error:', errorBody)
+        trace?.update({
+          output: { error: errorBody },
+        })
         return Response.json(
           { error: 'AI service failed to initiate stream.' },
           { status: response.status },
@@ -342,10 +386,17 @@ export const postSessionMessageEndpoint: Endpoint = {
       })
     } catch (err) {
       console.error('[session-message] Unexpected error:', err)
+      trace?.update({
+        output: { error: String(err) },
+      })
       return Response.json(
         { error: 'Internal server error.' },
         { status: 500 },
       )
+    } finally {
+      if (langfuse) {
+        await langfuse.flushAsync()
+      }
     }
   },
 }

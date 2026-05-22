@@ -43,6 +43,7 @@ class RefineService:
         style_modifier_prompt: Optional[str] = None,
         model_override: Optional[str] = None,
         session_id: Optional[str] = None,
+        langfuse_trace_id: Optional[str] = None,
     ) -> AsyncGenerator[dict[str, Any], None]:
         """
         Refines an existing draft based on user feedback.
@@ -66,9 +67,22 @@ class RefineService:
         style_modifier_instructions = style_modifier_prompt or ""
         resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
         model = self.ai_service.get_model(model_override=resolved_model)
-        history = session.to_langchain_messages()
-
         chain = REFINEMENT_PROMPT | model
+        
+        # Initialize Langfuse handler
+        langfuse_handler = self.ai_service._get_langfuse_handler(trace_id=langfuse_trace_id)
+        config = {}
+        if langfuse_handler:
+            config = {
+                "callbacks": [langfuse_handler],
+                "metadata": {
+                    "langfuse_user_id": user_id,
+                    "langfuse_session_id": str(session.id),
+                    "langfuse_tags": ["content-refinement", f"tenant:{tenant_id}"],
+                }
+            }
+
+        history = session.to_langchain_messages()
 
         full_content = ""
         total_input_tokens = 0
@@ -82,7 +96,8 @@ class RefineService:
                 "refinement_input": prompt,
                 "schema_json": json.dumps(schema_json, indent=2),
                 "history": history,
-            }
+            },
+            config=config
         ):
             if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
                 total_input_tokens += chunk.usage_metadata.get('input_tokens', 0)

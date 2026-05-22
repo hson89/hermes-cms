@@ -39,6 +39,7 @@
     "@tiptap/react": "^3.23.5",
     "@tiptap/starter-kit": "^3.23.5",
     "graphql": "^16.14.0",
+    "langfuse": "^3.38.20",
     "lexical": "0.41.0",
     "next": "^16.2.6",
     "payload": "^3.84.1",

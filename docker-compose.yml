@@ -1,3 +1,4 @@
+name: hermes-cms
 
 services:
   # Main CMS Database
@@ -101,6 +102,7 @@ services:
 networks:
   default:
     name: hermes-net
+    external: true
 
 volumes:
   postgres_cms_data:

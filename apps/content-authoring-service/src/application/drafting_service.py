@@ -50,6 +50,7 @@ class DraftingService:
         style_modifier_prompt: Optional[str] = None,
         model_override: Optional[str] = None,
         session_id: Optional[str] = None,
+        langfuse_trace_id: Optional[str] = None,
     ) -> AsyncGenerator[dict[str, Any], None]:
         """
         Generates a content draft using a streaming LLM.
@@ -273,6 +274,19 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
         tools = [schema_resolver, image_generator]
         model_with_tools = model.bind_tools(tools)
 
+        # Initialize Langfuse handler
+        langfuse_handler = self.ai_service._get_langfuse_handler(trace_id=langfuse_trace_id)
+        config = {}
+        if langfuse_handler:
+            config = {
+                "callbacks": [langfuse_handler],
+                "metadata": {
+                    "langfuse_user_id": user_id,
+                    "langfuse_session_id": str(session.id),
+                    "langfuse_tags": ["content-drafting", f"tenant:{tenant_id}"],
+                }
+            }
+
         history = session.to_langchain_messages()
         
         # Prepare initial messages for the chain
@@ -314,7 +328,7 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
             else:
                 input_data = messages
 
-            async for chunk in model_with_tools.astream(input_data):
+            async for chunk in model_with_tools.astream(input_data, config=config):
                 # Handle usage metadata if available
                 if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
                     total_input_tokens += chunk.usage_metadata.get('input_tokens', 0)
@@ -507,6 +521,7 @@ Return ONLY the raw JSON object matching the schema. Do not include any other co
         style_modifier_prompt: Optional[str] = None,
         model_override: Optional[str] = None,
         session_id: Optional[str] = None,
+        langfuse_trace_id: Optional[str] = None,
     ) -> AsyncGenerator[dict[str, Any], None]:
         """
         Refines an existing draft by delegating to RefineService.
@@ -523,5 +538,6 @@ Return ONLY the raw JSON object matching the schema. Do not include any other co
             style_modifier_prompt=style_modifier_prompt,
             model_override=model_override,
             session_id=session_id,
+            langfuse_trace_id=langfuse_trace_id,
         ):
             yield event

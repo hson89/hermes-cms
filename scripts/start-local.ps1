@@ -63,6 +63,9 @@ if (-not (Test-Path $venvPath)) {
     exit 1
 }
 
+# Ensure shared network exists
+$null = docker network create hermes-net 2>$null
+
 if (-not $skipLangfuse) {
     Write-Host "🚀 Starting Langfuse Observability Stack..." -ForegroundColor Cyan
     docker-compose -f docker-compose.langfuse.yml up -d

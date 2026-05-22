@@ -76,6 +76,7 @@ class CopilotService:
         prompt: str,
         tenant_id: UUID,
         user_id: UUID,
+        langfuse_trace_id: str | None = None,
     ) -> str:
         """
         Apply an AI edit instruction to a content section.
@@ -86,6 +87,7 @@ class CopilotService:
             prompt:          The editing instruction (e.g. "make more formal").
             tenant_id:       UUID of the requesting tenant.
             user_id:         UUID of the requesting user.
+            langfuse_trace_id: Optional trace ID to link this generation to a parent trace.
 
         Returns:
             The revised text for the specified section.
@@ -101,8 +103,21 @@ class CopilotService:
             ),
         ]
 
+        # Initialize Langfuse handler
+        config = {}
+        if self._ai_service:
+            langfuse_handler = self._ai_service._get_langfuse_handler(trace_id=langfuse_trace_id)
+            if langfuse_handler:
+                config = {
+                    "callbacks": [langfuse_handler],
+                    "metadata": {
+                        "langfuse_user_id": str(user_id),
+                        "langfuse_tags": ["copilot-edit", f"tenant:{tenant_id}"],
+                    }
+                }
+
         try:
-            response = await self._llm.ainvoke(messages)
+            response = await self._llm.ainvoke(messages, config=config)
             return (
                 response.content
                 if isinstance(response.content, str)

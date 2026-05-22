@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     NVIDIA_REASONING_BUDGET: int = 16384
     NVIDIA_ENABLE_THINKING: bool = True
 
+    # Langfuse Configuration
+    LANGFUSE_PUBLIC_KEY: str | None = None
+    LANGFUSE_SECRET_KEY: str | None = None
+    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+    LANGFUSE_BASE_URL: str | None = None
+
     # API Keys (optional at startup, validated by providers on use)
     OPENAI_API_KEY: str | None = None
     ANTHROPIC_API_KEY: str | None = None

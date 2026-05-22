@@ -5,6 +5,9 @@
 
 set -e
 
+# Ensure shared network exists
+docker network create hermes-net 2>/dev/null || true
+
 echo "🚀 Starting Langfuse Observability Stack..."
 docker compose -f docker-compose.langfuse.yml up -d
 

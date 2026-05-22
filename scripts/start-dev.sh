@@ -55,6 +55,9 @@ if [ ! -f apps/content-authoring-service/.env ]; then
     echo "⚠️  Please update apps/content-authoring-service/.env with your API keys"
 fi
 
+# Ensure shared network exists
+docker network create hermes-net 2>/dev/null || true
+
 if [ "$SKIP_LANGFUSE" = false ]; then
     echo "🚀 Starting Langfuse Observability Stack..."
     docker compose -f docker-compose.langfuse.yml up -d

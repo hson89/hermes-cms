@@ -1,4 +1,4 @@
-﻿# s:\Dev\hermes-cms\scripts\start-dev.ps1
+# s:\Dev\hermes-cms\scripts\start-dev.ps1
 # Starts all services required for Hermes AI local development and testing in Docker on Windows.
 
 # Set strict error action
@@ -51,6 +51,9 @@ if (-not (Test-Path $authoringEnv)) {
     Copy-Item $authoringEnvExample $authoringEnv
     Write-Host "⚠️ Please update apps/content-authoring-service/.env with your API keys" -ForegroundColor Yellow
 }
+
+# Ensure shared network exists
+$null = docker network create hermes-net 2>$null
 
 if (-not $skipLangfuse) {
     Write-Host "🚀 Starting Langfuse Observability Stack..." -ForegroundColor Cyan

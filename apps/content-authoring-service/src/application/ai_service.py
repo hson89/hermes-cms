@@ -94,6 +94,30 @@ class AIService:
             self.__llm = self.get_model()
         return self.__llm
 
+    def _get_langfuse_handler(self, trace_id: str | None = None) -> CallbackHandler | None:
+        """Initialize Langfuse callback handler if configured."""
+        if not settings.LANGFUSE_PUBLIC_KEY or not settings.LANGFUSE_SECRET_KEY:
+            return None
+        
+        import os
+        from unittest.mock import Mock
+        
+        langfuse_host = settings.LANGFUSE_BASE_URL or settings.LANGFUSE_HOST
+        for env_var, setting_val in [
+            ("LANGFUSE_PUBLIC_KEY", settings.LANGFUSE_PUBLIC_KEY),
+            ("LANGFUSE_SECRET_KEY", settings.LANGFUSE_SECRET_KEY),
+            ("LANGFUSE_HOST", langfuse_host)
+        ]:
+            if setting_val is not None and not isinstance(setting_val, Mock):
+                os.environ[env_var] = str(setting_val)
+        
+        # Import CallbackHandler locally so environment variables are loaded first
+        from langfuse.langchain import CallbackHandler
+        
+        trace_context = {"trace_id": trace_id} if trace_id else None
+        return CallbackHandler(trace_context=trace_context)
+
+
     def get_model(self, model_override: str | None = None):
         """Return a configured LangChain chat model, optionally overriding the default."""
         provider = settings.LANGCHAIN_MODEL_PROVIDER
@@ -142,6 +166,7 @@ class AIService:
         user_id: str,
         current_schema: dict | None = None,
         db: AsyncSession | None = None,
+        langfuse_trace_id: str | None = None,
     ) -> dict:
         """
         Creates a new AIAgentSession, invokes the LLM to generate a JSON schema,
@@ -153,6 +178,7 @@ class AIService:
             user_id:         The ID of the user initiating the request.
             current_schema:  Optional existing content schema to ground the model.
             db:              Optional async SQLAlchemy database session.
+            langfuse_trace_id: Optional trace ID to link this generation to a parent trace.
 
         Returns:
             dict with keys: sessionId, schema (dict), status, message (str)
@@ -167,6 +193,19 @@ class AIService:
                 _sessions[str(session.id)] = session
 
         await save_session()
+
+        # Initialize Langfuse handler
+        langfuse_handler = self._get_langfuse_handler(trace_id=langfuse_trace_id)
+        config = {}
+        if langfuse_handler:
+            config = {
+                "callbacks": [langfuse_handler],
+                "metadata": {
+                    "langfuse_user_id": user_id,
+                    "langfuse_session_id": str(session.id),
+                    "langfuse_tags": ["schema-generation", f"tenant:{tenant_id}"],
+                }
+            }
 
         # Build initial messages context
         session.add_message("system", _SCHEMA_GENERATION_SYSTEM_PROMPT)
@@ -189,7 +228,7 @@ class AIService:
 
         while retry_count <= max_retries:
             try:
-                response = await self._llm.ainvoke(messages)
+                response = await self._llm.ainvoke(messages, config=config)
                 raw_content = (
                     response.content
                     if isinstance(response.content, str)
@@ -271,6 +310,7 @@ class AIService:
         prompt: str,
         current_schema: dict | None = None,
         db: AsyncSession | None = None,
+        langfuse_trace_id: str | None = None,
     ) -> AsyncGenerator[dict, None]:
         """
         Continues an existing schema co-creation session, returning a real-time SSE event stream
@@ -294,6 +334,19 @@ class AIService:
                 _sessions[str(session.id)] = session
 
         await save_session()
+
+        # Initialize Langfuse handler
+        langfuse_handler = self._get_langfuse_handler(trace_id=langfuse_trace_id)
+        config = {}
+        if langfuse_handler:
+            config = {
+                "callbacks": [langfuse_handler],
+                "metadata": {
+                    "langfuse_user_id": str(session.user_id),
+                    "langfuse_session_id": str(session.id),
+                    "langfuse_tags": ["schema-refinement", f"tenant:{session.tenant_id}"],
+                }
+            }
 
         # Build message history for LangChain
         langchain_messages = []
@@ -332,7 +385,7 @@ class AIService:
                 last_emitted_len = 0
                 
                 # Stream directly from LLM
-                async for chunk in self._llm.astream(langchain_messages):
+                async for chunk in self._llm.astream(langchain_messages, config=config):
                     chunk_text = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
                     raw_content += chunk_text
                     

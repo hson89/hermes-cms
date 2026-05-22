@@ -66,6 +66,9 @@ if [ ! -d apps/content-authoring-service/venv ]; then
     exit 1
 fi
 
+# Ensure shared network exists
+docker network create hermes-net 2>/dev/null || true
+
 if [ "$SKIP_LANGFUSE" = false ]; then
     echo "🚀 Starting Langfuse Observability Stack..."
     docker compose -f docker-compose.langfuse.yml up -d

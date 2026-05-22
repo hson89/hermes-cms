@@ -76,6 +76,7 @@ class GenerateSchemaRequest(BaseModel):
     tenant_id: str
     user_id: str
     current_schema: dict | None = None
+    langfuse_trace_id: str | None = None
 
     @field_validator("tenant_id", "user_id", mode="before")
     @classmethod
@@ -108,6 +109,7 @@ class CopilotEditRequest(BaseModel):
     prompt: str
     tenant_id: str
     user_id: str
+    langfuse_trace_id: str | None = None
 
     @field_validator("content_item_id", "section_id", "tenant_id", "user_id", mode="before")
     @classmethod
@@ -122,6 +124,7 @@ class SessionMessageRequest(BaseModel):
 
     prompt: str
     current_schema: dict | None = None
+    langfuse_trace_id: str | None = None
 
     @field_validator("prompt")
     @classmethod
@@ -146,6 +149,7 @@ class DraftRequest(BaseModel):
     # Accept both camelCase (from CMS proxy) and snake_case variants
     modelOverride: str | None = None
     session_id: str | None = None
+    langfuse_trace_id: str | None = None
 
     @field_validator("tenant_id", "user_id", "session_id", "content_type_slug", mode="before")
     @classmethod
@@ -191,6 +195,7 @@ class RefineRequest(BaseModel):
     tenant_id: str
     user_id: str
     locale: str = "en"
+    langfuse_trace_id: str | None = None
 
     @field_validator("tenant_id", "user_id", mode="before")
     @classmethod
@@ -243,6 +248,7 @@ async def generate_draft(
                 style_modifier_prompt=body.style_modifier_prompt,
                 model_override=body.resolved_model_override(),
                 session_id=body.session_id,
+                langfuse_trace_id=body.langfuse_trace_id,
             ):
                 if await request.is_disconnected():
                     break
@@ -284,6 +290,7 @@ async def refine_draft(
                 user_id=body.user_id,
                 db=db,
                 locale=body.locale,
+                langfuse_trace_id=body.langfuse_trace_id,
             ):
                 if await request.is_disconnected():
                     break
@@ -324,6 +331,7 @@ async def generate_schema(
             user_id=body.user_id,
             current_schema=body.current_schema,
             db=db,
+            langfuse_trace_id=body.langfuse_trace_id,
         )
         return GenerateSchemaResponse(
             session_id=result["sessionId"],
@@ -414,6 +422,7 @@ async def copilot_edit(body: CopilotEditRequest, request: Request) -> dict:
             prompt=body.prompt,
             tenant_id=body.tenant_id,
             user_id=body.user_id,
+            langfuse_trace_id=body.langfuse_trace_id,
         )
         return {"section_id": body.section_id, "content": edited_content}
     except RuntimeError as exc:
@@ -448,6 +457,7 @@ async def post_session_message(
                 prompt=body.prompt,
                 current_schema=body.current_schema,
                 db=db,
+                langfuse_trace_id=body.langfuse_trace_id,
             ):
                 yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
         except ValueError as exc:

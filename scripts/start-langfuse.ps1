@@ -1,6 +1,9 @@
 # start-langfuse.ps1
 # Starts the Langfuse Observability Stack independently (Windows).
 
+# Ensure shared network exists
+$null = docker network create hermes-net 2>$null
+
 Write-Host "🚀 Starting Langfuse Observability Stack..." -ForegroundColor Cyan
 docker compose -f docker-compose.langfuse.yml up -d
 

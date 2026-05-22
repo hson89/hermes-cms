@@ -14,7 +14,7 @@ async function run() {
     console.log(JSON.stringify(users.docs, null, 2))
 
     if (users.docs.length > 0) {
-      const tenantId = users.docs[0].tenants?.[0]?.tenant?.id || users.docs[0].tenants?.[0]?.tenant
+      const tenantId = (users.docs[0].tenants?.[0]?.tenant as any)?.id || users.docs[0].tenants?.[0]?.tenant
       console.log('Using tenantId for query test:', tenantId)
 
       if (tenantId) {

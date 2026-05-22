@@ -94,7 +94,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
   const handleChange = React.useCallback((name: string, value: any) => {
     const lowercaseName = name.toLowerCase()
-    setData(prev => {
+    setData((prev: any) => {
       const matchingKey = Object.keys(prev).find(k => k.toLowerCase() === lowercaseName) || name
       const newData = { ...prev, [matchingKey]: value }
       onSave?.(newData)
