@@ -178,3 +178,23 @@ async def test_generate_schema_uses_nvidia_provider(ai_service: AIService, mock_
         )
         
         assert result["status"] == SessionStatus.COMPLETED
+
+
+def test_get_langfuse_handler_success(ai_service: AIService):
+    """Verify that _get_langfuse_handler successfully returns a CallbackHandler with correct parameters."""
+    with patch("src.application.ai_service.settings") as mock_settings, \
+         patch("langfuse.langchain.CallbackHandler") as mock_callback_handler:
+        
+        mock_settings.LANGFUSE_PUBLIC_KEY = "test-public-key"
+        mock_settings.LANGFUSE_SECRET_KEY = "test-secret-key"
+        mock_settings.LANGFUSE_BASE_URL = "http://test-langfuse"
+        
+        # Mock langfuse_client lazy property to return a non-None value
+        with patch.object(AIService, "langfuse_client", return_value=MagicMock()):
+            handler = ai_service._get_langfuse_handler(trace_id="test-trace-id")
+            
+            mock_callback_handler.assert_called_once_with(
+                public_key="test-public-key",
+                trace_context={"trace_id": "test-trace-id"}
+            )
+            assert handler == mock_callback_handler.return_value

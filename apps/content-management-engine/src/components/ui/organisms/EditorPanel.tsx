@@ -97,7 +97,11 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     setData((prev: any) => {
       const matchingKey = Object.keys(prev).find(k => k.toLowerCase() === lowercaseName) || name
       const newData = { ...prev, [matchingKey]: value }
-      onSave?.(newData)
+      if (onSave) {
+        setTimeout(() => {
+          onSave(newData)
+        }, 0)
+      }
       return newData
     })
     setModifiedFields(prev => new Set(prev).add(name))

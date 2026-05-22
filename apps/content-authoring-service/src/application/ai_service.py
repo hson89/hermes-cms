@@ -127,7 +127,10 @@ class AIService:
         from langfuse.langchain import CallbackHandler
         
         trace_context = {"trace_id": trace_id} if trace_id else None
-        return CallbackHandler(langfuse=client, trace_context=trace_context)
+        return CallbackHandler(
+            public_key=str(settings.LANGFUSE_PUBLIC_KEY),
+            trace_context=trace_context
+        )
 
 
     def get_model(self, model_override: str | None = None):
