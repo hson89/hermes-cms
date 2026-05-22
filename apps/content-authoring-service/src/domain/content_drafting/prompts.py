@@ -4,7 +4,10 @@ LLM prompt templates for content drafting.
 T013 - Formulate LLM prompts and strict system prompt templates
 """
 
+import logging
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+logger = logging.getLogger(__name__)
 
 # ── Content Generation Prompt ──────────────────────────────────────────────
 
@@ -82,8 +85,97 @@ Content Schema:
 {schema_json}
 """
 
+from typing import Optional
+
 REFINEMENT_PROMPT = ChatPromptTemplate.from_messages([
     ("system", REFINEMENT_SYSTEM_PROMPT),
     MessagesPlaceholder(variable_name="history"),
     ("user", REFINEMENT_USER_PROMPT),
 ])
+
+
+def get_drafting_prompt(langfuse_client=None) -> ChatPromptTemplate:
+    """
+    Get the ChatPromptTemplate for content drafting.
+    Attempts to fetch templates from Langfuse. Falls back to local defaults on failure.
+    """
+    system_prompt = DRAFTING_SYSTEM_PROMPT
+    user_prompt = DRAFTING_USER_PROMPT
+    
+    is_mock = False
+    try:
+        from unittest.mock import Mock
+        is_mock = isinstance(langfuse_client, Mock)
+    except ImportError:
+        pass
+
+    metadata = {}
+    if langfuse_client is not None and not is_mock:
+        try:
+            lf_system = langfuse_client.get_prompt("content-drafting-system", label="production")
+            system_prompt = lf_system.get_langchain_prompt()
+            metadata["langfuse_system_prompt_version"] = lf_system.version
+        except Exception as e:
+            logger.warning("Failed to fetch 'content-drafting-system' from Langfuse, falling back to local prompt. Error: %s", e)
+            
+        try:
+            lf_user = langfuse_client.get_prompt("content-drafting-user", label="production")
+            user_prompt = lf_user.get_langchain_prompt()
+            metadata["langfuse_user_prompt_version"] = lf_user.version
+        except Exception as e:
+            logger.warning("Failed to fetch 'content-drafting-user' from Langfuse, falling back to local prompt. Error: %s", e)
+            
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        MessagesPlaceholder(variable_name="history"),
+        ("user", user_prompt),
+    ])
+    
+    if metadata:
+        prompt = prompt.with_config({"metadata": metadata})
+        
+    return prompt
+
+
+def get_refinement_prompt(langfuse_client=None) -> ChatPromptTemplate:
+    """
+    Get the ChatPromptTemplate for content refinement.
+    Attempts to fetch templates from Langfuse. Falls back to local defaults on failure.
+    """
+    system_prompt = REFINEMENT_SYSTEM_PROMPT
+    user_prompt = REFINEMENT_USER_PROMPT
+    
+    is_mock = False
+    try:
+        from unittest.mock import Mock
+        is_mock = isinstance(langfuse_client, Mock)
+    except ImportError:
+        pass
+
+    metadata = {}
+    if langfuse_client is not None and not is_mock:
+        try:
+            lf_system = langfuse_client.get_prompt("content-refinement-system", label="production")
+            system_prompt = lf_system.get_langchain_prompt()
+            metadata["langfuse_system_prompt_version"] = lf_system.version
+        except Exception as e:
+            logger.warning("Failed to fetch 'content-refinement-system' from Langfuse, falling back to local prompt. Error: %s", e)
+            
+        try:
+            lf_user = langfuse_client.get_prompt("content-refinement-user", label="production")
+            user_prompt = lf_user.get_langchain_prompt()
+            metadata["langfuse_user_prompt_version"] = lf_user.version
+        except Exception as e:
+            logger.warning("Failed to fetch 'content-refinement-user' from Langfuse, falling back to local prompt. Error: %s", e)
+            
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        MessagesPlaceholder(variable_name="history"),
+        ("user", user_prompt),
+    ])
+    
+    if metadata:
+        prompt = prompt.with_config({"metadata": metadata})
+        
+    return prompt
+

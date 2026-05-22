@@ -14,7 +14,7 @@ from uuid import UUID
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.content_drafting.prompts import REFINEMENT_PROMPT
+from src.domain.content_drafting.prompts import get_refinement_prompt
 from src.application.ai_service import AIService
 from src.infrastructure.repositories.session_repository import SQLSessionRepository
 from src.domain.ai_agent_session.models import AIAgentSession
@@ -66,8 +66,9 @@ class RefineService:
         # Use style modifier instructions
         style_modifier_instructions = style_modifier_prompt or ""
         resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
+        refinement_prompt = get_refinement_prompt(self.ai_service.langfuse_client)
         model = self.ai_service.get_model(model_override=resolved_model)
-        chain = REFINEMENT_PROMPT | model
+        chain = refinement_prompt | model
         
         # Initialize Langfuse handler
         langfuse_handler = self.ai_service._get_langfuse_handler(trace_id=langfuse_trace_id)

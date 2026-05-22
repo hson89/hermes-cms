@@ -86,6 +86,7 @@ class AIService:
         # Client is lazy-initialised on first use so that tests can mock
         # this class without needing real API credentials.
         self.__llm = None  # lazy
+        self.__langfuse_client = None  # lazy
 
     @property
     def _llm(self):
@@ -94,28 +95,39 @@ class AIService:
             self.__llm = self.get_model()
         return self.__llm
 
+    @property
+    def langfuse_client(self):
+        """Lazy initialization of the Langfuse client."""
+        if self.__langfuse_client is None:
+            if not settings.LANGFUSE_PUBLIC_KEY or not settings.LANGFUSE_SECRET_KEY:
+                return None
+            
+            from unittest.mock import Mock
+            if isinstance(settings.LANGFUSE_PUBLIC_KEY, Mock) or isinstance(settings.LANGFUSE_SECRET_KEY, Mock):
+                return None
+            
+            langfuse_host = settings.LANGFUSE_BASE_URL or settings.LANGFUSE_HOST
+            try:
+                from langfuse import Langfuse
+                self.__langfuse_client = Langfuse(
+                    public_key=str(settings.LANGFUSE_PUBLIC_KEY),
+                    secret_key=str(settings.LANGFUSE_SECRET_KEY),
+                    host=str(langfuse_host) if langfuse_host else None
+                )
+            except Exception:
+                self.__langfuse_client = None
+        return self.__langfuse_client
+
     def _get_langfuse_handler(self, trace_id: str | None = None) -> CallbackHandler | None:
         """Initialize Langfuse callback handler if configured."""
-        if not settings.LANGFUSE_PUBLIC_KEY or not settings.LANGFUSE_SECRET_KEY:
+        client = self.langfuse_client
+        if not client:
             return None
         
-        import os
-        from unittest.mock import Mock
-        
-        langfuse_host = settings.LANGFUSE_BASE_URL or settings.LANGFUSE_HOST
-        for env_var, setting_val in [
-            ("LANGFUSE_PUBLIC_KEY", settings.LANGFUSE_PUBLIC_KEY),
-            ("LANGFUSE_SECRET_KEY", settings.LANGFUSE_SECRET_KEY),
-            ("LANGFUSE_HOST", langfuse_host)
-        ]:
-            if setting_val is not None and not isinstance(setting_val, Mock):
-                os.environ[env_var] = str(setting_val)
-        
-        # Import CallbackHandler locally so environment variables are loaded first
         from langfuse.langchain import CallbackHandler
         
         trace_context = {"trace_id": trace_id} if trace_id else None
-        return CallbackHandler(trace_context=trace_context)
+        return CallbackHandler(langfuse=client, trace_context=trace_context)
 
 
     def get_model(self, model_override: str | None = None):

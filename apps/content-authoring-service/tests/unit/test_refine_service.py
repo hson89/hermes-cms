@@ -26,9 +26,11 @@ async def test_refine_draft_stream_yields_events(refine_service, mock_ai_service
         
     mock_ai_service.get_model.return_value = mock_model
 
-    with patch("src.application.refine_service.REFINEMENT_PROMPT", new=MagicMock()) as mock_prompt, \
+    with patch("src.application.refine_service.get_refinement_prompt") as mock_get_prompt, \
          patch("src.application.refine_service.SQLSessionRepository", autospec=True) as mock_repo_class:
         
+        mock_prompt = MagicMock()
+        mock_get_prompt.return_value = mock_prompt
         mock_repo = mock_repo_class.return_value
         mock_repo.get_by_id.return_value = None
         mock_repo.save = AsyncMock()
@@ -64,9 +66,11 @@ async def test_refine_draft_with_style_modifier(refine_service, mock_ai_service)
         
     mock_ai_service.get_model.return_value = mock_model
 
-    with patch("src.application.refine_service.REFINEMENT_PROMPT", new=MagicMock()) as mock_prompt, \
+    with patch("src.application.refine_service.get_refinement_prompt") as mock_get_prompt, \
          patch("src.application.refine_service.SQLSessionRepository", autospec=True) as mock_repo_class:
         
+        mock_prompt = MagicMock()
+        mock_get_prompt.return_value = mock_prompt
         mock_repo = mock_repo_class.return_value
         mock_repo.get_by_id.return_value = None
         mock_repo.save = AsyncMock()

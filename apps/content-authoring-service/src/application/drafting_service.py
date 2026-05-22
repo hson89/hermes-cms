@@ -9,7 +9,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, Tool
 from langchain_core.runnables import RunnableConfig
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.content_drafting.prompts import DRAFTING_PROMPT, REFINEMENT_PROMPT
+from src.domain.content_drafting.prompts import get_drafting_prompt
 from src.application.ai_service import AIService
 from src.infrastructure.tools.schema_resolver import schema_resolver
 from src.infrastructure.tools.image_generator import image_generator
@@ -324,7 +324,8 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
             
             # Use the prompt template for the first iteration, then just raw messages if continuing
             if current_iteration == 1:
-                input_data = DRAFTING_PROMPT.format_messages(**prompt_values)
+                drafting_prompt = get_drafting_prompt(self.ai_service.langfuse_client)
+                input_data = drafting_prompt.format_messages(**prompt_values)
             else:
                 input_data = messages
 
