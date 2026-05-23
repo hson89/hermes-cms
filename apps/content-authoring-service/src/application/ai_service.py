@@ -90,7 +90,7 @@ class AIService:
                 self.__langfuse_client = None
         return self.__langfuse_client
 
-    def _get_langfuse_handler(self, trace_id: str | None = None) -> CallbackHandler | None:
+    def _get_langfuse_handler(self, trace_id: str | None = None, session_id: str | None = None) -> CallbackHandler | None:
         """Initialize Langfuse callback handler if configured."""
         client = self.langfuse_client
         if not client:
@@ -98,11 +98,20 @@ class AIService:
         
         from langfuse.langchain import CallbackHandler
         
-        trace_context = {"trace_id": trace_id} if trace_id else None
-        return CallbackHandler(
-            public_key=str(settings.LANGFUSE_PUBLIC_KEY),
-            trace_context=trace_context
-        )
+        trace_context = {}
+        if trace_id:
+            trace_context["trace_id"] = trace_id
+        if session_id:
+            trace_context["session_id"] = session_id
+            
+        kwargs = {
+            "public_key": str(settings.LANGFUSE_PUBLIC_KEY),
+            "trace_context": trace_context if trace_context else None
+        }
+        if session_id:
+            kwargs["session_id"] = session_id
+            
+        return CallbackHandler(**kwargs)
 
 
     def get_model(self, model_override: str | None = None):
@@ -182,7 +191,10 @@ class AIService:
         await save_session()
 
         # Initialize Langfuse handler
-        langfuse_handler = self._get_langfuse_handler(trace_id=langfuse_trace_id)
+        langfuse_handler = self._get_langfuse_handler(
+            trace_id=langfuse_trace_id,
+            session_id=str(session.id)
+        )
         config = {}
         if langfuse_handler:
             config = {
@@ -326,7 +338,10 @@ class AIService:
         await save_session()
 
         # Initialize Langfuse handler
-        langfuse_handler = self._get_langfuse_handler(trace_id=langfuse_trace_id)
+        langfuse_handler = self._get_langfuse_handler(
+            trace_id=langfuse_trace_id,
+            session_id=str(session.id)
+        )
         config = {}
         if langfuse_handler:
             config = {

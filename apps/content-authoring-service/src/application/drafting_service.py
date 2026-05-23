@@ -171,8 +171,8 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                 if not session or str(session.tenant_id) != tenant_id:
                     session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
                 else:
-                    # Clear schema generation history to start the drafting conversation fresh
-                    session.context = []
+                    # Preserve context history so multi-turn schema/plan confirmation works
+                    pass
             except (ValueError, AttributeError):
                 session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
         else:
@@ -190,7 +190,10 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
         model_with_tools = model.bind_tools(tools)
 
         # Initialize Langfuse handler
-        langfuse_handler = self.ai_service._get_langfuse_handler(trace_id=langfuse_trace_id)
+        langfuse_handler = self.ai_service._get_langfuse_handler(
+            trace_id=langfuse_trace_id,
+            session_id=str(session.id)
+        )
         config = {}
         if langfuse_handler:
             config = {
@@ -208,6 +211,31 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
         messages: List[BaseMessage] = history
         # History already contains the last user message added above
         
+        # Format the base messages with the prompt template (system prompt, history, user prompt)
+        # This ensures the model receives its system instructions, schema, and guidelines in all iterations
+        drafting_prompt = get_drafting_prompt(self.ai_service.langfuse_client)
+        
+        # Extract the original user request from history (the very first user message in the session)
+        original_user_request = prompt
+        if messages:
+            first_msg = messages[0]
+            if isinstance(first_msg, dict):
+                original_user_request = first_msg.get("content", prompt)
+            else:
+                original_user_request = getattr(first_msg, "content", prompt)
+        
+        prompt_values = {
+            "locale": locale,
+            "style_modifier_instructions": style_modifier_instructions,
+            "content_type_slug": content_type_slug,
+            "original_user_request": original_user_request,
+            "user_input": prompt,
+            "schema_json": json.dumps(schema_json, indent=2),
+            "history": messages[:-1] # All except the last user message which is replaced by user_input
+        }
+        base_messages = drafting_prompt.format_messages(**prompt_values)
+        tool_messages_this_turn = []
+        
         # We'll use a loop to handle potential tool calls
         max_iterations = 3
         current_iteration = 0
@@ -218,18 +246,6 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
         while current_iteration < max_iterations:
             current_iteration += 1
             
-            # Use the drafting prompt to wrap messages if it's the first call in this session
-            # Actually, LangChain's ChatPromptTemplate handles this.
-            # But we need to pass the required variables.
-            prompt_values = {
-                "locale": locale,
-                "style_modifier_instructions": style_modifier_instructions,
-                "content_type_slug": content_type_slug,
-                "user_input": prompt,
-                "schema_json": json.dumps(schema_json, indent=2),
-                "history": messages[:-1] # All except the last user message which is replaced by user_input
-            }
-            
             full_content = ""
             tool_calls = []
             
@@ -237,12 +253,11 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
             current_field = None
             emitted_fields = set()
             
-            # Use the prompt template for the first iteration, then just raw messages if continuing
+            # Use the base messages formatted with the prompt template, and append any tools executed during this turn
             if current_iteration == 1:
-                drafting_prompt = get_drafting_prompt(self.ai_service.langfuse_client)
-                input_data = drafting_prompt.format_messages(**prompt_values)
+                input_data = base_messages
             else:
-                input_data = messages
+                input_data = base_messages + tool_messages_this_turn
 
             async for chunk in model_with_tools.astream(input_data, config=config):
                 # Handle usage metadata if available
@@ -305,6 +320,7 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                     for tc in tool_calls if tc['name']
                 ])
                 messages.append(ai_msg)
+                tool_messages_this_turn.append(ai_msg)
                 
                 # Execute tools
                 tool_map = {t.name: t for t in tools}
@@ -325,11 +341,17 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                                 if ('content_type_slug' not in tool_args or not tool_args['content_type_slug']) and content_type_slug:
                                     tool_args['content_type_slug'] = content_type_slug
                             result = await tool.ainvoke(tool_args)
-                            messages.append(ToolMessage(content=json.dumps(result), tool_call_id=tc['id']))
+                            tool_msg = ToolMessage(content=json.dumps(result), tool_call_id=tc['id'])
+                            messages.append(tool_msg)
+                            tool_messages_this_turn.append(tool_msg)
                         except Exception as e:
-                            messages.append(ToolMessage(content=f"Error: {str(e)}", tool_call_id=tc['id']))
+                            err_msg = ToolMessage(content=f"Error: {str(e)}", tool_call_id=tc['id'])
+                            messages.append(err_msg)
+                            tool_messages_this_turn.append(err_msg)
                     else:
-                        messages.append(ToolMessage(content=f"Error: Tool {tc['name']} not found", tool_call_id=tc['id']))
+                        err_msg = ToolMessage(content=f"Error: Tool {tc['name']} not found", tool_call_id=tc['id'])
+                        messages.append(err_msg)
+                        tool_messages_this_turn.append(err_msg)
                 
                 # Continue loop to get next AI response
                 continue

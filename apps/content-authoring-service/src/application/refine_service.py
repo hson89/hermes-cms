@@ -71,7 +71,10 @@ class RefineService:
         chain = refinement_prompt | model
         
         # Initialize Langfuse handler
-        langfuse_handler = self.ai_service._get_langfuse_handler(trace_id=langfuse_trace_id)
+        langfuse_handler = self.ai_service._get_langfuse_handler(
+            trace_id=langfuse_trace_id,
+            session_id=str(session.id)
+        )
         config = {}
         if langfuse_handler:
             config = {

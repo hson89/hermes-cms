@@ -20,7 +20,7 @@ async def test_generate_draft_stream_yields_events(drafting_service, mock_ai_ser
     mock_chunk1 = MagicMock()
     mock_chunk1.content = "Thought: I should start with a title."
     mock_chunk2 = MagicMock()
-    mock_chunk2.content = ' {"title": "Hello World", "slug": "hello-world", "body": "This is a test."}'
+    mock_chunk2.content = '\n```json\n{"title": "Hello World", "slug": "hello-world", "body": "This is a test."}\n```'
     
     async def mock_astream(*args, **kwargs):
         yield mock_chunk1
@@ -187,25 +187,17 @@ async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_se
         ):
             events.append(event)
 
-    # 1. Assert generate_schema was called
-    mock_ai_service.generate_schema.assert_called_once_with(
-        prompt="create a contact form",
-        tenant_id="tenant-123",
-        user_id="user-123",
-        current_schema=None,
-        db=mock_db
-    )
+    # 1. Assert generate_schema was NOT called (we do not automatically co-create schemas if none matches)
+    mock_ai_service.generate_schema.assert_not_called()
 
-    # 2. Verify events
-    assert any(e["event"] == "SCHEMA_UPDATED" for e in events)
-    schema_event = next(e for e in events if e["event"] == "SCHEMA_UPDATED")
-    assert schema_event["data"]["contentType"]["id"] == "mock-ct-id"
-    assert schema_event["data"]["contentType"]["name"] == "Contact Form"
+    # 2. Verify events: should contain the warning TEXT_DELTA
+    assert any(e["event"] == "TEXT_DELTA" for e in events)
+    warning_event = next(e for e in events if e["event"] == "TEXT_DELTA" and "I couldn't find a matching content type" in e["data"])
+    assert warning_event is not None
     
-    assert any(e["event"] == "DRAFT_COMPLETE" for e in events)
-    draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
-    assert draft_event["data"]["draft"]["fullName"] == "John Doe"
-    assert draft_event["data"]["draft"]["consent"] is True
+    # 3. Verify no schema updated or draft complete events are yielded
+    assert not any(e["event"] == "SCHEMA_UPDATED" for e in events)
+    assert not any(e["event"] == "DRAFT_COMPLETE" for e in events)
 
 
 @pytest.mark.asyncio
@@ -227,7 +219,7 @@ async def test_generate_draft_stream_bootstrap_flow_with_matching(drafting_servi
     mock_chunk1 = MagicMock()
     mock_chunk1.content = "Thought: Drafting article..."
     mock_chunk2 = MagicMock()
-    mock_chunk2.content = ' {"title": "Matched Fuel Saving Info", "slug": "matched-fuel-saving", "body": "matched content"}'
+    mock_chunk2.content = '\n```json\n{"title": "Matched Fuel Saving Info", "slug": "matched-fuel-saving", "body": "matched content"}\n```'
     
     async def mock_astream(*args, **kwargs):
         yield mock_chunk1
@@ -320,7 +312,7 @@ async def test_generate_draft_stream_self_healing(drafting_service, mock_ai_serv
     mock_model_with_tools = MagicMock()
     
     mock_chunk = MagicMock()
-    mock_chunk.content = "Here is a structured outline:\nTitle: Saving Fuel"
+    mock_chunk.content = "Thought: Generating...\n```json\n{\n  \"title\": \"Saving Fuel\" (malformed JSON)\n"
     
     async def mock_astream(*args, **kwargs):
         yield mock_chunk

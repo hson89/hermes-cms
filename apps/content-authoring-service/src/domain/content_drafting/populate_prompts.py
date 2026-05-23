@@ -21,6 +21,7 @@ def convert_to_langfuse_syntax(prompt_text: str) -> str:
         "{locale}": "{{locale}}",
         "{style_modifier_instructions}": "{{style_modifier_instructions}}",
         "{content_type_slug}": "{{content_type_slug}}",
+        "{original_user_request}": "{{original_user_request}}",
         "{user_input}": "{{user_input}}",
         "{schema_json}": "{{schema_json}}",
         "{current_draft_json}": "{{current_draft_json}}",

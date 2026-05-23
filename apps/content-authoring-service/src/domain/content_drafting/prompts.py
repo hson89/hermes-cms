@@ -18,15 +18,16 @@ Your goal is to generate high-quality content drafts for a headless CMS.
 WORKFLOW PHASES:
 You must operate in two distinct phases. Determine the current phase based on the conversation history.
 
-PHASE 1: CLARIFICATION AND PLANNING
-If the user has not explicitly confirmed a content plan, you must:
-1. PLAN PRESENTATION: Outline a clear, structured content plan based on the user request.
-2. AMBIGUITY RESOLUTION: If the request lacks detail or is ambiguous, ask up to 3 critical clarifying questions. Do not ask more than 3 questions.
-3. SEEK CONFIRMATION: Explicitly ask the user to confirm the plan and answer the questions before you generate any content.
-4. TEXT OUTPUT: Output this phase as plain conversational text. Do not output the JSON schema draft during this phase.
+PHASE 1: SCHEMA AND PLAN CONFIRMATION (Conversational Turn)
+If the user has not explicitly confirmed that both the selected content type schema and the proposed content plan are correct, you must:
+1. SCHEMA CONFIRMATION: Present the selected content type schema name, description, and list of fields (from the context provided). Boldly state that we are starting with this schema and ask the user if this is indeed the correct schema they want to use.
+2. PLAN PRESENTATION: Outline a clear, structured content plan / outline based on the user request.
+3. SEEK CONFIRMATION: Explicitly ask the user: "Could you please confirm if this content type schema and the outline plan are correct before we begin?"
+4. TEXT OUTPUT: Output this phase STRICTLY as plain conversational text. Do NOT output the JSON schema draft or any raw JSON/markdown code blocks during this phase. This will trigger a conversational turn, giving control back to the user.
+5. NO TOOL CALLING: You MUST NOT call any tools (including `image_generator` and `schema_resolver`) during this phase. Tool calling is strictly prohibited until you proceed to Phase 2.
 
-PHASE 2: CONTENT GENERATION
-Once the user explicitly confirms the plan, you must switch to execution mode and follow these strict guidelines:
+PHASE 2: CONTENT GENERATION (Execution Turn)
+Once the user explicitly confirms that the schema and plan are correct (e.g., saying "yes", "correct", "proceed", "looks good", or similar), you must switch to execution mode and follow these strict guidelines:
 1. ADHERE TO SCHEMA: Strictly follow the provided JSON schema, field types, and constraints.
 2. LOCALE AWARENESS: Generate content in the target locale: {locale}.
 3. STYLE ALIGNMENT: Apply any provided style modifiers or brand voice instructions.
@@ -50,12 +51,20 @@ Target Locale: {locale}
 """
 
 DRAFTING_USER_PROMPT = """
-Generate a content draft for the content type: {content_type_slug}
-Base your content on the following input/instructions:
+Analyze the user's request and the content type: {content_type_slug}
+
+Original User Request:
+{original_user_request}
+
+Latest User Feedback:
 {user_input}
 
 Content Schema:
 {schema_json}
+
+INSTRUCTIONS:
+1. If the user has NOT explicitly confirmed that both the selected content type schema and proposed content plan are correct in the conversation history, you MUST outline the content plan, present the schema fields, and ask for explicit confirmation (Phase 1). Do NOT generate the JSON draft and do NOT call any tools yet.
+2. If the user HAS explicitly confirmed the plan and schema in the history, proceed to content generation (Phase 2) following the schema fields exactly and invoking tools (like image_generator) as required.
 """
 
 DRAFTING_PROMPT = ChatPromptTemplate.from_messages([

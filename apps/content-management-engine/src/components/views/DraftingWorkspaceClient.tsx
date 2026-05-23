@@ -737,6 +737,9 @@ export const DraftingWorkspaceClient: React.FC = () => {
             <ChatPanel 
               mode="draft"
               isCard={false}
+              currentSchema={schema}
+              draftingFields={draftingFields}
+              draftData={session?.draftData || {}}
               bestMatch={bestMatch}
               alternatives={alternatives}
               onSelectAlternative={handleSelectAlternative}

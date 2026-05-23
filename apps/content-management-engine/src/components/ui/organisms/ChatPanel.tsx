@@ -28,6 +28,8 @@ export interface ChatPanelProps {
   sessionId: string | null
   onSessionIdChange?: (id: string) => void
   currentSchema?: any
+  draftingFields?: Set<string>
+  draftData?: any
   onSchemaGenerated?: (schema: any) => void
   isGenerating?: boolean
   setIsGenerating?: (is: boolean) => void
@@ -466,6 +468,9 @@ const ThreadContainer: React.FC<{
   bestMatch?: any
   alternatives?: any[]
   onSelectAlternative?: (ct: any) => void
+  currentSchema?: any
+  draftingFields?: Set<string>
+  draftData?: any
 }> = ({
   mode,
   isGenerating,
@@ -482,12 +487,22 @@ const ThreadContainer: React.FC<{
   bestMatch,
   alternatives,
   onSelectAlternative,
+  currentSchema,
+  draftingFields,
+  draftData,
 }) => {
   const messages = useThread((s) => s.messages)
   const isRunning = useThread((s) => s.isRunning)
   const threadRuntime = useThreadRuntime()
   const [inputValue, setInputValue] = useState('')
   const chatEndRef = useRef<HTMLDivElement | null>(null)
+
+  const fields = useMemo(() => {
+    if (!currentSchema) return []
+    if (Array.isArray(currentSchema)) return currentSchema
+    if (currentSchema.fields && Array.isArray(currentSchema.fields)) return currentSchema.fields
+    return []
+  }, [currentSchema])
 
   // Track the actual generating state and bubble it up to parent components
   useEffect(() => {
@@ -644,55 +659,100 @@ const ThreadContainer: React.FC<{
               <div>
                 <p className="text-[10px] uppercase font-bold text-outline tracking-wider font-label mb-2">Generation Pipeline</p>
                 <ul className="space-y-2 relative before:absolute before:inset-y-2 before:left-[7px] before:w-px before:bg-outline-variant/30">
-                  {/* Step 1 — always done once we're here */}
+                  {/* Step 1 — Handshake */}
                   <li className="flex items-start gap-2 relative z-10">
                     <div className="mt-0.5 bg-surface-container-lowest">
                       <Icon name="check_circle" className="!text-base text-primary" filled />
                     </div>
                     <span className="text-xs text-on-surface-variant font-body font-medium">Connecting & Initializing Handshake</span>
                   </li>
-                  {/* Step 2 */}
-                  <li className="flex items-start gap-2 relative z-10">
-                    <div className="mt-0.5 bg-surface-container-lowest">
-                      {(statusText === 'Generating content layout...' || statusText === 'Thinking...')
-                        ? <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
-                        : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText)
-                          ? <Icon name="check_circle" className="!text-base text-primary" filled />
-                          : <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
-                      }
-                    </div>
-                    <span className={`text-xs font-body ${(statusText === 'Generating content layout...' || statusText === 'Thinking...') ? 'text-on-surface font-semibold' : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText) ? 'text-on-surface-variant' : 'text-outline'}`}>
-                      Analyzing Structural Layout & Fields
-                    </span>
-                  </li>
-                  {/* Step 3 */}
-                  <li className="flex items-start gap-2 relative z-10">
-                    <div className="mt-0.5 bg-surface-container-lowest">
-                      {statusText === 'Enforcing schema constraints...'
-                        ? <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
-                        : (statusText === 'Self-healing JSON errors...' || !statusText)
-                          ? <Icon name="check_circle" className="!text-base text-primary" filled />
-                          : <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
-                      }
-                    </div>
-                    <span className={`text-xs font-body ${statusText === 'Enforcing schema constraints...' ? 'text-primary font-medium' : (statusText === 'Self-healing JSON errors...' || !statusText) ? 'text-on-surface-variant' : 'text-outline'}`}>
-                      Synthesizing Narrative Prose
-                    </span>
-                  </li>
-                  {/* Step 4 */}
-                  <li className="flex items-start gap-2 relative z-10">
-                    <div className="mt-0.5 bg-surface-container-lowest">
-                      {statusText === 'Self-healing JSON errors...'
-                        ? <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
-                        : !statusText
-                          ? <Icon name="check_circle" className="!text-base text-primary" filled />
-                          : <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
-                      }
-                    </div>
-                    <span className={`text-xs font-body ${statusText === 'Self-healing JSON errors...' ? 'text-primary font-medium' : !statusText ? 'text-on-surface-variant' : 'text-outline'}`}>
-                      Validating Editorial Integrity
-                    </span>
-                  </li>
+
+                  {/* Step 2 — Schema & Plan Confirmation */}
+                  {(() => {
+                    const isConfirmed = (draftData && Object.keys(draftData).length > 0) || (draftingFields && draftingFields.size > 0)
+                    const isActive = isGenerating && !isConfirmed
+                    return (
+                      <li className="flex items-start gap-2 relative z-10">
+                        <div className="mt-0.5 bg-surface-container-lowest">
+                          {isConfirmed ? (
+                            <Icon name="check_circle" className="!text-base text-primary" filled />
+                          ) : isActive ? (
+                            <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
+                          ) : (
+                            <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                          )}
+                        </div>
+                        <span className={`text-xs font-body ${isActive ? 'text-on-surface font-semibold' : isConfirmed ? 'text-on-surface-variant' : 'text-outline'}`}>
+                          Schema & Plan Confirmation
+                        </span>
+                      </li>
+                    )
+                  })()}
+
+                  {/* Step 3 — Fields Generation Checklist */}
+                  {fields.length > 0 ? (
+                    fields.map((f: any) => {
+                      const isFieldGenerating = draftingFields?.has(f.name)
+                      const isFieldCompleted = draftData && draftData[f.name] !== undefined && draftData[f.name] !== ''
+                      return (
+                        <li key={f.name} className="flex items-start gap-2 relative z-10">
+                          <div className="mt-0.5 bg-surface-container-lowest">
+                            {isFieldCompleted ? (
+                              <Icon name="check_circle" className="!text-base text-primary" filled />
+                            ) : isFieldGenerating ? (
+                              <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
+                            ) : (
+                              <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                            )}
+                          </div>
+                          <span className={`text-xs font-body ${isFieldGenerating ? 'text-on-surface font-semibold' : isFieldCompleted ? 'text-on-surface-variant' : 'text-outline'}`}>
+                            {isFieldGenerating ? `Synthesizing ${f.label || f.name}...` : isFieldCompleted ? `Completed ${f.label || f.name}` : `Draft ${f.label || f.name}`}
+                          </span>
+                        </li>
+                      )
+                    })
+                  ) : (
+                    /* Fallback when no schema fields are preloaded (e.g. bootstrap schema mode) */
+                    <li className="flex items-start gap-2 relative z-10">
+                      <div className="mt-0.5 bg-surface-container-lowest">
+                        {isGenerating ? (
+                          <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
+                        ) : (
+                          <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                        )}
+                      </div>
+                      <span className={`text-xs font-body ${isGenerating ? 'text-on-surface font-semibold' : 'text-outline'}`}>
+                        Synthesizing Narrative Prose
+                      </span>
+                    </li>
+                  )}
+
+                  {/* Step 4 — Editorial Integrity */}
+                  {(() => {
+                    const isConfirmed = (draftData && Object.keys(draftData).length > 0) || (draftingFields && draftingFields.size > 0)
+                    const isValidated = !isGenerating && isConfirmed
+                    const isValidating = isGenerating && (
+                      statusText === 'Self-healing JSON errors...' ||
+                      statusText === 'Enforcing schema constraints...' ||
+                      (fields.length > 0 && fields.every((f: any) => draftData && draftData[f.name] !== undefined && draftData[f.name] !== ''))
+                    )
+                    return (
+                      <li className="flex items-start gap-2 relative z-10">
+                        <div className="mt-0.5 bg-surface-container-lowest">
+                          {isValidated ? (
+                            <Icon name="check_circle" className="!text-base text-primary" filled />
+                          ) : isValidating ? (
+                            <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
+                          ) : (
+                            <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                          )}
+                        </div>
+                        <span className={`text-xs font-body ${isValidating ? 'text-primary font-medium' : isValidated ? 'text-on-surface-variant' : 'text-outline'}`}>
+                          Validating Editorial Integrity
+                        </span>
+                      </li>
+                    )
+                  })()}
                 </ul>
               </div>
             </div>
@@ -776,6 +836,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   sessionId,
   onSessionIdChange,
   currentSchema,
+  draftingFields,
+  draftData,
   onSchemaGenerated,
   isGenerating: propIsGenerating,
   setIsGenerating: propSetIsGenerating,
@@ -898,6 +960,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           bestMatch={bestMatch}
           alternatives={alternatives}
           onSelectAlternative={onSelectAlternative}
+          currentSchema={currentSchema}
+          draftingFields={draftingFields}
+          draftData={draftData}
         />
       </ThreadPrimitive.Root>
     </AssistantRuntimeProvider>
