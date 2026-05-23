@@ -74,13 +74,6 @@ export const Nav: React.FC<any> = () => {
           <Icon name="settings" className="!text-xl" />
           <span>Settings</span>
         </Link>
-        <button
-          onClick={() => logOut()}
-          className="flex w-full items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant rounded-xl font-label text-sm transition-all no-underline bg-transparent border-none cursor-pointer text-left group"
-        >
-          <Icon name="logout" className="!text-xl transition-transform group-hover:translate-x-0.5" />
-          <span>Sign Out</span>
-        </button>
       </div>
 
       {user && (
