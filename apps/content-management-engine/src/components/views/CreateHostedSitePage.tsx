@@ -77,7 +77,7 @@ export const CreateHostedSitePage: React.FC = () => {
             setDeployedUrl(data.deployedUrl || '')
             
             const tid = typeof data.tenant === 'object' ? data.tenant.id : data.tenant
-            setSelectedTenantId(tid || '')
+            setSelectedTenantId(tid ? tid.toString() : '')
           }
         })
         .catch((err) => {
@@ -107,7 +107,7 @@ export const CreateHostedSitePage: React.FC = () => {
       name,
       template,
       domain,
-      tenant: selectedTenantId,
+      tenant: parseInt(selectedTenantId, 10),
     }
 
     try {
