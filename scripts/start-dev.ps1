@@ -63,6 +63,44 @@ if (-not $skipLangfuse) {
 Write-Host "🚀 Starting Hermes AI Stack inside Docker Compose..." -ForegroundColor Green
 docker-compose up -d --build
 
+if (-not $skipLangfuse) {
+    Write-Host "⏳ Waiting for Langfuse to be ready..." -ForegroundColor Gray
+    $ready = $false
+    for ($i = 1; $i -le 30; $i++) {
+        try {
+            $resp = Invoke-WebRequest -Uri "http://localhost:3003/api/public/health" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+            if ($resp.StatusCode -eq 200 -or $resp.StatusCode -eq 302) {
+                $ready = $true
+                break
+            }
+        }
+        catch {
+            try {
+                $resp2 = Invoke-WebRequest -Uri "http://localhost:3003/" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+                if ($resp2.StatusCode -eq 200 -or $resp2.StatusCode -eq 302) {
+                    $ready = $true
+                    break
+                }
+            }
+            catch {}
+        }
+        Start-Sleep -Seconds 2
+    }
+
+    if ($ready) {
+        Write-Host "✅ Langfuse is ready!" -ForegroundColor Green
+        Write-Host "📝 Populating/updating Langfuse prompt templates..." -ForegroundColor Cyan
+        try {
+            docker-compose exec -T content_authoring_service env LANGFUSE_BASE_URL=http://langfuse-web:3000 python src/domain/content_drafting/populate_prompts.py
+        }
+        catch {
+            Write-Host "⚠️ Failed to populate Langfuse prompts inside container. Skipping..." -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "⚠️ Langfuse did not become ready in time. Skipping prompt population." -ForegroundColor Yellow
+    }
+}
+
 Write-Host ""
 Write-Host "✨ All services are running!" -ForegroundColor Green
 Write-Host "--------------------------------------------------" -ForegroundColor DarkGray

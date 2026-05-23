@@ -10,6 +10,9 @@ from src.domain.content_drafting.prompts import (
     DRAFTING_USER_PROMPT,
     REFINEMENT_SYSTEM_PROMPT,
     REFINEMENT_USER_PROMPT,
+    SCHEMA_GENERATION_SYSTEM_PROMPT,
+    COPILOT_SYSTEM_PROMPT,
+    HEALING_SYSTEM_PROMPT,
 )
 
 
@@ -22,6 +25,7 @@ def convert_to_langfuse_syntax(prompt_text: str) -> str:
         "{schema_json}": "{{schema_json}}",
         "{current_draft_json}": "{{current_draft_json}}",
         "{refinement_input}": "{{refinement_input}}",
+        "{full_content}": "{{full_content}}",
     }
     for old, new in replacements.items():
         prompt_text = prompt_text.replace(old, new)
@@ -49,6 +53,9 @@ def populate():
         "content-drafting-user": DRAFTING_USER_PROMPT,
         "content-refinement-system": REFINEMENT_SYSTEM_PROMPT,
         "content-refinement-user": REFINEMENT_USER_PROMPT,
+        "schema-generation-system": SCHEMA_GENERATION_SYSTEM_PROMPT,
+        "copilot-system": COPILOT_SYSTEM_PROMPT,
+        "content-healing-system": HEALING_SYSTEM_PROMPT,
     }
 
     for name, content in prompts_to_create.items():

@@ -66,6 +66,19 @@ fi
 echo "🚀 Starting Hermes AI Stack inside Docker Compose..."
 docker compose up -d --build
 
+if [ "$SKIP_LANGFUSE" = false ]; then
+    echo "⏳ Waiting for Langfuse to be fully ready..."
+    for i in {1..30}; do
+        if curl -s http://localhost:3003/api/public/health >/dev/null || curl -s http://localhost:3003/ >/dev/null; then
+            echo "✅ Langfuse is ready!"
+            echo "📝 Populating/updating Langfuse prompt templates..."
+            docker compose exec -T content_authoring_service env LANGFUSE_BASE_URL=http://langfuse-web:3000 python src/domain/content_drafting/populate_prompts.py || echo "⚠️  Failed to populate Langfuse prompts. Skipping..."
+            break
+        fi
+        sleep 2
+    done
+fi
+
 echo ""
 echo "✨ All services are running!"
 echo "--------------------------------------------------"
