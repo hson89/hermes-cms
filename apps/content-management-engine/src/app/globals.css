@@ -470,7 +470,7 @@ html:has(.custom-editor-view) {
   margin-top: 5rem !important;
   height: calc(100vh - 5rem) !important;
   max-height: calc(100vh - 5rem) !important;
-  overflow: hidden !important;
+  overflow-y: auto !important;
   box-sizing: border-box !important;
 }
 
