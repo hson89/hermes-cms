@@ -12,7 +12,7 @@
   --primary: #3366cc;
   --on-primary: #ffffff;
   --primary-container: #eff6ff;
-  --on-primary-container: #e7ebff;
+  --on-primary-container: #001946;
   --primary-fixed: #d9e2ff;
   --on-primary-fixed: #001946;
   --primary-fixed-dim: #b1c5ff;
@@ -21,7 +21,7 @@
   --secondary: #5a5f63;
   --on-secondary: #ffffff;
   --secondary-container: #dfe3e8;
-  --on-secondary-container: #606569;
+  --on-secondary-container: #1c2125;
   --secondary-fixed: #dfe3e8;
   --on-secondary-fixed: #171c20;
   --secondary-fixed-dim: #c2c7cc;
@@ -47,7 +47,7 @@
   --surface: #faf9fa;
   --on-surface: #1b1c1d;
   --surface-variant: #e3e2e3;
-  --on-surface-variant: #434653;
+  --on-surface-variant: #242733;
   --surface-dim: #dbdadb;
   --surface-bright: #faf9fa;
   --surface-tint: #2259bf;
@@ -299,6 +299,26 @@ body {
   background-color: var(--color-background);
   color: var(--color-on-surface);
   font-family: var(--font-body), sans-serif;
+}
+
+/* Alexandria High-End Editorial Primary Buttons (WCAG AAA Compliant Gradient) */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, #3366cc 0%, #2259bf 100%) !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary-gradient:hover {
+  background: linear-gradient(135deg, #2b5bc7 0%, #1e50b3 100%) !important;
+}
+
+.dark .btn-primary-gradient {
+  background: linear-gradient(135deg, #4782ff 0%, #2b61d6 100%) !important;
+  color: #ffffff !important;
+}
+
+.dark .btn-primary-gradient:hover {
+  background: linear-gradient(135deg, #3a75f0 0%, #2053c7 100%) !important;
 }
 
 /* Custom ghost borders for form controls */

@@ -153,117 +153,15 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                     }
                 }
             else:
-                yield {"event": "TEXT_DELTA", "data": "No matching content type found. Creating a new one...\n\n"}
-                yield {"event": "TEXT_DELTA", "data": "Designing schema structure for your content...\n\n"}
+                yield {"event": "TEXT_DELTA", "data": "I couldn't find a matching content type for your request among the existing ones.\n\n"}
                 
-                # Run generate_schema with a heartbeat loop so the SSE stream stays alive
-                # while the LLM is working (it's a blocking non-streaming call internally).
-                import asyncio
-                schema_task = asyncio.ensure_future(self.ai_service.generate_schema(
-                    prompt=prompt,
-                    tenant_id=tenant_id,
-                    user_id=user_id,
-                    current_schema=schema_json,
-                    db=db,
-                ))
+                if existing_types:
+                    types_list = ", ".join([f"**{ct.get('name')}**" for ct in existing_types[:5]])
+                    yield {"event": "TEXT_DELTA", "data": f"Would you like to use one of these: {types_list}? Or please be more specific about the type of content you want to create."}
+                else:
+                    yield {"event": "TEXT_DELTA", "data": "No content types are currently defined for this tenant. Please create a content type in the CMS first."}
                 
-                heartbeat_messages = [
-                    "Analyzing content requirements...\n\n",
-                    "Mapping fields and data types...\n\n",
-                    "Finalizing schema structure...\n\n",
-                ]
-                heartbeat_idx = 0
-                timeout_seconds = settings.SCHEMA_GENERATION_TIMEOUT
-                elapsed = 0
-                poll_interval = settings.SCHEMA_GENERATION_POLL_INTERVAL
-                
-                while not schema_task.done():
-                    try:
-                        await asyncio.wait_for(asyncio.shield(schema_task), timeout=poll_interval)
-                    except asyncio.TimeoutError:
-                        elapsed += poll_interval
-                        if elapsed >= timeout_seconds:
-                            schema_task.cancel()
-                            yield {"event": "ERROR", "data": {"detail": f"Schema generation timed out after {timeout_seconds} seconds. Please try again."}}
-                            return
-                        # Emit a progress heartbeat so the client knows we're still working
-                        msg = heartbeat_messages[heartbeat_idx % len(heartbeat_messages)]
-                        heartbeat_idx += 1
-                        yield {"event": "TEXT_DELTA", "data": msg}
-                    except Exception:
-                        break
-                
-                if schema_task.cancelled():
-                    return
-                
-                try:
-                    schema_result = schema_task.result()
-                except Exception as exc:
-                    yield {"event": "ERROR", "data": {"detail": f"Schema generation failed: {exc}"}}
-                    return
-                
-                schema_json = schema_result["schema"]
-                content_type_slug = schema_json.get("slug", schema_json.get("name", "Generated Type"))
-                session_id = schema_result["sessionId"]
-                
-                if schema_result.get("message"):
-                    yield {"event": "TEXT_DELTA", "data": schema_result["message"] + "\n\n"}
-
-                
-                if not schema_json.get("slug") and schema_json.get("name"):
-                    schema_json["slug"] = slugify(schema_json["name"])
-                elif not schema_json.get("slug"):
-                    schema_json["slug"] = "generated-type"
-                
-                # Register new content type in Payload CMS via POST /api/content-types
-                payload_data = {
-                    "name": schema_json.get("name", "Generated Type"),
-                    "slug": schema_json.get("slug", "generated-type"),
-                    "status": "draft",
-                    "originalSchema": schema_json,
-                    "schema": schema_json,
-                    "generatedByAI": True,
-                    "aiSessionId": session_id,
-                    "tenant": tenant_id
-                }
-                
-                try:
-                    async with httpx.AsyncClient() as client:
-                        create_url = f"{cms_url}/api/content-types"
-                        response = await client.post(create_url, json=payload_data, headers=headers)
-                        if response.status_code in (200, 201):
-                            created_ct = response.json()
-                            if created_ct.get("doc"):
-                                content_type_id = created_ct["doc"].get("id")
-                                schema_json = created_ct["doc"].get("schema", schema_json)
-                                content_type_slug = created_ct["doc"].get("slug", content_type_slug)
-                            else:
-                                content_type_id = created_ct.get("id")
-                                schema_json = created_ct.get("schema", schema_json)
-                                content_type_slug = created_ct.get("slug", content_type_slug)
-                            
-                            yield {"event": "TEXT_DELTA", "data": f"Registered new content type **{schema_json.get('name')}** in CMS.\n\n"}
-                        else:
-                            yield {"event": "TEXT_DELTA", "data": f"[Warning: Failed to create content type in CMS: {response.text}]\n\n"}
-                except Exception as e:
-                    yield {"event": "TEXT_DELTA", "data": f"[Warning: Failed to connect to CMS to create content type: {e}]\n\n"}
-                
-                # Fallback to session_id as the ID if CMS registration failed
-                final_ct_id = content_type_id or "gen-ct-id"
-                yield {
-                    "event": "SCHEMA_UPDATED",
-                    "data": {
-                        "contentType": {
-                            "id": final_ct_id,
-                            "name": schema_json.get("name", "Generated Type"),
-                            "slug": content_type_slug,
-                            "fields": schema_json.get("fields", []),
-                            "schema": schema_json,
-                        },
-                        "prompt": prompt,
-                        "sessionId": str(session_id),
-                    }
-                }
+                return
 
         repo = SQLSessionRepository(db)
         
@@ -447,6 +345,17 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
 
         # 5. Extract and yield the final JSON and metadata
         try:
+            # Check if the AI output looks like a conversational turn (asking clarification)
+            # instead of a structured draft completion.
+            has_json_block = "```" in full_content
+            has_raw_json = full_content.strip().startswith("{") and full_content.strip().endswith("}")
+            
+            if not has_json_block and not has_raw_json:
+                # Conversational turn: save to history and end stream without DRAFT_COMPLETE
+                session.add_message("assistant", full_content)
+                await repo.save(session)
+                return
+
             match = re.search(r"```(?:json)?\s*(.*?)\s*```", full_content, re.DOTALL)
             clean_content = match.group(1).strip() if match else full_content.strip()
             
@@ -480,6 +389,8 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                 }
             }
         except Exception as e:
+            # If the output *contained* a JSON block but failed to parse, attempt healing.
+            # Otherwise, if it was already caught as conversational above, we've returned.
             try:
                 # Healing block: attempt to recover plain text output into structured JSON schema format
                 healing_template = get_healing_prompt(self.ai_service.langfuse_client if self.ai_service else None)

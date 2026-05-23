@@ -99,7 +99,7 @@ export const Header: React.FC = () => {
                     setIsProfileOpen(false)
                     logOut()
                   }}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary py-2.5 px-4 rounded-xl font-label text-sm tracking-wide shadow-sm hover:shadow-md transition-all border-none cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 btn-primary-gradient py-2.5 px-4 rounded-xl font-label text-sm tracking-wide shadow-sm hover:shadow-md transition-all border-none cursor-pointer"
                 >
                   <Icon name="logout" className="!text-sm" />
                   <span>Sign Out</span>

@@ -96,7 +96,7 @@ export default function LoginPage() {
             <div className="pt-4">
               <button 
                 disabled={isPending}
-                className="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold tracking-wide rounded-full py-4 px-6 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed" 
+                className="w-full btn-primary-gradient font-label font-bold tracking-wide rounded-full py-4 px-6 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed" 
                 type="submit"
               >
                 {isPending ? 'Signing In...' : 'Sign In'}
