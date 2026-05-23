@@ -247,12 +247,12 @@ export const CreateUserPage: React.FC = () => {
         
         {/* Left Column: Visual Profile Card */}
         <div className="lg:col-span-4 space-y-6">
-          <Card variant="low" className="border border-outline-variant/15 p-6 shadow-xl relative overflow-hidden flex flex-col items-center text-center">
+          <Card variant="low" className="border border-outline-variant/15 p-6 relative overflow-hidden flex flex-col items-center text-center">
             {/* Elegant glass profile backgrounds */}
             <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-primary/30 to-primary-container/30 filter blur-xl -z-10" />
             
             {/* Dynamic Avatar Monogram */}
-            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl shadow-lg ring-4 ring-surface-container-low transition-all duration-300">
+            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl ring-4 ring-surface-container-low transition-all duration-300">
               {getInitials()}
             </div>
 
@@ -271,7 +271,7 @@ export const CreateUserPage: React.FC = () => {
             </div>
 
             {/* Divider */}
-            <div className="h-[1px] w-full bg-outline-variant/15 my-6" />
+            <div className="pt-6 mt-6 w-full" />
 
             {/* Mapped Workspaces list */}
             <div className="w-full text-left space-y-3">
@@ -287,7 +287,7 @@ export const CreateUserPage: React.FC = () => {
                     return (
                       <span 
                         key={tid} 
-                        className="inline-flex items-center rounded-lg bg-surface-container-high px-2.5 py-1 text-xs font-medium text-on-surface border border-outline-variant/10 shadow-sm"
+                        className="inline-flex items-center rounded-lg bg-surface-container-high px-2.5 py-1 text-xs font-medium text-on-surface border border-outline-variant/15"
                       >
                         <Icon name="workspaces" size={12} className="text-primary mr-1 flex-shrink-0" />
                         {matched?.name || `Tenant ID: ${tid}`}
@@ -302,7 +302,7 @@ export const CreateUserPage: React.FC = () => {
 
         {/* Right Column: Edit form */}
         <div className="lg:col-span-8">
-          <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8 shadow-xl shadow-on-surface/5">
+          <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               
               <div>
@@ -357,7 +357,7 @@ export const CreateUserPage: React.FC = () => {
                       id="changePasswordCheckbox"
                       checked={changePassword}
                       onChange={(e) => setChangePassword(e.target.checked)}
-                      className="size-4 text-primary bg-surface-container-lowest border-outline-variant/30 rounded focus:ring-primary cursor-pointer"
+                      className="size-4 text-primary bg-surface-container-lowest border-outline-variant/15 rounded focus:ring-primary cursor-pointer"
                     />
                     <label 
                       htmlFor="changePasswordCheckbox"
@@ -455,7 +455,7 @@ export const CreateUserPage: React.FC = () => {
               </div>
 
               {/* Form actions */}
-              <div className="pt-6 border-t border-outline-variant/10 flex justify-end gap-4">
+              <div className="pt-6 border-t border-outline-variant/15 flex justify-end gap-4">
                 <Button
                   type="button"
                   variant="secondary"

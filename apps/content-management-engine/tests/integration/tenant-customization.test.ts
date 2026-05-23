@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 
@@ -6,9 +7,29 @@ import config from '../../src/payload.config'
  */
 describe('Tenant Customization & Gating', () => {
   let payload: any
+  const createdTenants: string[] = []
+  const createdMedia: string[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
+    for (const id of createdMedia) {
+      await payload.delete({
+        collection: 'media',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should return branding metadata including resolved logo url', async () => {
@@ -21,6 +42,7 @@ describe('Tenant Customization & Gating', () => {
       filePath: 'tests/assets/test-logo.png', // Mock or use existing
       overrideAccess: true,
     })
+    createdMedia.push(media.id)
 
     const uniqueId = Date.now()
     const slug = `branding-test-${uniqueId}`
@@ -43,6 +65,7 @@ describe('Tenant Customization & Gating', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant.id)
 
     const { TenantService } = await import('../../src/services/tenant-service')
     const service = new TenantService(payload)
@@ -56,7 +79,7 @@ describe('Tenant Customization & Gating', () => {
 
   it('should block suspended tenants', async () => {
     const uniqueId = Date.now()
-    await payload.create({
+    const suspendedTenant = await payload.create({
       collection: 'tenants',
       data: {
         name: 'Suspended Tenant',
@@ -70,6 +93,7 @@ describe('Tenant Customization & Gating', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(suspendedTenant.id)
 
     const { TenantService } = await import('../../src/services/tenant-service')
     const service = new TenantService(payload)

@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 
@@ -6,8 +7,8 @@ import config from '../../src/payload.config'
  */
 describe('Tenant Impersonation', () => {
   let payload: any
-  let superAdminId: string
-  let tenantId: string
+  const createdTenants: string[] = []
+  const createdUsers: string[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
@@ -23,7 +24,7 @@ describe('Tenant Impersonation', () => {
         role: 'super-admin',
       },
     })
-    superAdminId = superAdmin.id
+    createdUsers.push(superAdmin.id)
 
     // 2. Create a Tenant
     const tenantSlug = `target-tenant-${Date.now()}`
@@ -41,12 +42,53 @@ describe('Tenant Impersonation', () => {
       },
       overrideAccess: true,
     })
-    tenantId = tenant.id
+    createdTenants.push(tenant.id)
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+    // 1. Clean up audit logs for the created users
+    for (const userId of createdUsers) {
+      const logs = await payload.find({
+        collection: 'audit-logs',
+        where: { user: { equals: userId } },
+        overrideAccess: true,
+        depth: 0,
+      })
+      for (const log of logs.docs) {
+        await payload.delete({
+          collection: 'audit-logs',
+          id: log.id,
+          overrideAccess: true,
+        }).catch(() => {})
+      }
+    }
+
+    // 2. Clean up users
+    for (const id of createdUsers) {
+      await payload.delete({
+        collection: 'users',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
+
+    // 3. Clean up tenants
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should allow Super Admin to impersonate a tenant and log it', async () => {
     const { TenantService } = await import('../../src/services/tenant-service')
     const service = new TenantService(payload)
+
+    const superAdminId = createdUsers[0]
+    const tenantId = createdTenants[0]
 
     const success = await service.impersonateTenant(superAdminId, tenantId)
     expect(success).toBe(true)

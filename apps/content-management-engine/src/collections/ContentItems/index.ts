@@ -15,9 +15,10 @@ const beforeValidateHook: CollectionBeforeValidateHook = async ({
 }) => {
   const { payload } = req
 
-  const contentTypeId = data?.contentType || originalDoc?.contentType
+  const getCleanId = (val: any) => (val && typeof val === 'object' ? val.id : val)
+  const contentTypeId = getCleanId(data?.contentType || originalDoc?.contentType)
   const fieldsData = data?.fieldsData || originalDoc?.fieldsData || {}
-  const tenantId = data?.tenant || originalDoc?.tenant
+  const tenantId = getCleanId(data?.tenant || originalDoc?.tenant)
 
   if (!contentTypeId || !tenantId) {
     return data
@@ -62,15 +63,32 @@ const beforeValidateHook: CollectionBeforeValidateHook = async ({
  */
 export const ContentItems: CollectionConfig = {
   slug: 'content-items',
+  labels: {
+    singular: 'Content Item',
+    plural: 'Content Items',
+  },
   endpoints: [copilotEditEndpoint],
   admin: {
     useAsTitle: 'title',
     description: 'Content entries per tenant and content type.',
+    components: {
+      views: {
+        list: {
+          Component: '/src/components/views/ContentItemListPage#ContentItemListPage',
+        },
+        edit: {
+          default: {
+            Component: '/src/components/views/DraftingWorkspace#DraftingWorkspace',
+          },
+        },
+      },
+    },
   },
   access: {
     // Public delivery (GET) is guarded by API key at the endpoint level.
     // Here we enforce tenant isolation for authenticated CMS users.
-    read: tenantDeliveryAccess,
+    read: ({ req: { user } }) => Boolean(user),
+    admin: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) =>
       Boolean(user) &&
       ((user as any).role === 'super-admin' ||
@@ -125,6 +143,9 @@ export const ContentItems: CollectionConfig = {
       defaultValue: {},
       admin: {
         description: 'Structured JSON data holding actual field values matching the selected Content Type schema.',
+        components: {
+          Field: '/src/components/admin/FieldsDataEditor#FieldsDataEditor',
+        },
       },
     },
     {
@@ -146,6 +167,16 @@ export const ContentItems: CollectionConfig = {
         { label: 'Draft', value: 'draft' },
         { label: 'Published', value: 'published' },
       ],
+    },
+    {
+      name: 'tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      required: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+      },
     },
   ],
   timestamps: true,

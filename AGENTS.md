@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-/home/itlight/dev/hermes-cms/specs/003-define-content-types/plan.md
+/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/plan.md
 <!-- SPECKIT END -->
 
 # Hermes AI — Agent Guidelines
@@ -77,7 +77,8 @@ hermes-cms/
 ├── docker-compose.yml        # Local dev infra (2× Postgres, Kafka, Zookeeper)
 ├── docs/architecture.md      # High-level architecture doc
 ├── k8s/                      # Kubernetes manifests
-├── scripts/start-dev.sh      # One-command local dev startup
+├── scripts/start-dev.sh      # One-command local dev startup (Unix)
+├── scripts/start-dev.ps1     # One-command local dev startup (Windows)
 ├── specs/001-ai-headless-cms/ # Feature spec, plan, tasks, data model, contracts
 ├── DESIGN.md                 # "Alexandria" design system tokens
 └── README.md
@@ -119,8 +120,8 @@ hermes-cms/
 
 The visual language is codename **"Alexandria — High-End Editorial"**.
 Refer to `DESIGN.md` at the project root for full token definitions:
-- Primary: `#094cb2`, Tertiary/gold: `#6d5e00`
-- Fonts: Noto Serif (headlines), Inter (body), Public Sans (labels)
+- Primary: `#3366cc`, Tertiary/gold: `#6d5e00`
+- Fonts: Noto Serif (headlines), Inter (body & labels)
 - Glassmorphism floating menus, gradient CTAs, no hard borders
 - Tonal elevation via surface tokens, not box-shadows
 
@@ -128,7 +129,8 @@ Refer to `DESIGN.md` at the project root for full token definitions:
 
 ```bash
 # Start everything (Docker infra + CMS + AI service)
-./scripts/start-dev.sh
+./scripts/start-dev.sh         # Unix
+.\scripts\start-dev.ps1        # Windows (PowerShell)
 
 # Content Management Engine only (from apps/content-management-engine/)
 pnpm dev           # Next.js dev server on :3000
@@ -184,8 +186,9 @@ docker-compose stop
 8. **Internal service auth** uses `X-Internal-Secret` header between CMS ↔ AI.
 9. Feature specs go under `specs/<feature-id>/` with `spec.md`, `plan.md`,
    `tasks.md`, and supporting artifacts.
-10. **Payload UI Safety:** Any UI/UX modifications to the Payload admin interface *must* begin by invoking the `payload-ui` skill (located in `.agents/skills/payload-ui/SKILL.md`) to prevent layout and configuration breakages.
-11. **Payload CMS Expertise:** When working with Payload CMS backend concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) in `apps/content-management-engine/`, you MUST invoke the `payload` skill (located in `.agents/skills/payload/SKILL.md`) first.
+10. **Payload CMS & UI Safety (with Pre-Commit Hook Enforcement):** When working with Payload CMS backend concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) or making UI/UX modifications/custom views in `apps/content-management-engine/`, you MUST invoke the unified `payload` skill (located in `.agents/skills/payload/SKILL.md`) first. An automated git pre-commit hook is active; if staged files contain changes under `apps/content-management-engine/`, it reminds/enforces that you have invoked and followed this skill before you commit. Always check the Alexandria Layout & Admin UI Guardrails section in the skill, verify whether the custom view is auto-wrapped by the framework's default templates, and apply deep-ancestor `:has()` CSS overrides in `globals.css` to prevent double-nesting and layout spacing gaps.
+
+
 
 ### Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts`:
@@ -198,4 +201,6 @@ When adding custom React components to `payload.config.ts`:
 2. **Lowercase View Keys:** In `payload.config.ts`, use lowercase keys for standard admin views (e.g., `dashboard`, `login`, `account`). Uppercase keys may be ignored by the Payload 3.x view resolver.
 3. **Process Management:** Stale `payload` processes (generators) can consume 100% CPU and lock files. If the system is slow or `importMap.js` fails to update, kill specific non-agent node/next processes. **CRITICAL WARNING:** NEVER use `pkill -f "node"` or other generic node killing commands, as this will terminate the current coding session and communication with the AI agent. Use targeted process termination instead (e.g., `pkill -f "next-router-worker"` or find specific PIDs).
 4. **importMap Regeneration:** Changes to custom component registrations in `payload.config.ts` often require a manual `pnpm payload generate:importmap` if the dev server fails to auto-sync.
+5. **WSL 2 Compiler Stability & Webpack Opt-in:** Next.js 16/Turbopack dev server has known compilation deadlocks when compiling Payload CMS catch-all views on WSL 2, resulting in CPU hangs and system freezes. To ensure development stability, the dev server script must use the Webpack builder via the `--webpack` flag: e.g., `next dev --webpack`. Do NOT remove the `--webpack` flag in WSL 2 workspace environments.
+6. **Circular Import Loop Prevention:** Standalone custom views registered in `payload.config.ts` must NEVER import layout templates from `@payloadcms/next/templates` or `@payloadcms/next/views` (such as `DefaultTemplate`). Because these standard templates depend recursively on the core config, importing them inside custom view components creates a compiler circular dependency loop that freezes the bundler. Standalone custom views should instead use a minimal wrapper layout (such as `AdminView`) that implements layout structure without circular references.
 

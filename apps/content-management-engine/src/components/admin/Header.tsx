@@ -3,9 +3,11 @@
 import React from 'react'
 import { Icon } from '../ui/atoms/Icon'
 import { useStepNav } from '@payloadcms/ui'
+import { usePathname } from 'next/navigation'
 
 export const Header: React.FC = () => {
   const { stepNav } = useStepNav()
+  const pathname = usePathname()
   
   // Safely get the current title from stepNav or fallback to Dashboard
   let currentTitle: React.ReactNode = 'Dashboard'
@@ -22,20 +24,38 @@ export const Header: React.FC = () => {
   }
 
   return (
-    <header className="w-full h-20 sticky top-0 z-40 bg-surface-container-low/80 backdrop-blur-xl flex justify-between items-center px-10 max-w-full">
-      <div className="flex items-center">
-        <h2 className="font-headline font-bold text-on-surface text-2xl tracking-tight m-0">
-          {currentTitle}
-        </h2>
-      </div>
+    <header className="fixed top-0 right-0 left-0 lg:left-72 h-16 z-40 bg-surface-bright/80 backdrop-blur-xl flex justify-between items-center px-8 shadow-[0_1px_4px_rgba(0,0,0,0.01)] transition-colors border-b border-surface-variant/30">
       <div className="flex items-center gap-6">
-        {/* Trailing Actions */}
-        <button className="text-on-surface-variant hover:text-primary transition-colors focus:outline-none focus-within:ring-2 focus-within:ring-primary/20 rounded-full p-2 bg-transparent border-none cursor-pointer flex items-center justify-center">
-          <Icon name="notifications" />
+        <h2 className="font-headline text-xl font-bold text-on-surface m-0">
+          {pathname?.includes('/draft/') ? 'The Content Oracle' : currentTitle}
+        </h2>
+        
+        {pathname?.includes('/draft/') && (
+          <div className="hidden md:flex gap-4">
+            <button className="text-on-surface-variant font-label text-sm hover:bg-surface-variant/50 px-3 py-1.5 rounded-lg transition-colors border-none bg-transparent cursor-pointer">Drafts</button>
+            <button className="text-on-surface-variant font-label text-sm hover:bg-surface-variant/50 px-3 py-1.5 rounded-lg transition-colors border-none bg-transparent cursor-pointer">Published</button>
+            <button className="text-on-surface-variant font-label text-sm hover:bg-surface-variant/50 px-3 py-1.5 rounded-lg transition-colors border-none bg-transparent cursor-pointer">Archived</button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-4">
+        <button className="text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer">
+          <Icon name="history" className="!text-xl" />
         </button>
-        <button className="text-on-surface-variant hover:text-primary transition-colors focus:outline-none focus-within:ring-2 focus-within:ring-primary/20 rounded-full p-2 bg-transparent border-none cursor-pointer flex items-center justify-center">
-          <Icon name="help_outline" />
+        <button className="text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer">
+          <Icon name="settings" className="!text-xl" />
         </button>
+        <button className="text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer mr-2">
+          <Icon name="account_circle" className="!text-xl" />
+        </button>
+        
+        {pathname?.includes('/draft/') && (
+          <>
+            <button className="text-primary font-label text-sm font-medium hover:bg-surface-variant/50 px-4 py-2 rounded-lg transition-colors border-none bg-transparent cursor-pointer">Save</button>
+            <button className="bg-primary text-on-primary font-label text-sm font-medium px-4 py-2 rounded-lg hover:opacity-90 transition-opacity border-none cursor-pointer">Publish</button>
+          </>
+        )}
       </div>
     </header>
   )

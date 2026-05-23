@@ -1,6 +1,6 @@
 # Next.js Blog Starter
 
-This is a pre-configured Next.js template designed to connect seamlessly with the Hermes AI Headless CMS.
+This is a pre-configured Next.js template designed to connect seamlessly with the Hermes CMS.
 
 ## Environment Variables
 

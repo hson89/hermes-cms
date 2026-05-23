@@ -3,12 +3,9 @@ import { CreateTenantPage as CreateTenantPage_ba4d1474d25bead833c99485afbd573c }
 import { TenantListPage as TenantListPage_c5178ba657a215cbb89ea742ddb72f1b } from '../../../../src/components/views/TenantListPage'
 import { CreateUserPage as CreateUserPage_913d5b23f33cda93261c04e0e37d4b55 } from '../../../../src/components/views/CreateUserPage'
 import { UserListPage as UserListPage_86189bd53a034cea3e66cd5c99ea1212 } from '../../../../src/components/views/UserListPage'
-import { HostedSiteListPage as HostedSiteListPage_e3b1c2a4d5e6f7g8h9i0j1k2l3m4n5o } from '../../../../src/components/views/HostedSiteListPage'
-import { CreateHostedSitePage as CreateHostedSitePage_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p } from '../../../../src/components/views/CreateHostedSitePage'
-import { TenantField as TenantField_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
-import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { GeneratorView as GeneratorView_1d1663104411f3249e49e11834ea065f } from '../../../../src/components/views/ContentTypes/GeneratorView'
 import { ContentTypeListPage as ContentTypeListPage_a1d37317a26eeea16c6de0a4978585ab } from '../../../../src/components/views/ContentTypeListPage'
+import { FieldsDataEditor as FieldsDataEditor_7f8453c598b7f8b3b37cb1365a029f00 } from '../../../../src/components/admin/FieldsDataEditor'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -32,10 +29,16 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
+import { DraftingWorkspace as DraftingWorkspace_4afbc8fae6f1cef3d3ee192b056b84b4 } from '../../../../src/components/views/DraftingWorkspace'
+import { ContentItemListPage as ContentItemListPage_37d21c0ac527c782eaa01278022738dc } from '../../../../src/components/views/ContentItemListPage'
+import { CreateHostedSitePage as CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a } from '../../../../src/components/views/CreateHostedSitePage'
+import { HostedSiteListPage as HostedSiteListPage_3e442b45b17811de0e52627585bc87ad } from '../../../../src/components/views/HostedSiteListPage'
 import { CreateAPIKeyPage as CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d } from '../../../../src/components/views/CreateAPIKeyPage'
 import { APIKeyListPage as APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f } from '../../../../src/components/views/APIKeyListPage'
-import { Nav as Nav_f9fd2b4264c96de9aad33b08efee653b } from '../../../../src/components/admin/Nav'
-import { Header as Header_02cf1ef79dd724a149fdc47d1c79b4ef } from '../../../../src/components/admin/Header'
+import { TenantField as TenantField_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
+import { Nav as Nav_725104caa96b88e49c21a618118acd02 } from '../../../../src/components/ui/organisms/Nav'
+import { Header as Header_7cf062c528de236e4ac0d80ace4e9e1d } from '../../../../src/components/ui/organisms/Header'
 import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { Dashboard as Dashboard_2a99722be2bc34386fe3c5345b6f60e6 } from '../../../../src/components/views/Dashboard'
@@ -50,12 +53,9 @@ export const importMap = {
   "/src/components/views/TenantListPage#TenantListPage": TenantListPage_c5178ba657a215cbb89ea742ddb72f1b,
   "/src/components/views/CreateUserPage#CreateUserPage": CreateUserPage_913d5b23f33cda93261c04e0e37d4b55,
   "/src/components/views/UserListPage#UserListPage": UserListPage_86189bd53a034cea3e66cd5c99ea1212,
-  "/src/components/views/HostedSiteListPage#HostedSiteListPage": HostedSiteListPage_e3b1c2a4d5e6f7g8h9i0j1k2l3m4n5o,
-  "/src/components/views/CreateHostedSitePage#CreateHostedSitePage": CreateHostedSitePage_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p,
-  "@payloadcms/plugin-multi-tenant/client#TenantField": TenantField_1d0591e3cf4f332c83a86da13a0de59a,
-  "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,
   "/src/components/views/ContentTypes/GeneratorView#GeneratorView": GeneratorView_1d1663104411f3249e49e11834ea065f,
   "/src/components/views/ContentTypeListPage#ContentTypeListPage": ContentTypeListPage_a1d37317a26eeea16c6de0a4978585ab,
+  "/src/components/admin/FieldsDataEditor#FieldsDataEditor": FieldsDataEditor_7f8453c598b7f8b3b37cb1365a029f00,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -79,10 +79,16 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/plugin-multi-tenant/client#AssignTenantFieldTrigger": AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a,
+  "/src/components/views/DraftingWorkspace#DraftingWorkspace": DraftingWorkspace_4afbc8fae6f1cef3d3ee192b056b84b4,
+  "/src/components/views/ContentItemListPage#ContentItemListPage": ContentItemListPage_37d21c0ac527c782eaa01278022738dc,
+  "/src/components/views/CreateHostedSitePage#CreateHostedSitePage": CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a,
+  "/src/components/views/HostedSiteListPage#HostedSiteListPage": HostedSiteListPage_3e442b45b17811de0e52627585bc87ad,
   "/src/components/views/CreateAPIKeyPage#CreateAPIKeyPage": CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d,
   "/src/components/views/APIKeyListPage#APIKeyListPage": APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f,
-  "/src/components/admin/Nav#Nav": Nav_f9fd2b4264c96de9aad33b08efee653b,
-  "/src/components/admin/Header#Header": Header_02cf1ef79dd724a149fdc47d1c79b4ef,
+  "@payloadcms/plugin-multi-tenant/client#TenantField": TenantField_1d0591e3cf4f332c83a86da13a0de59a,
+  "/src/components/ui/organisms/Nav#Nav": Nav_725104caa96b88e49c21a618118acd02,
+  "/src/components/ui/organisms/Header#Header": Header_7cf062c528de236e4ac0d80ace4e9e1d,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelector": TenantSelector_d6d5f193a167989e2ee7d14202901e62,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelectionProvider": TenantSelectionProvider_d6d5f193a167989e2ee7d14202901e62,
   "/src/components/views/Dashboard#Dashboard": Dashboard_2a99722be2bc34386fe3c5345b6f60e6,

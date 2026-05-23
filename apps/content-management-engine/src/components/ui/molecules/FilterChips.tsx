@@ -32,7 +32,7 @@ export const FilterChips = <T extends string>({
             className={`
               font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer border-none
               ${isActive 
-                ? 'bg-primary text-on-primary font-bold shadow-md shadow-primary/10' 
+                ? 'bg-primary text-on-primary font-bold' 
                 : 'bg-surface-container-low text-outline hover:bg-surface-container-high hover:text-on-surface'
               }
             `}

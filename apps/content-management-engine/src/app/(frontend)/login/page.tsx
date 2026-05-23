@@ -61,7 +61,7 @@ export default function LoginPage() {
                 Professional Email
               </label>
               <input 
-                className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3.5 font-body text-on-surface text-base focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm" 
+                className="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl px-4 py-3.5 font-body text-on-surface text-base focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
                 id="email" 
                 name="email"
                 placeholder="curator@publication.com" 
@@ -84,7 +84,7 @@ export default function LoginPage() {
                 </button>
               </div>
               <input 
-                className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3.5 font-body text-on-surface text-base focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm" 
+                className="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl px-4 py-3.5 font-body text-on-surface text-base focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" 
                 id="password" 
                 name="password"
                 placeholder="••••••••••••" 
@@ -96,7 +96,7 @@ export default function LoginPage() {
             <div className="pt-4">
               <button 
                 disabled={isPending}
-                className="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-bold tracking-wide rounded-full py-4 px-6 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed" 
+                className="w-full btn-primary-gradient font-label font-bold tracking-wide rounded-full py-4 px-6 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed" 
                 type="submit"
               >
                 {isPending ? 'Signing In...' : 'Sign In'}
@@ -104,7 +104,7 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <div className="mt-12 text-center border-t border-outline-variant/20 pt-8">
+          <div className="mt-12 text-center pt-8">
             <Link 
               className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 group no-underline" 
               href="/signup"

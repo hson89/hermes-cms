@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 
@@ -7,9 +8,21 @@ import config from '../../src/payload.config'
 describe('Tenant Resolution API', () => {
   let payload: any
   const internalSecret = process.env.INTERNAL_SERVICE_SECRET || 'hermes-internal-secret'
+  const createdTenants: string[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should resolve tenant by primary domain', async () => {
@@ -31,6 +44,7 @@ describe('Tenant Resolution API', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant.id)
 
     // 2. Call the internal service logic directly for testing
     const { TenantService } = await import('../../src/services/tenant-service')
@@ -58,6 +72,7 @@ describe('Tenant Resolution API', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant.id)
 
     const { TenantService } = await import('../../src/services/tenant-service')
     const service = new TenantService(payload)
@@ -89,6 +104,7 @@ describe('Tenant Resolution API', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant.id)
 
     const { TenantService } = await import('../../src/services/tenant-service')
     const service = new TenantService(payload)
@@ -109,7 +125,7 @@ describe('Tenant Resolution API', () => {
     const domain = `unique-shared-${uniqueId}.com`
 
     // Create Tenant 1 with the domain
-    await payload.create({
+    const tenant1 = await payload.create({
       collection: 'tenants',
       data: {
         name: 'Tenant Unique 1',
@@ -123,6 +139,7 @@ describe('Tenant Resolution API', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant1.id)
 
     // Try to create Tenant 2 with the same domain and expect it to fail
     await expect(
@@ -162,6 +179,7 @@ describe('Tenant Resolution API', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant.id)
 
     const { TenantService } = await import('../../src/services/tenant-service')
     const service = new TenantService(payload)

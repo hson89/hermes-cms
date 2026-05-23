@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+coverage/
+*.min.js
+.next/
+.turbo/
+apps/content-management-engine/.next/
+apps/content-management-engine/test-results/
+apps/content-management-engine/playwright-report/

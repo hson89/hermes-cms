@@ -8,7 +8,7 @@ import { Icon } from '../ui/atoms/Icon'
 
 export const Nav: React.FC<any> = () => {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, logOut } = useAuth()
 
   const navLinks = [
     { label: 'Dashboard', icon: 'grid_view', path: '/admin' },
@@ -20,77 +20,93 @@ export const Nav: React.FC<any> = () => {
   ]
 
   return (
-    <nav className="alexandria-nav fixed left-0 top-0 h-full w-72 flex flex-col bg-on-primary-fixed dark:bg-on-primary-fixed z-50 overflow-y-auto overflow-x-hidden shadow-2xl">
-      <div className="flex flex-col h-full p-6 justify-between">
-        <div>
-          {/* Brand Header */}
-          <div className="flex items-center gap-3 mb-10 pl-2">
-            <span className="material-symbols-outlined text-primary-fixed-dim text-3xl">psychiatry</span>
-            <div>
-              <h1 className="font-display text-xl font-bold text-surface-bright tracking-tighter uppercase m-0 leading-none">HERMES AI</h1>
-            </div>
-          </div>
-
-          {/* Main Navigation */}
-          <ul className="space-y-2 font-body text-label-sm tracking-wide list-none p-0 m-0">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.path || (link.path !== '/admin' && pathname.startsWith(link.path))
-              
-              return (
-                <li key={link.path}>
-                  <Link
-                    href={link.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 no-underline group ${
-                      isActive 
-                        ? 'bg-primary-container text-on-primary-container shadow-lg shadow-primary/10' 
-                        : 'text-primary-fixed-dim hover:text-surface-bright hover:bg-on-primary-fixed-variant'
-                    }`}
-                  >
-                    <Icon 
-                      name={link.icon} 
-                      filled={isActive}
-                      className="transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <span className="font-medium">{link.label}</span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-
-        {/* Footer Navigation */}
-        <div className="space-y-2 font-body text-label-sm tracking-wide">
-          <div className="pt-6 mt-6">
-            <Link
-              href="/admin/settings"
-              className="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-surface-bright hover:bg-on-primary-fixed-variant rounded-xl transition-all duration-200 no-underline group"
-            >
-              <Icon name="settings" className="group-hover:rotate-45 transition-transform duration-500" />
-              <span className="font-medium">Settings</span>
-            </Link>
-          </div>
-
-          <div className="mt-4 pt-4 bg-on-primary-fixed-variant/20 rounded-2xl">
-            <div className="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim rounded-xl group/profile transition-all duration-200">
-              <div className="relative">
-                <img 
-                  src={`https://www.gravatar.com/avatar/${user?.email || 'admin'}?d=mp&s=100`}
-                  alt={user?.email || 'User'} 
-                  className="w-8 h-8 rounded-full border border-primary-fixed-dim/50 object-cover"
-                />
-                <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover/profile:opacity-100 transition-opacity" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-medium truncate text-surface-bright leading-tight">
-                  {(user as any)?.name || user?.email?.split('@')[0] || 'Admin User'}
-                </span>
-                <Link href="/admin/logout" className="text-[10px] text-primary-fixed-dim/60 hover:text-error transition-colors no-underline uppercase tracking-widest font-bold mt-1">Sign Out</Link>
-              </div>
-            </div>
-          </div>
-        </div>
+    <nav className="alexandria-nav fixed left-0 top-0 h-screen w-72 lg:w-[18rem] z-[1000] bg-surface-container flex flex-col py-6 gap-y-1 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+      <div className="px-6 pb-8">
+        <h1 className="font-headline text-2xl font-black text-primary m-0">Hermes</h1>
+        <p className="font-label uppercase tracking-widest text-[10px] text-on-surface-variant mt-1 m-0">CMS</p>
       </div>
+
+      <Link 
+        href="/admin/draft/new"
+        className="mx-4 mb-6 py-3 px-4 btn-primary-gradient rounded-xl font-label text-sm tracking-wide transition-all flex items-center justify-center gap-2 border-none cursor-pointer no-underline"
+      >
+        <span className="material-symbols-outlined !text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>add</span>
+        New Entry
+      </Link>
+
+      <div className="flex-1 flex flex-col gap-1 px-2 overflow-y-auto">
+        {navLinks.map((link) => {
+          const isActive = pathname === link.path || (link.path !== '/admin' && pathname.startsWith(link.path))
+          
+          return (
+            <Link
+              key={link.path}
+              href={link.path}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 no-underline group ${
+                isActive 
+                  ? 'bg-primary-container text-on-primary-container' 
+                  : 'text-on-surface-variant hover:bg-surface-variant'
+              }`}
+            >
+              <Icon 
+                name={link.icon} 
+                filled={isActive}
+                className="!text-xl"
+              />
+              <span className="font-label text-sm font-medium">{link.label}</span>
+            </Link>
+          )
+        })}
+      </div>
+
+      <div className="px-2 pb-4 pt-4 mt-auto">
+        <Link
+          href="/admin/help"
+          className="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant rounded-xl font-label text-sm transition-all no-underline"
+        >
+          <Icon name="help_outline" className="!text-xl" />
+          <span>Help</span>
+        </Link>
+        <Link
+          href="/admin/settings"
+          className="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant rounded-xl font-label text-sm transition-all no-underline"
+        >
+          <Icon name="settings" className="!text-xl" />
+          <span>Settings</span>
+        </Link>
+        <button
+          onClick={() => logOut()}
+          className="flex w-full items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant rounded-xl font-label text-sm transition-all no-underline bg-transparent border-none cursor-pointer text-left group"
+        >
+          <Icon name="logout" className="!text-xl transition-transform group-hover:translate-x-0.5" />
+          <span>Sign Out</span>
+        </button>
+      </div>
+
+      {user && (
+        <div className="mx-4 mt-2 p-3 bg-surface-container-high/40 rounded-2xl flex items-center justify-between gap-3 border border-outline-variant/5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-label text-xs font-bold shrink-0">
+              {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : user.email?.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex flex-col">
+              <span className="font-label text-xs font-bold text-on-surface truncate leading-none mb-1">
+                {user.name || 'User'}
+              </span>
+              <span className="font-label text-[10px] text-on-surface-variant/70 uppercase tracking-wider font-semibold leading-none truncate">
+                {user.role || 'Editor'}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => logOut()}
+            title="Sign Out"
+            className="w-8 h-8 rounded-xl hover:bg-surface-variant text-on-surface-variant hover:text-error flex items-center justify-center transition-all border-none bg-transparent cursor-pointer shrink-0"
+          >
+            <Icon name="logout" className="!text-lg" />
+          </button>
+        </div>
+      )}
     </nav>
   )
 }

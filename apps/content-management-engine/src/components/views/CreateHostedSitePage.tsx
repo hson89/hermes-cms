@@ -194,10 +194,10 @@ export const CreateHostedSitePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         <div className="lg:col-span-4 space-y-6">
-          <Card variant="low" className="border border-outline-variant/15 p-6 shadow-xl relative overflow-hidden flex flex-col items-center text-center">
+          <Card variant="low" className="border border-outline-variant/15 p-6 bg-surface-container-low/30 relative overflow-hidden flex flex-col items-center text-center">
             <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-primary/30 to-primary-container/30 filter blur-xl -z-10" />
             
-            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl shadow-lg ring-4 ring-surface-container-low">
+            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl ring-4 ring-surface-container-low">
               <Icon name="web" size={40} />
             </div>
 
@@ -211,7 +211,7 @@ export const CreateHostedSitePage: React.FC = () => {
               </Badge>
             </div>
 
-            <div className="h-[1px] w-full bg-outline-variant/15 my-6" />
+            <div className="pt-6 mt-6 w-full" />
 
             <div className="w-full text-left space-y-3">
               <span className="font-label text-[10px] uppercase tracking-widest text-outline block font-bold">Deployment Info</span>
@@ -234,7 +234,7 @@ export const CreateHostedSitePage: React.FC = () => {
         </div>
 
         <div className="lg:col-span-8">
-          <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8 shadow-xl shadow-on-surface/5">
+          <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8 bg-surface-container-low/30">
             <form onSubmit={handleSubmit} className="space-y-6">
               
               <div>
@@ -294,7 +294,7 @@ export const CreateHostedSitePage: React.FC = () => {
                 placeholder="e.g. blog.my-domain.com"
               />
 
-              <div className="pt-6 border-t border-outline-variant/10 flex justify-end gap-4">
+              <div className="pt-6 flex justify-end gap-4">
                 <Button
                   type="button"
                   variant="secondary"

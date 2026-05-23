@@ -10,6 +10,10 @@ import { getTenantIds } from './utils'
  */
 export const APIKeys: CollectionConfig = {
   slug: 'api-keys',
+  labels: {
+    singular: 'API Key',
+    plural: 'API Keys',
+  },
   auth: {
     // Use API key authentication strategy for this collection.
     useAPIKey: true,
@@ -48,6 +52,13 @@ export const APIKeys: CollectionConfig = {
           in: tenantIds,
         },
       }
+    },
+    admin: ({ req: { user } }) => {
+      if (!user) return false
+      return (
+        (user as any).role === 'super-admin' ||
+        (user as any).role === 'tenant-admin'
+      )
     },
     create: ({ req: { user } }) => !!user,
     update: ({ req: { user } }) => {
@@ -98,6 +109,16 @@ export const APIKeys: CollectionConfig = {
       label: 'Expires At',
       admin: {
         description: 'Optional expiry date. Leave empty for no expiry.',
+      },
+    },
+    {
+      name: 'tenant',
+      type: 'relationship',
+      relationTo: 'tenants',
+      required: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
       },
     },
   ],

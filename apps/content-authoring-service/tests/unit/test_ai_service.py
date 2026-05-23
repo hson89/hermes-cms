@@ -44,8 +44,14 @@ async def test_generate_schema_uses_correct_provider(ai_service: AIService, mock
         mock_settings.LANGCHAIN_MODEL_PROVIDER = "test-provider"
         mock_settings.LANGCHAIN_ENDPOINT_URL = "http://test-url"
         
+        from src.domain.content_drafting.structures import ContentSchemaOutput, FieldDefinition
         mock_llm = MagicMock()
-        mock_llm.ainvoke = AsyncMock(return_value=mock_llm_response)
+        mock_structured_llm = MagicMock()
+        mock_structured_llm.ainvoke = AsyncMock(return_value=ContentSchemaOutput(
+            name="Test Content Type",
+            fields=[FieldDefinition(name="title", type="text", required=True, label="Title")]
+        ))
+        mock_llm.with_structured_output.return_value = mock_structured_llm
         mock_init.return_value = mock_llm
 
         result = await ai_service.generate_schema(
@@ -78,8 +84,14 @@ async def test_generate_schema_session_lifecycle(ai_service: AIService, mock_llm
         mock_settings.LANGCHAIN_MODEL = "mock-model"
         mock_settings.LANGCHAIN_ENDPOINT_URL = ""
         
+        from src.domain.content_drafting.structures import ContentSchemaOutput, FieldDefinition
         mock_llm = MagicMock()
-        mock_llm.ainvoke = AsyncMock(return_value=mock_llm_response)
+        mock_structured_llm = MagicMock()
+        mock_structured_llm.ainvoke = AsyncMock(return_value=ContentSchemaOutput(
+            name="Test Content Type",
+            fields=[FieldDefinition(name="title", type="text", required=True, label="Title")]
+        ))
+        mock_llm.with_structured_output.return_value = mock_structured_llm
         mock_init.return_value = mock_llm
 
         result = await ai_service.generate_schema(
@@ -111,10 +123,18 @@ async def test_generate_schema_handles_json_error(ai_service: AIService):
         mock_settings.LANGCHAIN_MODEL_PROVIDER = "openai"
         mock_settings.LANGCHAIN_ENDPOINT_URL = None
         
+        from src.domain.content_drafting.structures import ContentSchemaOutput, FieldDefinition
         mock_llm = MagicMock()
-        invalid_response = MagicMock()
-        invalid_response.content = "NOT JSON"
-        mock_llm.ainvoke = AsyncMock(return_value=invalid_response)
+        mock_structured_llm = MagicMock()
+        mock_structured_llm.ainvoke = AsyncMock(return_value=ContentSchemaOutput(
+            name="Article",
+            fields=[
+                FieldDefinition(name="body", type="text", required=True, label="Body"),
+                FieldDefinition(name="body", type="richText", required=True, label="Body")
+            ],
+            explanation="Persistent duplicate fields"
+        ))
+        mock_llm.with_structured_output.return_value = mock_structured_llm
         mock_init.return_value = mock_llm
 
         with pytest.raises(ValueError, match="Failed to generate a valid schema after 3 retries"):
@@ -153,8 +173,14 @@ async def test_generate_schema_uses_nvidia_provider(ai_service: AIService, mock_
         mock_settings.NVIDIA_REASONING_BUDGET = 16384
         mock_settings.NVIDIA_ENABLE_THINKING = True
         
+        from src.domain.content_drafting.structures import ContentSchemaOutput, FieldDefinition
         mock_llm = MagicMock()
-        mock_llm.ainvoke = AsyncMock(return_value=mock_llm_response)
+        mock_structured_llm = MagicMock()
+        mock_structured_llm.ainvoke = AsyncMock(return_value=ContentSchemaOutput(
+            name="Test Content Type",
+            fields=[FieldDefinition(name="title", type="text", required=True, label="Title")]
+        ))
+        mock_llm.with_structured_output.return_value = mock_structured_llm
         mock_chat_nvidia.return_value = mock_llm
 
         result = await ai_service.generate_schema(
@@ -178,3 +204,44 @@ async def test_generate_schema_uses_nvidia_provider(ai_service: AIService, mock_
         )
         
         assert result["status"] == SessionStatus.COMPLETED
+
+
+def test_get_langfuse_handler_success(ai_service: AIService):
+    """Verify that _get_langfuse_handler successfully returns a CallbackHandler with correct parameters."""
+    with patch("src.application.ai_service.settings") as mock_settings, \
+         patch("langfuse.langchain.CallbackHandler") as mock_callback_handler:
+        
+        mock_settings.LANGFUSE_PUBLIC_KEY = "test-public-key"
+        mock_settings.LANGFUSE_SECRET_KEY = "test-secret-key"
+        mock_settings.LANGFUSE_BASE_URL = "http://test-langfuse"
+        
+        # Mock langfuse_client lazy property to return a non-None value
+        with patch.object(AIService, "langfuse_client", return_value=MagicMock()):
+            handler = ai_service._get_langfuse_handler(trace_id="test-trace-id")
+            
+            mock_callback_handler.assert_called_once_with(
+                public_key="test-public-key",
+                trace_context={"trace_id": "test-trace-id"}
+            )
+            assert handler == mock_callback_handler.return_value
+
+
+def test_get_langfuse_handler_with_session_id(ai_service: AIService):
+    """Verify that _get_langfuse_handler configures both trace_context and top-level session_id correctly."""
+    with patch("src.application.ai_service.settings") as mock_settings, \
+         patch("langfuse.langchain.CallbackHandler") as mock_callback_handler:
+        
+        mock_settings.LANGFUSE_PUBLIC_KEY = "test-public-key"
+        mock_settings.LANGFUSE_SECRET_KEY = "test-secret-key"
+        mock_settings.LANGFUSE_BASE_URL = "http://test-langfuse"
+        
+        # Mock langfuse_client lazy property to return a non-None value
+        with patch.object(AIService, "langfuse_client", return_value=MagicMock()):
+            handler = ai_service._get_langfuse_handler(trace_id="test-trace-id", session_id="test-session-id")
+            
+            mock_callback_handler.assert_called_once_with(
+                public_key="test-public-key",
+                trace_context={"trace_id": "test-trace-id", "session_id": "test-session-id"},
+                session_id="test-session-id"
+            )
+            assert handler == mock_callback_handler.return_value

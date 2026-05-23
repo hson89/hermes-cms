@@ -11,6 +11,8 @@ interface FormFieldProps {
   type?: string
   required?: boolean
   name?: string
+  value?: string | number
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
   className?: string
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
 }
@@ -23,6 +25,8 @@ export const FormField: React.FC<FormFieldProps> = ({
   type = 'text', 
   required, 
   name,
+  value,
+  onChange,
   className = '',
   inputProps
 }) => {
@@ -37,6 +41,8 @@ export const FormField: React.FC<FormFieldProps> = ({
         type={type} 
         placeholder={placeholder} 
         required={required} 
+        value={value}
+        onChange={onChange}
         error={!!error}
         {...inputProps}
       />

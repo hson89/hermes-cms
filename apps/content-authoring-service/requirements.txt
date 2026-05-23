@@ -28,3 +28,6 @@ asyncpg>=0.30.0        # PostgreSQL async driver for SQLAlchemy
 pytest>=8.4.0
 pytest-asyncio>=0.26.0
 httpx>=0.28.0           # Required for FastAPI TestClient async support
+langfuse
+langgraph-checkpoint-postgres
+psycopg[binary]

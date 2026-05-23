@@ -1,3 +1,9 @@
+import { jest } from '@jest/globals'
+
+jest.mock('../../../src/services/langfuse', () => ({
+  langfuse: null,
+}))
+
 import { generateSchemaEndpoint, getSessionStatusEndpoint, postSessionMessageEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint } from '../../../src/collections/ContentTypes/endpoints'
 
 describe('generateSchemaEndpoint CMS Handler', () => {

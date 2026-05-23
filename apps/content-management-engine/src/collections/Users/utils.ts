@@ -9,9 +9,13 @@ export const getTenantIds = (user: any): (string | number)[] => {
   if (user.role === 'super-admin') return [] // Super admins don't need filtering
 
   if (Array.isArray(user.tenants)) {
-    return user.tenants.map((t: any) => 
-      typeof t.tenant === 'object' ? t.tenant.id : t.tenant
-    )
+    return user.tenants
+      .map((t: any) => {
+        if (!t) return undefined
+        if (typeof t === 'string' || typeof t === 'number') return t
+        return typeof t.tenant === 'object' ? t.tenant?.id : t.tenant
+      })
+      .filter((id: string | number | undefined | null): id is string | number => id !== undefined && id !== null)
   }
 
   // Fallback for API keys or users with a single tenant relationship

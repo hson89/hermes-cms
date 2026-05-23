@@ -41,8 +41,21 @@ from src.infrastructure.auth import require_internal_secret as _require_internal
 async def lifespan(app: FastAPI):  # noqa: ANN001
     """Application lifespan – initialise / teardown shared resources."""
     app.state.ai_service = AIService()
-    yield
-    # Teardown (DB connections, etc.) goes here.
+    
+    # Decoupled setup: Execute checkpointer setup exactly once on startup
+    from src.infrastructure.database import get_db_checkpointer
+    async with get_db_checkpointer() as saver:
+        await saver.setup()
+        app.state.checkpointer = saver
+        
+        # Compile graphs with checkpointer exactly once to prevent rebuild overhead
+        from src.application.graphs.schema_graph import builder as schema_builder
+        from src.application.graphs.drafting_graph import builder as drafting_builder
+        
+        app.state.schema_graph = schema_builder.compile(checkpointer=saver)
+        app.state.drafting_graph = drafting_builder.compile(checkpointer=saver)
+        
+        yield
 
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -76,6 +89,7 @@ class GenerateSchemaRequest(BaseModel):
     tenant_id: str
     user_id: str
     current_schema: dict | None = None
+    langfuse_trace_id: str | None = None
 
     @field_validator("tenant_id", "user_id", mode="before")
     @classmethod
@@ -108,6 +122,7 @@ class CopilotEditRequest(BaseModel):
     prompt: str
     tenant_id: str
     user_id: str
+    langfuse_trace_id: str | None = None
 
     @field_validator("content_item_id", "section_id", "tenant_id", "user_id", mode="before")
     @classmethod
@@ -122,6 +137,7 @@ class SessionMessageRequest(BaseModel):
 
     prompt: str
     current_schema: dict | None = None
+    langfuse_trace_id: str | None = None
 
     @field_validator("prompt")
     @classmethod
@@ -131,6 +147,74 @@ class SessionMessageRequest(BaseModel):
         return v.strip()
 
 
+class AIBaseRequest(BaseModel):
+    """Base model for common AI request fields."""
+    tenant_id: str
+    user_id: str
+    locale: str = "en"
+    style_modifier_id: str | None = None
+    style_modifier_prompt: str | None = None
+    model_override: str | None = None
+    modelOverride: str | None = None
+    langfuse_trace_id: str | None = None
+
+    @field_validator("tenant_id", "user_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
+
+    def resolved_model_override(self) -> str | None:
+        """
+        Return the model override only when the requested provider has credentials
+        configured in the environment.
+        """
+        import os
+        raw = self.model_override or self.modelOverride
+        if not raw:
+            return None
+
+        provider = raw.split("/")[0].lower() if "/" in raw else ""
+        key_map = {
+            "openai":    os.environ.get("OPENAI_API_KEY", ""),
+            "anthropic": os.environ.get("ANTHROPIC_API_KEY", ""),
+            "google":    os.environ.get("GOOGLE_API_KEY", ""),
+            "mistral":   os.environ.get("MISTRAL_API_KEY", ""),
+            "nvidia":    os.environ.get("NVIDIA_API_KEY", ""),
+        }
+        api_key = key_map.get(provider, "")
+        if not api_key or api_key.startswith("your-"):
+            return None
+        return raw
+
+
+class DraftRequest(AIBaseRequest):
+    """Payload for POST /api/ai/draft."""
+
+    prompt: str
+    content_type_slug: str | None = None
+    content_schema: dict | None = None
+    session_id: str | None = None
+
+    @field_validator("session_id", "content_type_slug", mode="before")
+    @classmethod
+    def coerce_slug_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
+
+
+class RefineRequest(AIBaseRequest):
+    """Payload for POST /api/ai/refine."""
+
+    prompt: str
+    current_draft_json: dict
+    content_schema: dict
+    session_id: str | None = None
+
+
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 
@@ -138,6 +222,101 @@ class SessionMessageRequest(BaseModel):
 async def health() -> dict:
     """Health check endpoint."""
     return {"status": "ok", "service": "content-authoring-service"}
+
+
+@app.post(
+    "/api/ai/draft",
+    tags=["AI Drafting"],
+    summary="Generate a full content draft",
+    dependencies=[Security(_require_internal_secret)],
+)
+async def generate_draft(
+    body: DraftRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """
+    Generate a full content draft from a natural language prompt.
+    Returns a stream of tokens for the explanation/thought process,
+    followed by the final JSON draft.
+    """
+    from src.application.drafting_service import DraftingService  # noqa: PLC0415
+
+    drafting_service = DraftingService(request.app.state.ai_service)
+
+    async def event_generator():
+        try:
+            async for event in drafting_service.generate_draft_stream(
+                prompt=body.prompt,
+                content_type_slug=body.content_type_slug,
+                schema_json=body.content_schema,
+                tenant_id=body.tenant_id,
+                user_id=body.user_id,
+                db=db,
+                locale=body.locale,
+                style_modifier_id=body.style_modifier_id,
+                style_modifier_prompt=body.style_modifier_prompt,
+                model_override=body.resolved_model_override(),
+                session_id=body.session_id,
+                langfuse_trace_id=body.langfuse_trace_id,
+                drafting_graph=request.app.state.drafting_graph,
+            ):
+                if await request.is_disconnected():
+                    break
+                yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        except Exception as exc:
+            import traceback
+            traceback.print_exc()
+            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error during draft: {exc}'})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.post(
+    "/api/ai/refine",
+    tags=["AI Drafting"],
+    summary="Refine an existing content draft",
+    dependencies=[Security(_require_internal_secret)],
+)
+async def refine_draft(
+    body: RefineRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """
+    Refine an existing content draft based on user feedback.
+    Returns a stream of tokens for the explanation, followed by updated JSON.
+    """
+    from src.application.refine_service import RefineService  # noqa: PLC0415
+
+    refine_service = RefineService(request.app.state.ai_service)
+
+    async def event_generator():
+        try:
+            async for event in refine_service.refine_draft_stream(
+                prompt=body.prompt,
+                current_draft_json=body.current_draft_json,
+                schema_json=body.content_schema,
+                tenant_id=body.tenant_id,
+                user_id=body.user_id,
+                db=db,
+                locale=body.locale,
+                style_modifier_id=body.style_modifier_id,
+                style_modifier_prompt=body.style_modifier_prompt,
+                model_override=body.resolved_model_override(),
+                session_id=body.session_id,
+                langfuse_trace_id=body.langfuse_trace_id,
+                drafting_graph=request.app.state.drafting_graph,
+            ):
+                if await request.is_disconnected():
+                    break
+                yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
+        except Exception as exc:
+            import traceback
+            traceback.print_exc()
+            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error during refinement: {exc}'})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @app.post(
@@ -168,6 +347,8 @@ async def generate_schema(
             user_id=body.user_id,
             current_schema=body.current_schema,
             db=db,
+            langfuse_trace_id=body.langfuse_trace_id,
+            schema_graph=request.app.state.schema_graph,
         )
         return GenerateSchemaResponse(
             session_id=result["sessionId"],
@@ -199,7 +380,7 @@ async def get_session(
 ) -> dict:
     """Return the current status and context of an AIAgentSession."""
     ai_service: AIService = request.app.state.ai_service
-    session = await ai_service.get_session(session_id, db=db)
+    session = await ai_service.get_session(session_id, db=db, schema_graph=request.app.state.schema_graph)
     if session is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -232,6 +413,14 @@ async def get_session(
         "created_at": session.created_at.isoformat(),
         "updated_at": session.updated_at.isoformat(),
         "schema": schema_data,
+        "context": [
+            {
+                "role": msg.role,
+                "content": msg.content,
+                "timestamp": msg.timestamp.isoformat(),
+            }
+            for msg in session.context
+        ],
     }
 
 
@@ -258,6 +447,7 @@ async def copilot_edit(body: CopilotEditRequest, request: Request) -> dict:
             prompt=body.prompt,
             tenant_id=body.tenant_id,
             user_id=body.user_id,
+            langfuse_trace_id=body.langfuse_trace_id,
         )
         return {"section_id": body.section_id, "content": edited_content}
     except RuntimeError as exc:
@@ -292,6 +482,8 @@ async def post_session_message(
                 prompt=body.prompt,
                 current_schema=body.current_schema,
                 db=db,
+                langfuse_trace_id=body.langfuse_trace_id,
+                schema_graph=request.app.state.schema_graph,
             ):
                 yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
         except ValueError as exc:

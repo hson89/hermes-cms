@@ -99,7 +99,7 @@ export const LoginPage: React.FC = () => {
             </div>
           </form>
 
-          <div className="mt-12 text-center border-t border-outline-variant/20 pt-8">
+          <div className="mt-12 text-center pt-8">
             <Link 
               className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-1 group no-underline" 
               href="/signup"

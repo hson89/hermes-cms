@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 import { GET } from '../../src/app/(payload)/api/tenants/resolve/route'
@@ -6,9 +7,21 @@ import { NextRequest } from 'next/server'
 describe('Tenant API Resolution Endpoint', () => {
   let payload: any
   const internalSecret = process.env.INTERNAL_SERVICE_SECRET || 'hermes-internal-secret'
+  const createdTenants: string[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   const createMockRequest = (url: string, headers: Record<string, string> = {}) => {
@@ -62,7 +75,7 @@ describe('Tenant API Resolution Endpoint', () => {
     const hostname = `suspended-api-${uniqueId}.com`
     
     // Create a suspended tenant
-    await payload.create({
+    const tenant1 = await payload.create({
       collection: 'tenants',
       data: {
         name: 'Suspended Tenant API',
@@ -76,6 +89,7 @@ describe('Tenant API Resolution Endpoint', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant1.id)
 
     const req = createMockRequest(`http://localhost:3000/api/tenants/resolve?hostname=${hostname}`, {
       'X-Internal-Secret': internalSecret,
@@ -93,7 +107,7 @@ describe('Tenant API Resolution Endpoint', () => {
     const hostname = `archived-api-${uniqueId}.com`
     
     // Create an archived tenant
-    await payload.create({
+    const tenant2 = await payload.create({
       collection: 'tenants',
       data: {
         name: 'Archived Tenant API',
@@ -107,6 +121,7 @@ describe('Tenant API Resolution Endpoint', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant2.id)
 
     const req = createMockRequest(`http://localhost:3000/api/tenants/resolve?hostname=${hostname}`, {
       'X-Internal-Secret': internalSecret,
@@ -137,11 +152,12 @@ describe('Tenant API Resolution Endpoint', () => {
           { hostname, isPrimary: true }
         ],
         branding: {
-          primaryColor: '#094cb2',
+          primaryColor: '#3366cc',
         }
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant.id)
 
     const req = createMockRequest(`http://localhost:3000/api/tenants/resolve?hostname=${hostname}`, {
       'X-Internal-Secret': internalSecret,
@@ -152,6 +168,6 @@ describe('Tenant API Resolution Endpoint', () => {
     expect(body.id).toBe(tenant.id)
     expect(body.slug).toBe(slug)
     expect(body.status).toBe('active')
-    expect(body.branding.primaryColor).toBe('#094cb2')
+    expect(body.branding.primaryColor).toBe('#3366cc')
   })
 })

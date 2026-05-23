@@ -1,107 +1,55 @@
 import React from 'react'
-import { Icon } from '@/components/ui/atoms/Icon'
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+interface BadgeProps {
   children?: React.ReactNode
-  variant?: 'solid' | 'subtle' | 'outline'
-  color?: 'primary' | 'tertiary' | 'success' | 'danger' | 'warning' | 'neutral' | 'gold'
-  size?: 'sm' | 'md'
+  color?: 'primary' | 'success' | 'danger' | 'neutral' | 'gold' | string
+  size?: 'sm' | 'md' | 'lg'
   icon?: string
-}
-
-const colorClassMap: Record<string, { bg: string; text: string; border: string }> = {
-  primary: {
-    bg: 'bg-primary/10',
-    text: 'text-primary',
-    border: 'border-primary/10'
-  },
-  tertiary: {
-    bg: 'bg-tertiary/10',
-    text: 'text-tertiary dark:text-tertiary-fixed-dim',
-    border: 'border-tertiary/10'
-  },
-  success: {
-    bg: 'bg-green-500/10',
-    text: 'text-green-700 dark:text-green-400',
-    border: 'border-green-500/10'
-  },
-  danger: {
-    bg: 'bg-red-500/10',
-    text: 'text-red-700 dark:text-red-400',
-    border: 'border-red-500/10'
-  },
-  warning: {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-700 dark:text-amber-400',
-    border: 'border-amber-500/10'
-  },
-  neutral: {
-    bg: 'bg-neutral-500/10',
-    text: 'text-neutral-600 dark:text-neutral-300',
-    border: 'border-neutral-500/10'
-  },
-  gold: {
-    bg: 'bg-tertiary/10',
-    text: 'text-tertiary dark:text-tertiary-fixed-dim',
-    border: 'border-tertiary/15'
-  }
-}
-
-const getVariantClasses = (variant: 'solid' | 'subtle' | 'outline', colorKey: string) => {
-  const conf = colorClassMap[colorKey] || colorClassMap.neutral
-  if (variant === 'solid') {
-    if (colorKey === 'primary') return 'bg-primary text-on-primary border border-transparent'
-    if (colorKey === 'tertiary') return 'bg-tertiary text-on-tertiary border border-transparent'
-    if (colorKey === 'success') return 'bg-green-600 text-white border border-transparent'
-    if (colorKey === 'danger') return 'bg-red-600 text-white border border-transparent'
-    if (colorKey === 'warning') return 'bg-amber-600 text-black border border-transparent'
-    if (colorKey === 'gold') return 'bg-tertiary text-on-tertiary border border-transparent'
-    return 'bg-neutral-500 text-white border border-transparent'
-  }
-  if (variant === 'outline') {
-    return `bg-transparent ${conf.text} border ${conf.border.replace('/10', '').replace('/15', '')}`
-  }
-  // subtle
-  return `${conf.bg} ${conf.text} border ${conf.border}`
+  className?: string
+  variant?: 'solid' | 'subtle' | 'outline' | string
+  isNew?: boolean
+  isModified?: boolean
 }
 
 export const Badge: React.FC<BadgeProps> = ({ 
   children, 
-  variant = 'subtle',
-  color,
-  size = 'md',
-  icon,
-  className = '', 
-  ...props 
+  color = 'primary', 
+  size = 'md', 
+  icon, 
+  className = '',
+  isNew,
+  isModified
 }) => {
-  if (!color) {
+  // If it's an AI suggestion badge
+  if (isNew || isModified) {
     return (
-      <span 
-        className={`inline-flex items-center rounded-full bg-tertiary px-2.5 py-0.5 text-xs font-label font-bold text-on-tertiary tracking-wider ${className}`} 
-        {...props}
-      >
-        {children}
-      </span>
+      <button className="flex items-center gap-1 text-[10px] bg-primary-container/10 text-primary px-2 py-0.5 rounded-full hover:bg-primary-container/20 transition-all font-label font-bold border-none cursor-pointer whitespace-nowrap">
+        <span className="material-symbols-outlined !text-xs">auto_fix_high</span>
+        {isNew ? 'AI SUGGESTS' : 'AI REFINED'}
+      </button>
     )
   }
 
-  const baseClasses = 'inline-flex items-center gap-1 rounded-full font-label font-bold uppercase tracking-wider transition-colors'
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-[9px]' : 'px-3 py-1 text-[10px]'
-  const variantClasses = getVariantClasses(variant, color)
+  // Generic Alexandria Badge
+  const sizeClasses = {
+    sm: 'text-[9px] px-1.5 py-0.5',
+    md: 'text-[10px] px-2.5 py-1',
+    lg: 'text-[12px] px-3 py-1.5'
+  }
+
+  const colorClasses: Record<string, string> = {
+    primary: 'bg-primary/10 text-primary border-primary/20',
+    success: 'bg-success-container/20 text-success border-success/20',
+    danger: 'bg-error-container/20 text-error border-error/20',
+    neutral: 'bg-surface-variant text-on-surface-variant border-outline-variant/15',
+    gold: 'bg-tertiary-container/20 text-tertiary border-tertiary/20'
+  }
+
+  const colorClass = colorClasses[color] || `bg-${color}/10 text-${color} border-${color}/20`
 
   return (
-    <span 
-      className={`${baseClasses} ${sizeClasses} ${variantClasses} ${className}`} 
-      {...props}
-    >
-      {icon && (
-        <Icon 
-          name={icon} 
-          size={size === 'sm' ? 10 : 11} 
-          filled 
-          className="flex-shrink-0"
-        />
-      )}
+    <span className={`inline-flex items-center gap-1 rounded-full font-label font-bold border ${sizeClasses[size]} ${colorClass} ${className}`}>
+      {icon && <span className="material-symbols-outlined !text-[1.2em]">{icon}</span>}
       {children}
     </span>
   )

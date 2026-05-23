@@ -14,11 +14,15 @@ import { HostedSites } from './collections/HostedSites'
 import { AuditLogs } from './collections/AuditLogs'
 import { Media } from './collections/Media'
 import { AIPromptHistory } from './collections/AIPromptHistory'
+import { DraftingSessions } from './collections/DraftingSessions'
+import { StyleModifiers } from './collections/StyleModifiers'
+import { AIAuditLogs } from './collections/AIAuditLogs'
+import { AIRateLimits } from './collections/AIRateLimits'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-export default buildConfig({
+const configPromise = buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -29,18 +33,36 @@ export default buildConfig({
         dashboard: {
           Component: '/src/components/views/Dashboard#Dashboard',
         },
-        init: {
+        createFirstUser: {
           Component: '/src/components/views/InitPage#InitPage',
         },
         login: {
           Component: '/src/components/views/LoginPage#LoginPage',
         },
+        drafting: {
+          Component: '/src/components/views/DraftingWorkspace#DraftingWorkspace',
+          path: '/draft/:contentTypeId?',
+        },
       },
-      Nav: '/src/components/admin/Nav#Nav',
-      header: ['/src/components/admin/Header#Header'] as any,
+      Nav: ['/src/components/ui/organisms/Nav#Nav'] as any,
+      header: ['/src/components/ui/organisms/Header#Header'] as any,
     },
   },
-  collections: [Tenants, Users, ContentTypes, ContentItems, HostedSites, Media, AuditLogs, APIKeys, AIPromptHistory],
+  collections: [
+    Tenants,
+    Users,
+    ContentTypes,
+    ContentItems,
+    HostedSites,
+    Media,
+    AuditLogs,
+    APIKeys,
+    AIPromptHistory,
+    DraftingSessions,
+    StyleModifiers,
+    AIAuditLogs,
+    AIRateLimits,
+  ],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || 'YOUR_SECRET_HERE',
   db: postgresAdapter({
@@ -52,13 +74,15 @@ export default buildConfig({
   plugins: [
     multiTenantPlugin({
       collections: {
-        'content-types': {},
-        'content-items': {},
-        'api-keys': {},
+        'content-items': { customTenantField: true },
+        'api-keys': { customTenantField: true },
         'media': { customTenantField: true },
         'audit-logs': { customTenantField: true },
         'hosted-sites': { customTenantField: true },
         'ai-prompt-history': {},
+        'drafting-sessions': { customTenantField: true },
+        'style-modifiers': {},
+        'ai-audit-logs': {},
       } as any,
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => {
@@ -69,5 +93,40 @@ export default buildConfig({
   ],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
+    autoGenerate: false,
   },
 })
+
+// Fix for multi-tenant plugin not saving tenants to JWT by default
+// This is required for getTenantIds() to work in access control checks on the server
+configPromise.then((config) => {
+  if (config.collections) {
+    const usersCollection = config.collections.find((c) => c.slug === 'users')
+    if (usersCollection && usersCollection.fields) {
+      const roleField = usersCollection.fields.find(
+        (f) => 'name' in f && f.name === 'role',
+      )
+      if (roleField) {
+        ;(roleField as any).saveToJWT = true
+      }
+
+      const tenantsField = usersCollection.fields.find(
+        (f) => 'name' in f && f.name === 'tenants',
+      )
+      if (tenantsField && typeof tenantsField === 'object') {
+        ;(tenantsField as any).saveToJWT = true
+        // Also ensure the nested relationship field is in the JWT
+        if ('fields' in tenantsField && Array.isArray(tenantsField.fields)) {
+          const tenantRelField = tenantsField.fields.find(
+            (f) => 'name' in f && f.name === 'tenant',
+          )
+          if (tenantRelField) {
+            ;(tenantRelField as any).saveToJWT = true
+          }
+        }
+      }
+    }
+  }
+})
+
+export default configPromise

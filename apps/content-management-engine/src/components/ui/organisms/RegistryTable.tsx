@@ -91,7 +91,7 @@ export const RegistryTable = <T extends { id: string | number }>({
           ))
         ) : items.length === 0 ? (
           emptyState || (
-            <div className="text-center py-20 bg-surface-container-lowest rounded-2xl border border-dashed border-outline-variant/20">
+            <div className="text-center py-20 bg-surface-container-lowest rounded-2xl border border-dashed border-outline-variant/15">
               <h3 className="font-headline font-bold text-lg text-on-surface">No Records Found</h3>
             </div>
           )
@@ -102,7 +102,7 @@ export const RegistryTable = <T extends { id: string | number }>({
               key={item.id}
               onClick={() => onRowClick && onRowClick(item)}
               className={`
-                grid grid-cols-1 lg:grid-cols-12 gap-4 px-6 py-4.5 bg-surface-container-lowest lg:bg-surface-container-lowest/70 hover:bg-surface-container-lowest items-center rounded-2xl border-l-[3px] border-transparent hover:border-primary transition-all duration-300 shadow-sm hover:shadow shadow-on-surface/5 cursor-pointer relative group
+                grid grid-cols-1 lg:grid-cols-12 gap-4 px-6 py-4.5 bg-surface-container-lowest lg:bg-surface-container-lowest/70 hover:bg-surface-container-lowest items-center rounded-2xl transition-all duration-300 cursor-pointer relative group
               `}
             >
               {columns.map((col) => {

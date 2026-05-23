@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 import { createMockTenant, createMockUser } from '../utils'
@@ -9,6 +10,9 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
   let adminUserTenant1: any
   let adminUserTenant2: any
   let superAdminUser: any
+  const createdTenants: string[] = []
+  const createdUsers: string[] = []
+  const createdApiKeys: string[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
@@ -17,14 +21,44 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
 
     // 1. Create two isolated tenants
     tenant1 = await createMockTenant(payload, `Tenant A - ${uniqueSuffix}`, `tenant-a-${uniqueSuffix}.com`)
+    createdTenants.push(tenant1.id)
     tenant2 = await createMockTenant(payload, `Tenant B - ${uniqueSuffix}`, `tenant-b-${uniqueSuffix}.com`)
+    createdTenants.push(tenant2.id)
 
     // 2. Create tenant admin users for both tenants
     adminUserTenant1 = await createMockUser(payload, `admin-t1-${uniqueSuffix}@hermes-ai.com`, 'tenant-admin', tenant1.id)
+    createdUsers.push(adminUserTenant1.id)
     adminUserTenant2 = await createMockUser(payload, `admin-t2-${uniqueSuffix}@hermes-ai.com`, 'tenant-admin', tenant2.id)
+    createdUsers.push(adminUserTenant2.id)
 
     // 3. Create a global super admin user
     superAdminUser = await createMockUser(payload, `super-${uniqueSuffix}@hermes-ai.com`, 'super-admin')
+    createdUsers.push(superAdminUser.id)
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+    for (const id of createdApiKeys) {
+      await payload.delete({
+        collection: 'api-keys',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
+    for (const id of createdUsers) {
+      await payload.delete({
+        collection: 'users',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should successfully persist custom owner email when creating an API Key', async () => {
@@ -41,6 +75,7 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
       data: keyData,
       overrideAccess: true,
     })
+    createdApiKeys.push(createdKey.id)
 
     expect(createdKey).toBeDefined()
     expect(createdKey.id).toBeDefined()
@@ -69,6 +104,7 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
       },
       overrideAccess: true,
     })
+    createdApiKeys.push(keyTenant1.id)
 
     const keyTenant2 = await payload.create({
       collection: 'api-keys',
@@ -80,6 +116,7 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
       },
       overrideAccess: true,
     })
+    createdApiKeys.push(keyTenant2.id)
 
     // Fetch keys using Tenant 1's admin user session
     const readResultT1 = await payload.find({
@@ -117,6 +154,7 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
       },
       overrideAccess: true,
     })
+    createdApiKeys.push(keyTenant1.id)
 
     const keyTenant2 = await payload.create({
       collection: 'api-keys',
@@ -128,6 +166,7 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
       },
       overrideAccess: true,
     })
+    createdApiKeys.push(keyTenant2.id)
 
     // Fetch keys using global super admin user session
     const readResultSuper = await payload.find({

@@ -386,6 +386,59 @@ export default buildConfig({
 import type { Post, User } from '@/payload-types'
 ```
 
+
+## Alexandria Layout & Admin UI Guardrails (CRITICAL)
+
+When modifying or customizing the Payload CMS 3.x Admin UI under the **"Alexandria — High-End Editorial"** visual design system:
+
+### 1. Alexandria Layout Offsets
+- **Left Navigation Sidebar**: `18rem` wide (fixed, z-index: 1000).
+- **Top App Header**: `5rem` high (`h-20`).
+
+### 2. Preventing Double-Nesting Layout Shifts (18rem Sidebar Offset Bug)
+Payload 3.x renders different layouts automatically depending on the integration point:
+- **Standalone Custom Admin View** (registered under `admin.components.views` in `payload.config.ts`):
+  - ❌ **No auto-wrapping** by default.
+  - **Action**: Wrap the child components manually inside the custom `AdminView` component (`src/components/admin/AdminView.tsx`), which renders the template shell.
+- **Collection-level custom views** (registered under `collections[X].admin.components.views` such as `list` or `edit.default`):
+  - **Yes, auto-wrapped** by Payload.
+  - **Action**: Do **not** use the `AdminView` or `DefaultTemplate` wrapper inside the custom component itself. Rendering it inside causes a duplicate template wrap and a secondary 18rem horizontal margin shift bug.
+
+### 3. The "Deep-Ancestor" Layout Reset Pattern
+To render full-screen or splitscreen co-creation workspaces flush against the sidebar, standard default margins and gutters on Payload's parent wrapping containers must be completely zeroed out:
+1. Wrap your custom workspace client component in a container with a designated viewport-isolation class (e.g. `className="custom-editor-view"`).
+2. Write a deep ancestor override in `globals.css` using the CSS `:has()` selector to dynamically strip outer padding, margins, and max-widths from the parent container tree:
+   ```css
+   .template-default__wrap:has(.custom-editor-view) {
+     padding: 0 !important;
+   }
+
+   .template-default__wrap:has(.custom-editor-view) div:has(.custom-editor-view),
+   .template-default__wrap:has(.custom-editor-view) form:has(.custom-editor-view),
+   .template-default__wrap:has(.custom-editor-view) main:has(.custom-editor-view),
+   .template-default__wrap:has(.custom-editor-view) section:has(.custom-editor-view),
+   .template-default__wrap:has(.custom-editor-view) .collection-edit,
+   .template-default__wrap:has(.custom-editor-view) .gutter {
+     padding: 0 !important;
+     margin: 0 !important;
+     max-width: 100% !important;
+     width: 100% !important;
+   }
+   ```
+
+### 4. Custom View Verification Checklist
+Before completing any Payload UI modification task:
+- [ ] Verify that no duplicate `DefaultTemplate` is rendered in the component tree.
+- [ ] Verify that parent wrapper overrides exist in `globals.css` matching your isolation class.
+- [ ] Standard headers or gutters from standard views have `display: none !important;` to prevent stacking when the custom view renders its own panels.
+- [ ] Absolutely no technical commentary, walkthrough notes, or markdown descriptions are left appended inside the `.ts` / `.tsx` source files.
+- [ ] Verify that standalone custom views registered under `admin.components.views` do not import layout templates (such as `DefaultTemplate` or from `@payloadcms/next/...`) to prevent circular compiler dependencies.
+- [ ] Under WSL 2 environments, verify that Next.js dev execution is configured with the `--webpack` compiler flag to bypass Turbopack dynamic watcher deadlocks.
+
+### 5. Compiler Stability & Acyclic Build Prevention (CRITICAL WSL 2)
+- **WSL 2 Webpack Opt-in**: The Next.js dev server defaults to Turbopack in v16, which exhibits compilation deadlocks when compiling catch-all views on WSL 2. Ensure `package.json` dev execution includes the `--webpack` flag in WSL contexts.
+- **Acyclic Import Graph**: Standalone custom views registered in `payload.config.ts` must NEVER import layout templates from `@payloadcms/next/templates` or `@payloadcms/next/views`. These templates import the core configuration recursively, creating an infinite bundler loop that hangs local resources. Use minimal wrapper layouts (such as `AdminView`) to render layout offsets.
+
 ## Reference Documentation
 
 - **[FIELDS.md](reference/FIELDS.md)** - All field types, validation, admin options

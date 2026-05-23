@@ -29,6 +29,7 @@ export const Users: CollectionConfig = {
   },
   access: {
     read: () => true,
+    admin: ({ req: { user } }) => Boolean(user),
     create: () => true,
     update: () => true,
     delete: () => true,
@@ -55,6 +56,7 @@ export const Users: CollectionConfig = {
       required: true,
       defaultValue: 'editor',
       label: 'Role',
+      saveToJWT: true,
       options: [
         { label: 'Super Admin', value: 'super-admin' },
         { label: 'Tenant Admin', value: 'tenant-admin' },

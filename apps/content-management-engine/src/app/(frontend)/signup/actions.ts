@@ -9,7 +9,7 @@ export type SignupState = {
 }
 export async function signupAction(prevState: any, formData: FormData): Promise<SignupState> {
   const config = (await import('@/payload.config')).default
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await config })
 
   const name = (formData.get('name') as string || '').trim()
   const email = (formData.get('email') as string || '').trim().toLowerCase()

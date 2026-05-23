@@ -37,7 +37,7 @@ async function fetchContentItems(): Promise<ContentItem[]> {
         id: doc.id,
         title: doc.title,
         slug: doc.slug,
-        excerpt: doc.excerpt || doc.summary || 'A thoughtfully constructed entry compiled through Hermes AI Headless CMS.',
+        excerpt: doc.excerpt || doc.summary || 'A thoughtfully constructed entry compiled through Hermes CMS.',
         createdAt: doc.createdAt,
       }))
     }

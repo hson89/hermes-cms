@@ -13,15 +13,9 @@ from uuid import UUID
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from src.domain.content_drafting.prompts import get_copilot_prompt
 from src.application.ai_service import AIService
 from src.infrastructure.config import settings
-
-_COPILOT_SYSTEM_PROMPT = """\
-You are a professional writing assistant embedded in a content management system.
-You will receive a section of text and a user instruction.
-Apply the instruction to the text and return ONLY the revised text with no
-extra explanation, quotes, or markdown formatting.
-"""
 
 
 class CopilotService:
@@ -76,6 +70,7 @@ class CopilotService:
         prompt: str,
         tenant_id: UUID,
         user_id: UUID,
+        langfuse_trace_id: str | None = None,
     ) -> str:
         """
         Apply an AI edit instruction to a content section.
@@ -86,23 +81,34 @@ class CopilotService:
             prompt:          The editing instruction (e.g. "make more formal").
             tenant_id:       UUID of the requesting tenant.
             user_id:         UUID of the requesting user.
+            langfuse_trace_id: Optional trace ID to link this generation to a parent trace.
 
         Returns:
             The revised text for the specified section.
         """
-        messages = [
-            SystemMessage(content=_COPILOT_SYSTEM_PROMPT),
-            HumanMessage(
-                content=(
-                    f"Content item: {content_item_id}\n"
-                    f"Section: {section_id}\n"
-                    f"Instruction: {prompt}"
-                )
-            ),
-        ]
+        lf_client = self._ai_service.langfuse_client if self._ai_service else None
+        copilot_prompt = get_copilot_prompt(lf_client)
+        messages = copilot_prompt.format_messages(
+            content_item_id=content_item_id,
+            section_id=section_id,
+            prompt=prompt
+        )
+
+        # Initialize Langfuse handler
+        config = {}
+        if self._ai_service:
+            langfuse_handler = self._ai_service._get_langfuse_handler(trace_id=langfuse_trace_id)
+            if langfuse_handler:
+                config = {
+                    "callbacks": [langfuse_handler],
+                    "metadata": {
+                        "langfuse_user_id": str(user_id),
+                        "langfuse_tags": ["copilot-edit", f"tenant:{tenant_id}"],
+                    }
+                }
 
         try:
-            response = await self._llm.ainvoke(messages)
+            response = await self._llm.ainvoke(messages, config=config)
             return (
                 response.content
                 if isinstance(response.content, str)

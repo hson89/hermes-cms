@@ -9,7 +9,8 @@ set -e
 cleanup() {
     echo ""
     echo "🛑 Shutting down services..."
-    docker-compose stop
+    docker compose stop
+    docker compose -f docker-compose.langfuse.yml stop 2>/dev/null || true
     echo "✅ Done."
 }
 
@@ -29,7 +30,16 @@ echo "🧹 Cleaning up any conflicting local port processes..."
 kill_port 3000
 kill_port 3001
 kill_port 3002
+kill_port 3003
 kill_port 8000
+
+# Parse arguments
+SKIP_LANGFUSE=false
+for arg in "$@"; do
+    if [ "$arg" == "--no-langfuse" ]; then
+        SKIP_LANGFUSE=true
+    fi
+done
 
 # Setup Environment Variables if missing
 echo "📝 Checking environment variables..."
@@ -45,8 +55,29 @@ if [ ! -f apps/content-authoring-service/.env ]; then
     echo "⚠️  Please update apps/content-authoring-service/.env with your API keys"
 fi
 
+# Ensure shared network exists
+docker network create hermes-net 2>/dev/null || true
+
+if [ "$SKIP_LANGFUSE" = false ]; then
+    echo "🚀 Starting Langfuse Observability Stack..."
+    docker compose -f docker-compose.langfuse.yml up -d
+fi
+
 echo "🚀 Starting Hermes AI Stack inside Docker Compose..."
-docker-compose up -d --build
+docker compose up -d --build
+
+if [ "$SKIP_LANGFUSE" = false ]; then
+    echo "⏳ Waiting for Langfuse to be fully ready..."
+    for i in {1..30}; do
+        if curl -s http://localhost:3003/api/public/health >/dev/null || curl -s http://localhost:3003/ >/dev/null; then
+            echo "✅ Langfuse is ready!"
+            echo "📝 Populating/updating Langfuse prompt templates..."
+            docker compose exec -T content_authoring_service env LANGFUSE_BASE_URL=http://langfuse-web:3000 python src/domain/content_drafting/populate_prompts.py || echo "⚠️  Failed to populate Langfuse prompts. Skipping..."
+            break
+        fi
+        sleep 2
+    done
+fi
 
 echo ""
 echo "✨ All services are running!"
@@ -55,6 +86,9 @@ echo "💻 Engine Admin:    http://localhost:3000/admin"
 echo "✍️  Authoring:       http://localhost:8000/health"
 echo "📄 Next.js Blog:    http://localhost:3001"
 echo "🎨 Astro Portfolio: http://localhost:3002"
+if [ "$SKIP_LANGFUSE" = false ]; then
+echo "📊 Langfuse UI:     http://localhost:3003"
+fi
 echo "📊 Kafka UI:        http://localhost:9092 (broker)"
 echo "🗄️  Engine DB:      localhost:5432"
 echo "🗄️  Authoring DB:   localhost:5433"
@@ -64,4 +98,4 @@ echo "📋 Showing live logs from CMS engine and site templates..."
 echo ""
 
 # Tail the logs of our web/node-based apps
-docker-compose logs -f content_management_engine nextjs_blog astro_portfolio
+docker compose logs -f content_management_engine nextjs_blog astro_portfolio

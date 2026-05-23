@@ -21,11 +21,21 @@ class Settings(BaseSettings):
 
     # Security
     INTERNAL_SERVICE_SECRET: str = ""
+    CMS_ENGINE_URL: str = "http://localhost:3000"
 
     # LLM Configuration
     LANGCHAIN_MODEL_PROVIDER: str = "openai"
     LANGCHAIN_MODEL: str = "gpt-4o-mini"
     LANGCHAIN_ENDPOINT_URL: str | None = None
+    SCHEMA_GENERATION_TIMEOUT: int = 120
+    SCHEMA_GENERATION_POLL_INTERVAL: int = 4
+
+    # Image Configuration
+    IMAGE_MODEL_PROVIDER: str = "openai"
+    IMAGE_MODEL: str = "dall-e-3"
+    IMAGE_ENDPOINT_URL: str | None = None
+    FALLBACK_IMAGE_URL: str = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1024&auto=format&fit=crop&q=80"
+    BYPASS_IMAGE_GENERATION: bool = True
 
     # NVIDIA Configuration
     NVIDIA_TEMPERATURE: float = 0.6
@@ -33,6 +43,12 @@ class Settings(BaseSettings):
     NVIDIA_MAX_TOKENS: int = 65536
     NVIDIA_REASONING_BUDGET: int = 16384
     NVIDIA_ENABLE_THINKING: bool = True
+
+    # Langfuse Configuration
+    LANGFUSE_PUBLIC_KEY: str | None = None
+    LANGFUSE_SECRET_KEY: str | None = None
+    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+    LANGFUSE_BASE_URL: str | None = None
 
     # API Keys (optional at startup, validated by providers on use)
     OPENAI_API_KEY: str | None = None

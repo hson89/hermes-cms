@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 
@@ -8,9 +9,37 @@ import config from '../../src/payload.config'
 
 describe('Cross-Tenant Data Access', () => {
   let payload: any
+  const createdTenants: string[] = []
+  const createdContentTypes: string[] = []
+  const createdContentItems: string[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+    for (const id of createdContentItems) {
+      await payload.delete({
+        collection: 'content-items',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
+    for (const id of createdContentTypes) {
+      await payload.delete({
+        collection: 'content-types',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should return 403 or not found when requesting another tenant\'s ContentItem', async () => {
@@ -27,6 +56,7 @@ describe('Cross-Tenant Data Access', () => {
         ]
       },
     })
+    createdTenants.push(tenantA.id)
 
     // 2. Create Tenant B
     const tenantB = await payload.create({
@@ -39,6 +69,7 @@ describe('Cross-Tenant Data Access', () => {
         ]
       },
     })
+    createdTenants.push(tenantB.id)
 
     // Create ContentType for Tenant A
     const contentTypeA = await payload.create({
@@ -49,6 +80,7 @@ describe('Cross-Tenant Data Access', () => {
         tenant: tenantA.id,
       },
     })
+    createdContentTypes.push(contentTypeA.id)
 
     // 3. Create ContentItem for Tenant A
     const itemA = await payload.create({
@@ -59,6 +91,7 @@ describe('Cross-Tenant Data Access', () => {
         tenant: tenantA.id,
       },
     })
+    createdContentItems.push(itemA.id)
 
     // 4. Attempt to fetch ContentItem A with Tenant B context
     // In Payload, we simulate this by passing a user scoped to Tenant B
@@ -100,6 +133,7 @@ describe('Cross-Tenant Data Access', () => {
         ]
       },
     })
+    createdTenants.push(tenantA.id)
 
     // Create ContentType for Tenant A
     const contentTypeA = await payload.create({
@@ -110,6 +144,7 @@ describe('Cross-Tenant Data Access', () => {
         tenant: tenantA.id,
       },
     })
+    createdContentTypes.push(contentTypeA.id)
 
     const itemA = await payload.create({
       collection: 'content-items',
@@ -119,6 +154,7 @@ describe('Cross-Tenant Data Access', () => {
         tenant: tenantA.id,
       },
     })
+    createdContentItems.push(itemA.id)
 
     const superAdminUser = {
       id: 'super-admin',

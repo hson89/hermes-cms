@@ -1,3 +1,4 @@
+name: hermes-cms
 
 services:
   # Main CMS Database
@@ -97,6 +98,11 @@ services:
       - PAYLOAD_API_KEY=dummy-key
     depends_on:
       - content_management_engine
+
+networks:
+  default:
+    name: hermes-net
+    external: true
 
 volumes:
   postgres_cms_data:

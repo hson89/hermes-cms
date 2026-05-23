@@ -26,7 +26,7 @@ export const RegistryPagination: React.FC<RegistryPaginationProps> = ({
   const endDoc = Math.min(page * limit, totalDocs)
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-center mt-10 pb-6 pt-4 border-t border-outline-variant/15 gap-4">
+    <div className="flex flex-col md:flex-row justify-between items-center mt-10 pb-6 pt-4 gap-4">
       {/* Metadata counts */}
       <div className="text-xs text-outline font-body">
         Showing <span className="font-semibold text-on-surface">{startDoc}</span> to{' '}
@@ -58,7 +58,7 @@ export const RegistryPagination: React.FC<RegistryPaginationProps> = ({
               className={`
                 size-9 rounded-full text-xs font-label font-bold uppercase transition-all duration-200 cursor-pointer border-none
                 ${isActive 
-                  ? 'bg-primary text-on-primary shadow-sm shadow-primary/10' 
+                  ? 'bg-primary text-on-primary' 
                   : 'bg-surface-container text-outline hover:bg-surface-container-high hover:text-on-surface'
                 }
               `}

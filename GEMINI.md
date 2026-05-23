@@ -1,14 +1,14 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-/home/itlight/dev/hermes-cms/specs/003-define-content-types/plan.md
+/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/plan.md
 <!-- SPECKIT END -->
 
-# Hermes AI — Gemini Agent Context
+# Hermes CMS — Gemini Agent Context
 
 ## Quick Reference
 
-- **Product name**: Hermes AI (always use this in UI, docs, and branding)
+- **Product name**: Hermes CMS (always use this in UI, docs, and branding)
 - **Constitution**: `.specify/memory/constitution.md` (v2.1.0) — read before any
   architectural decisions
 - **Design system**: `DESIGN.md` ("Alexandria — High-End Editorial")
@@ -54,7 +54,10 @@ hermes-cms/
 │   ├── infrastructure/               # Adapters, persistence
 │   └── main.py                       # FastAPI entrypoint
 ├── docker-compose.yml                # 2× Postgres + Kafka + Zookeeper
-├── scripts/start-dev.sh              # One-command local dev startup
+├── scripts/start-dev.sh              # Full Docker stack startup (Unix)
+├── scripts/start-dev.ps1             # Full Docker stack startup (Windows)
+├── scripts/start-local.sh            # Infra in Docker + Apps locally (Unix)
+├── scripts/start-local.ps1           # Infra in Docker + Apps locally (Windows)
 ├── specs/001-ai-headless-cms/        # Active feature spec + plan + tasks
 ├── DESIGN.md                         # Alexandria design system tokens
 └── docs/architecture.md              # Architecture overview
@@ -63,8 +66,18 @@ hermes-cms/
 ## Development Commands
 
 ```bash
-# Full stack (recommended)
-./scripts/start-dev.sh
+# Full Docker stack
+./scripts/start-dev.sh                # Unix (includes Langfuse by default)
+./scripts/start-dev.sh --no-langfuse  # Unix (skips Langfuse)
+.\scripts\start-dev.ps1               # Windows (PowerShell)
+
+# Local-first (Infra in Docker + Apps locally - Better for hot reload)
+./scripts/start-local.sh              # Unix (includes Langfuse by default)
+./scripts/start-local.sh --no-langfuse# Unix (skips Langfuse)
+.\scripts\start-local.ps1             # Windows (PowerShell)
+
+# Langfuse only
+./scripts/start-langfuse.sh           # :3003
 
 # CMS only
 cd apps/content-management-engine && pnpm dev          # :3000
@@ -106,8 +119,8 @@ Super-admin bypass: users with `role === 'super-admin'`.
 
 ## Design System ("Alexandria")
 
-- **Primary**: `#094cb2` · **Tertiary/gold**: `#6d5e00`
-- **Fonts**: Noto Serif (headlines), Inter (body), Public Sans (labels)
+- **Primary**: `#3366cc` · **Tertiary/gold**: `#6d5e00`
+- **Fonts**: Noto Serif (headlines), Inter (body & labels)
 - **Style**: Glassmorphism, gradient CTAs, tonal elevation (no box-shadows),
   no hard borders (ghost borders at 15% opacity max)
 - **Corners**: Minimum `sm` roundness — never sharp
@@ -124,7 +137,8 @@ Super-admin bypass: users with `role === 'super-admin'`.
    hardcode a specific LLM.
 8. CMS ↔ AI auth: `X-Internal-Secret` header.
 9. Feature specs live under `specs/<feature-id>/`.
-10. **Payload Expertise:** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control) in `apps/content-management-engine/`, you MUST invoke the `payload` skill first.
+10. **Payload CMS & UI Safety (with Pre-Commit Hook Enforcement):** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) or making UI/UX modifications to the admin interface in `apps/content-management-engine/`, you MUST invoke the unified `payload` skill (located in `.agents/skills/payload/SKILL.md`) first. An automated git pre-commit hook is active; if staged files contain changes under `apps/content-management-engine/`, it reminds/enforces that you have invoked and followed this skill before you commit. Always check the Alexandria Layout & Admin UI Guardrails section in the skill, verify whether the custom view is auto-wrapped by the framework's default templates, and apply deep-ancestor `:has()` CSS overrides in `globals.css` to prevent layout gaps.
+
 
 ## Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts` (e.g., Dashboards, Graphics, Custom Fields):
@@ -140,12 +154,16 @@ When adding custom React components to `payload.config.ts` (e.g., Dashboards, Gr
 2. **Lowercase View Keys:** In `payload.config.ts`, use lowercase keys for standard admin views (e.g., `dashboard`, `login`, `account`). Uppercase keys may be ignored by the Payload 3.x view resolver.
 3. **Process Management:** Stale `payload` processes (generators) can consume 100% CPU and lock files. If the system is slow or `importMap.js` fails to update, kill specific non-agent node/next processes. **CRITICAL WARNING:** NEVER use `pkill -f "node"` or other generic node killing commands, as this will terminate the current coding session and communication with the AI agent. Use targeted process termination instead (e.g., `pkill -f "next-router-worker"` or find specific PIDs).
 4. **importMap Regeneration:** Changes to custom component registrations in `payload.config.ts` often require a manual `pnpm payload generate:importmap` if the dev server fails to auto-sync.
+5. **WSL 2 Compiler Stability & Webpack Opt-in:** Next.js 16/Turbopack dev server has known compilation deadlocks when compiling Payload CMS catch-all views on WSL 2, resulting in CPU hangs and system freezes. To ensure development stability, the dev server script must use the Webpack builder via the `--webpack` flag: e.g., `next dev --webpack`. Do NOT remove the `--webpack` flag in WSL 2 workspace environments.
+6. **Circular Import Loop Prevention:** Standalone custom views registered in `payload.config.ts` must NEVER import layout templates from `@payloadcms/next/templates` or `@payloadcms/next/views` (such as `DefaultTemplate`). Because these standard templates depend recursively on the core config, importing them inside custom view components creates a compiler circular dependency loop that freezes the bundler. Standalone custom views should instead use a minimal wrapper layout (such as `AdminView`) that implements layout structure without circular references.
 
 ## Payload CMS 3.x UI Guardrails (CRITICAL)
 When modifying the Payload Admin UI or adding custom components:
-1. **Layout Hierarchy:** Never place global components (like `Nav` or `Header`) inside View components (like `Dashboard`). Payload automatically wraps all views in its `RootLayout`. Doing so causes severe duplication and overlapping.
-2. **Component Registration:** Global overrides must be registered in `payload.config.ts` under `admin.components`. Strictly follow the expected object syntax (e.g., `header: [ '/src/components/admin/Header#Header' ] as any`).
-3. **CSS Safety:** Never aggressively override or hide core Payload layout classes (e.g., `.nav`, `.app-header`, `.template-default__wrap`) using `display: none !important` globally without understanding the flex/grid container consequences.
-4. **Sidebar Offsets:** The native Next.js App Router template used by Payload expects an 18rem sidebar. If implementing a custom sidebar, ensure the main content wrapper maintains a `margin-left: 18rem`.
-5. **Skill Required:** Any time you are asked to work on or fix the Payload UI, you MUST invoke the `payload-ui` skill first.
+1. **Mandatory Skill:** ALWAYS invoke the unified `payload` skill first (located in `.agents/skills/payload/SKILL.md`). It contains the project-specific Alexandria layout tokens (18rem sidebar, 5rem header) and detailed UI guardrails.
+2. **View Wrapper Distinctions (Critical)**:
+   - **Standalone Custom Views** (registered under `admin.components.views` on the admin router) MUST use the `AdminView` component (`src/components/admin/AdminView.tsx`).
+   - **Collection-level custom views** (registered under `collections[X].admin.components.views` like `list` or `edit.default`) are automatically wrapped by the framework. **DO NOT** use the `AdminView` or `DefaultTemplate` wrapper inside the custom component itself, as this results in a duplicate 18rem margin shift layout bug.
+3. **CSS Isolation & Parent Resets:** Ensure your custom view content is wrapped in a designated isolation class (e.g., `.custom-editor-view`). In `globals.css`, write a deep-ancestor reset rule using the `:has()` selector to strip all padding, margins, and max-widths from the default Payload container tree.
+4. **Verification:** Always check `src/app/(payload)/admin/importMap.js` and verify that the sidebar, header, and visual canvas sit completely flush without overlapping or horizontal/vertical whitespace gaps.
+
 

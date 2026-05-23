@@ -39,6 +39,9 @@
   ],
   "exclude": [
     "node_modules",
-    "tests"
+    "tests",
+    "**/tests/*",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

@@ -38,6 +38,7 @@ export const Tenants: CollectionConfig = {
       // multi-tenant plugin will add further restrictions
       return true
     },
+    admin: ({ req: { user } }) => !!user,
     // Mutation: Super Admin only
     create: ({ req: { user } }) => (user as any)?.role === 'super-admin',
     update: ({ req: { user } }) => (user as any)?.role === 'super-admin',
@@ -109,6 +110,32 @@ export const Tenants: CollectionConfig = {
         { label: 'German', value: 'de' },
       ],
       defaultValue: 'en',
+    },
+    {
+      name: 'defaultLLMModel',
+      type: 'select',
+      label: 'Default LLM Model',
+      options: [
+        { label: 'OpenAI GPT-4o', value: 'openai/gpt-4o' },
+        { label: 'Anthropic Claude 3.5 Sonnet', value: 'anthropic/claude-3-5-sonnet' },
+        { label: 'Google Gemini 2.5 Flash', value: 'google/gemini-2.5-flash' },
+      ],
+      defaultValue: 'openai/gpt-4o',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'defaultImageModel',
+      type: 'select',
+      label: 'Default Image Model',
+      options: [
+        { label: 'OpenAI DALL-E 3', value: 'openai/dall-e-3' },
+      ],
+      defaultValue: 'openai/dall-e-3',
+      admin: {
+        position: 'sidebar',
+      },
     },
     {
       name: 'domains',

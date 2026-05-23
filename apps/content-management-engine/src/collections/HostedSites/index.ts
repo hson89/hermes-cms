@@ -37,6 +37,13 @@ export const HostedSites: CollectionConfig = {
         },
       }
     },
+    admin: ({ req: { user } }) => {
+      if (!user) return false
+      return (
+        (user as any).role === 'super-admin' ||
+        (user as any).role === 'tenant-admin'
+      )
+    },
     create: ({ req: { user } }) =>
       Boolean(user) &&
       ((user as any).role === 'super-admin' || (user as any).role === 'tenant-admin'),
