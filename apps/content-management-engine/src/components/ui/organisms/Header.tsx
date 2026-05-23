@@ -41,7 +41,7 @@ export const Header: React.FC = () => {
   }
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-[18rem] h-20 z-40 bg-surface-bright/80 backdrop-blur-xl flex justify-between items-center px-8 shadow-[0_1px_4px_rgba(0,0,0,0.01)] transition-colors border-b border-surface-variant/30">
+    <header className="fixed top-0 right-0 left-0 lg:left-[18rem] h-20 z-40 bg-surface-bright/80 backdrop-blur-xl flex justify-between items-center px-8 transition-colors border-b border-outline-variant/15">
       <div className="flex items-center gap-6">
         <h2 className="font-headline text-xl font-bold text-on-surface m-0">
           {pathname?.includes('/draft/') ? 'The Content Oracle' : currentTitle}
@@ -73,7 +73,7 @@ export const Header: React.FC = () => {
           </button>
           
           {isProfileOpen && user && (
-            <div className="absolute right-0 mt-2 w-64 bg-surface-bright/80 backdrop-blur-xl border border-outline-variant/15 rounded-2xl p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 mt-2 w-64 bg-surface-bright/80 backdrop-blur-xl border border-outline-variant/15 rounded-2xl p-4 modal-shadow z-50 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-label text-sm font-bold shrink-0">
@@ -92,14 +92,14 @@ export const Header: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="h-px bg-outline-variant/10 my-1" />
+                <div className="h-px bg-outline-variant/15 my-1" />
                 
                 <button
                   onClick={() => {
                     setIsProfileOpen(false)
                     logOut()
                   }}
-                  className="w-full flex items-center justify-center gap-2 btn-primary-gradient py-2.5 px-4 rounded-xl font-label text-sm tracking-wide shadow-sm hover:shadow-md transition-all border-none cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 btn-primary-gradient py-2.5 px-4 rounded-xl font-label text-sm tracking-wide transition-all border-none cursor-pointer"
                 >
                   <Icon name="logout" className="!text-sm" />
                   <span>Sign Out</span>

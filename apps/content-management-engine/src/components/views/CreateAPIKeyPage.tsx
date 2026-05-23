@@ -340,13 +340,13 @@ export const CreateAPIKeyPage: React.FC = () => {
           
           {/* Left Column: Key Profile Summary Card */}
           <div className="lg:col-span-4 space-y-6">
-            <Card variant="low" className="border border-outline-variant/15 p-6 shadow-xl relative overflow-hidden flex flex-col items-center text-center">
+            <Card variant="low" className="border border-outline-variant/15 p-6 bg-surface-container-low/30 relative overflow-hidden flex flex-col items-center text-center">
               
               {/* Decorative Glass Circle */}
               <div className="absolute -top-12 -right-12 size-32 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
               
               {/* Monogram Monolith */}
-              <div className="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-label font-bold text-2xl shadow-inner mb-4">
+              <div className="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-label font-bold text-2xl mb-4">
                 <Icon name="vpn_key" size={32} />
               </div>
 
@@ -370,7 +370,7 @@ export const CreateAPIKeyPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="w-full h-[1px] bg-outline-variant/10 my-6" />
+              <div className="w-full pt-6 mt-6" />
 
               {/* Metadata Details */}
               <div className="w-full text-left space-y-3 font-label text-xs">
@@ -398,7 +398,7 @@ export const CreateAPIKeyPage: React.FC = () => {
               </div>
             </Card>
 
-            <div className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/10 text-xs text-outline space-y-2 leading-relaxed">
+            <div className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/15 text-xs text-outline space-y-2 leading-relaxed">
               <div className="flex gap-2 text-primary font-bold">
                 <Icon name="shield" size={14} />
                 <span>Security Guidelines</span>
@@ -411,7 +411,7 @@ export const CreateAPIKeyPage: React.FC = () => {
 
           {/* Right Column: Settings & Mapping forms */}
           <div className="lg:col-span-8 space-y-6">
-            <Card variant="low" className="border border-outline-variant/15 p-6 md:p-8 space-y-6">
+            <Card variant="low" className="border border-outline-variant/15 p-6 md:p-8 bg-surface-container-low/30 space-y-6">
               
               <div className="space-y-4">
                 <Heading level={4} className="font-bold text-on-surface tracking-tight">
@@ -493,7 +493,7 @@ export const CreateAPIKeyPage: React.FC = () => {
                     type="checkbox"
                     checked={enableAPIKey}
                     onChange={(e) => setEnableAPIKey(e.target.checked)}
-                    className="size-4.5 rounded text-primary border-outline-variant/30 focus:ring-primary cursor-pointer"
+                    className="size-4.5 rounded text-primary border-outline-variant/15 focus:ring-primary cursor-pointer"
                   />
                   <Label htmlFor="enableAPIKey" className="text-sm font-semibold text-on-surface cursor-pointer select-none">
                     Enable and Activate programmatic API Key Strategy
@@ -503,7 +503,7 @@ export const CreateAPIKeyPage: React.FC = () => {
               </div>
 
               {/* Form submit/cancel footer */}
-              <div className="flex justify-end items-center gap-4 pt-6 border-t border-outline-variant/10">
+              <div className="flex justify-end items-center gap-4 pt-6">
                 <Button
                   type="button"
                   variant="secondary"

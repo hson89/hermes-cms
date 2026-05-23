@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;700&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;700&family=Inter:wght@400;500;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
 @import "tailwindcss";
 @source "./";
@@ -9,7 +9,7 @@
 @plugin "@tailwindcss/container-queries";
 
 :root {
-  --primary: #3366cc;
+  --primary: #094cb2;
   --on-primary: #ffffff;
   --primary-container: #eff6ff;
   --on-primary-container: #001946;
@@ -177,7 +177,7 @@
   --font-display: "Noto Serif", serif;
   --font-headline: "Noto Serif", serif;
   --font-body: "Inter", sans-serif;
-  --font-label: "Inter", sans-serif;
+  --font-label: "Public Sans", sans-serif;
   --font-code: "JetBrains Mono", monospace;
 
   --radius-default: 0.125rem;
@@ -303,13 +303,18 @@ body {
 
 /* Alexandria High-End Editorial Primary Buttons (WCAG AAA Compliant Gradient) */
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #3366cc 0%, #2259bf 100%) !important;
+  background: linear-gradient(135deg, #094cb2 0%, #063a8d 100%) !important;
   color: #ffffff !important;
   transition: all 0.2s ease-in-out;
 }
 
 .btn-primary-gradient:hover {
-  background: linear-gradient(135deg, #2b5bc7 0%, #1e50b3 100%) !important;
+  background: linear-gradient(135deg, #0a56cc 0%, #0848bd 100%) !important;
+}
+
+/* Alexandria Modal Shadows (Extra-diffused) */
+.modal-shadow {
+  box-shadow: 0 12px 32px -4px rgba(27, 28, 29, 0.05); /* Tinted with on-surface (#1b1c1d) at ~5% opacity */
 }
 
 .dark .btn-primary-gradient {

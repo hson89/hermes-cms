@@ -261,7 +261,7 @@ export const ContentItemListPage: React.FC = () => {
             {/* Contextual Action Dropdown (Glassmorphism layout) */}
             {activeMenuId === itemIdStr && (
               <div 
-                className="absolute right-6 top-12 bg-surface/90 backdrop-blur-md border border-outline-variant/15 rounded-xl shadow-xl w-48 py-1.5 z-40 animate-fade-slide-up text-left"
+                className="absolute right-6 top-12 bg-surface/90 backdrop-blur-md border border-outline-variant/15 rounded-xl modal-shadow w-48 py-1.5 z-40 animate-fade-slide-up text-left"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -272,8 +272,6 @@ export const ContentItemListPage: React.FC = () => {
                   <Icon name="edit" size={14} />
                   Edit Entry
                 </button>
-
-                <div className="h-[1px] bg-outline-variant/10 my-1" />
 
                 <button
                   type="button"
@@ -292,7 +290,7 @@ export const ContentItemListPage: React.FC = () => {
   ]
 
   const emptyState = (
-    <div className="text-center py-20 bg-surface-container-lowest rounded-2xl border border-dashed border-outline-variant/20 flex flex-col items-center justify-center">
+    <div className="text-center py-20 bg-surface-container-lowest rounded-2xl border border-dashed border-outline-variant/15 flex flex-col items-center justify-center">
       <div className="size-16 rounded-full bg-surface-container-low flex items-center justify-center mb-4 text-outline-variant">
         <Icon name="description" size={32} />
       </div>
@@ -306,7 +304,7 @@ export const ContentItemListPage: React.FC = () => {
         <button
           type="button"
           onClick={() => { setSearch(''); setStatusFilter('all') }}
-          className="mt-4 border border-outline-variant/30 text-primary hover:bg-surface-container-low px-4 py-2 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent"
+          className="mt-4 border border-outline-variant/15 text-primary hover:bg-surface-container-low px-4 py-2 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent"
         >
           Clear All Filters
         </button>

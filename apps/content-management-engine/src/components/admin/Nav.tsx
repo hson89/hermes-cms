@@ -28,7 +28,7 @@ export const Nav: React.FC<any> = () => {
 
       <Link 
         href="/admin/draft/new"
-        className="mx-4 mb-6 py-3 px-4 btn-primary-gradient rounded-xl font-label text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 border-none cursor-pointer no-underline"
+        className="mx-4 mb-6 py-3 px-4 btn-primary-gradient rounded-xl font-label text-sm tracking-wide transition-all flex items-center justify-center gap-2 border-none cursor-pointer no-underline"
       >
         <span className="material-symbols-outlined !text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>add</span>
         New Entry
@@ -44,7 +44,7 @@ export const Nav: React.FC<any> = () => {
               href={link.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 no-underline group ${
                 isActive 
-                  ? 'bg-primary-container text-on-primary-container shadow-sm' 
+                  ? 'bg-primary-container text-on-primary-container' 
                   : 'text-on-surface-variant hover:bg-surface-variant'
               }`}
             >
@@ -59,7 +59,7 @@ export const Nav: React.FC<any> = () => {
         })}
       </div>
 
-      <div className="px-2 pb-4 border-t border-outline-variant/10 pt-4 mt-auto">
+      <div className="px-2 pb-4 pt-4 mt-auto">
         <Link
           href="/admin/help"
           className="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant rounded-xl font-label text-sm transition-all no-underline"

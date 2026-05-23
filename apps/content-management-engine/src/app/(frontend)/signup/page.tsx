@@ -68,7 +68,7 @@ export default function SignupPage() {
             </div>
 
             {/* Form Container */}
-            <div className="bg-white/80 backdrop-blur-2xl p-8 rounded-xl ring-1 ring-outline-variant/15 shadow-2xl shadow-on-surface/5">
+            <div className="bg-white/80 backdrop-blur-2xl p-8 rounded-xl ring-1 ring-outline-variant/15">
               <form action={formAction} className="space-y-6">
                 {state?.error && (
                   <div className="p-4 bg-error-container text-on-error-container rounded-xl text-sm font-medium">
@@ -82,7 +82,7 @@ export default function SignupPage() {
                     id="name"
                     name="name"
                     required
-                    className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
+                    className="w-full bg-white border-0 ring-1 ring-outline-variant/15 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
                     placeholder="e.g. Alex Rivera" 
                     type="text"
                   />
@@ -94,7 +94,7 @@ export default function SignupPage() {
                     id="email"
                     name="email"
                     required
-                    className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
+                    className="w-full bg-white border-0 ring-1 ring-outline-variant/15 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
                     placeholder="alex@company.ai" 
                     type="email"
                   />
@@ -107,7 +107,7 @@ export default function SignupPage() {
                       id="password"
                       name="password"
                       required
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all pr-12" 
+                      className="w-full bg-white border-0 ring-1 ring-outline-variant/15 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all pr-12" 
                       placeholder="••••••••" 
                       type={showPassword ? 'text' : 'password'}
                     />
@@ -129,7 +129,7 @@ export default function SignupPage() {
                       name="workspaceName"
                       required
                       onChange={(e) => setWorkspaceSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-'))}
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
+                      className="w-full bg-white border-0 ring-1 ring-outline-variant/15 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all" 
                       placeholder="Research Ops" 
                       type="text"
                     />
@@ -142,7 +142,7 @@ export default function SignupPage() {
                       required
                       value={workspaceSlug}
                       onChange={(e) => setWorkspaceSlug(e.target.value.toLowerCase())}
-                      className="w-full bg-white border-0 ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all font-mono text-sm" 
+                      className="w-full bg-white border-0 ring-1 ring-outline-variant/15 focus:ring-2 focus:ring-primary rounded-lg py-4 px-5 font-body text-on-surface placeholder:text-outline transition-all font-mono text-sm" 
                       placeholder="research-ops" 
                       type="text"
                     />
@@ -153,7 +153,7 @@ export default function SignupPage() {
                   <button 
                     type="submit"
                     disabled={isPending}
-                    className="w-full flex items-center justify-center gap-3 text-white font-body font-bold py-5 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 group bg-gradient-to-br from-primary to-primary-container disabled:opacity-70 disabled:cursor-not-allowed border-0"
+                    className="w-full flex items-center justify-center gap-3 text-white font-body font-bold py-5 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all group bg-gradient-to-br from-primary to-primary-container disabled:opacity-70 disabled:cursor-not-allowed border-0"
                   >
                     {isPending ? 'Creating Workspace...' : 'Register Workspace'}
                     <Icon name="arrow_forward" className="transition-transform group-hover:translate-x-1" />

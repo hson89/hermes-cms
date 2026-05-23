@@ -190,10 +190,10 @@ export const FieldRenderer: React.FC<{
 
   if (isMedia) {
     return (
-      <div className={`w-full h-80 rounded-xl bg-surface-container-high border-2 border-dashed border-outline-variant/50 flex flex-col items-center justify-center relative overflow-hidden transition-colors group ${disabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-primary/50'}`}>
+      <div className={`w-full h-80 rounded-xl bg-surface-container-high border-2 border-dashed border-outline-variant/15 flex flex-col items-center justify-center relative overflow-hidden transition-colors group ${disabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-primary/50'}`}>
         {isDrafting ? (
           <div className="absolute inset-0 bg-surface-container-lowest/40 backdrop-blur-sm flex flex-col items-center justify-center z-10 pulse-subtle">
-            <div className="w-12 h-12 rounded-full bg-primary-container text-primary flex items-center justify-center mb-3 shadow-lg">
+            <div className="w-12 h-12 rounded-full bg-primary-container text-primary flex items-center justify-center mb-3">
               <span className="material-symbols-outlined !text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
             </div>
             <span className="font-label text-sm text-primary font-medium tracking-wide">AI Generating Image...</span>
@@ -208,7 +208,7 @@ export const FieldRenderer: React.FC<{
             />
             {!disabled && (
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button className="bg-white text-on-surface px-4 py-2 rounded-lg font-label text-xs font-bold shadow-sm border-none cursor-pointer">
+                <button className="bg-white text-on-surface px-4 py-2 rounded-lg font-label text-xs font-bold border-none cursor-pointer">
                   Regenerate with AI
                 </button>
               </div>
@@ -366,7 +366,7 @@ export const FieldRenderer: React.FC<{
               key={idx} 
               className="p-5 rounded-2xl bg-surface-container-low/40 border border-outline-variant/15 flex flex-col gap-4 relative transition-all"
             >
-              <div className="flex justify-between items-center border-b border-outline-variant/10 pb-2">
+              <div className="flex justify-between items-center pb-2">
                 <span className="font-label text-xs font-bold text-on-surface-variant">Item #{idx + 1}</span>
                 {!disabled && (
                   <button
@@ -409,7 +409,7 @@ export const FieldRenderer: React.FC<{
               onClick={() => {
                 onChange([...rows, {}])
               }}
-              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-outline-variant/40 hover:border-primary/50 hover:bg-primary/5 text-xs font-label font-bold text-outline hover:text-primary transition-all cursor-pointer bg-transparent"
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-outline-variant/15 hover:border-primary/50 hover:bg-primary/5 text-xs font-label font-bold text-outline hover:text-primary transition-all cursor-pointer bg-transparent"
             >
               <span className="material-symbols-outlined !text-sm">add</span>
               Add Item

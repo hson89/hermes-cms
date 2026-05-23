@@ -301,7 +301,7 @@ export const CreateTenantPage: React.FC = () => {
           
           {/* Stepper vertical navigation */}
           <div className="lg:col-span-4 bg-surface-container-lowest/40 rounded-2xl border border-outline-variant/15 p-6 space-y-8 relative">
-            <div className="absolute left-[34px] top-12 bottom-12 w-[1px] bg-outline-variant/30 -z-10" />
+            <div className="absolute left-[34px] top-12 bottom-12 w-[1px] bg-outline-variant/15 -z-10" />
 
             <div className="flex items-start gap-4">
               <div className={`size-10 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all font-semibold ${
@@ -352,7 +352,7 @@ export const CreateTenantPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-outline-variant/15 mt-8">
+            <div className="pt-6 mt-8">
               <div className="flex justify-between items-center text-xs font-semibold uppercase tracking-widest text-outline">
                 <span>Setup Progress</span>
                 <span className="text-primary font-bold">{Math.round(((step - 1) / 2) * 100)}%</span>
@@ -367,7 +367,7 @@ export const CreateTenantPage: React.FC = () => {
           </div>
 
           {/* Stepper active form area */}
-          <div className="lg:col-span-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/15 p-6 lg:p-8 shadow-xl shadow-on-surface/5">
+          <div className="lg:col-span-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/15 p-6 lg:p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
               
               {/* STEP 1: IDENTITY */}
@@ -414,7 +414,7 @@ export const CreateTenantPage: React.FC = () => {
                     <option value="de">German (de)</option>
                   </FormSelect>
 
-                  <div className="pt-6 border-t border-outline-variant/10 flex justify-end">
+                  <div className="pt-6 flex justify-end">
                     <Button
                       type="button"
                       onClick={handleNextStep1}
@@ -447,7 +447,7 @@ export const CreateTenantPage: React.FC = () => {
                         className={`text-left p-5 rounded-2xl border transition-all cursor-pointer bg-transparent ${
                           tier === 'standard' 
                             ? 'border-primary ring-2 ring-primary/20 bg-primary/5' 
-                            : 'border-outline-variant/20 hover:border-outline-variant/50 hover:bg-surface-container-low/50'
+                            : 'border-outline-variant/15 hover:border-outline-variant/15 hover:bg-surface-container-low/50'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -469,7 +469,7 @@ export const CreateTenantPage: React.FC = () => {
                         className={`text-left p-5 rounded-2xl border transition-all cursor-pointer bg-transparent ${
                           tier === 'premium' 
                             ? 'border-primary ring-2 ring-primary/20 bg-primary/5' 
-                            : 'border-outline-variant/20 hover:border-outline-variant/50 hover:bg-surface-container-low/50'
+                            : 'border-outline-variant/15 hover:border-outline-variant/15 hover:bg-surface-container-low/50'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -491,7 +491,7 @@ export const CreateTenantPage: React.FC = () => {
                         className={`text-left p-5 rounded-2xl border transition-all cursor-pointer bg-transparent ${
                           tier === 'enterprise' 
                             ? 'border-primary ring-2 ring-primary/20 bg-primary/5' 
-                            : 'border-outline-variant/20 hover:border-outline-variant/50 hover:bg-surface-container-low/50'
+                            : 'border-outline-variant/15 hover:border-outline-variant/15 hover:bg-surface-container-low/50'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -521,7 +521,7 @@ export const CreateTenantPage: React.FC = () => {
                     <option value="archived">Archived (Read-only historical freeze)</option>
                   </FormSelect>
 
-                  <div className="pt-6 border-t border-outline-variant/10 flex justify-between items-center">
+                  <div className="pt-6 flex justify-between items-center">
                     <Button
                       type="button"
                       variant="secondary"
@@ -572,7 +572,7 @@ export const CreateTenantPage: React.FC = () => {
                     {/* Domain listing table style */}
                     <div className="space-y-2 max-h-48 overflow-y-auto mb-3">
                       {domains.length === 0 ? (
-                        <div className="text-center p-6 bg-surface-container-low/40 rounded-xl border border-dashed border-outline-variant/30 text-outline text-xs">
+                        <div className="text-center p-6 bg-surface-container-low/40 rounded-xl border border-dashed border-outline-variant/15 text-outline text-xs">
                           No domains currently mapped. Add at least one entryway.
                         </div>
                       ) : (
@@ -592,7 +592,7 @@ export const CreateTenantPage: React.FC = () => {
                                 onClick={() => handleTogglePrimary(index)}
                                 className={`font-label text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md transition-all cursor-pointer border-none ${
                                   dom.isPrimary 
-                                    ? 'bg-primary text-on-primary shadow-sm shadow-primary/10' 
+                                    ? 'bg-primary text-on-primary' 
                                     : 'bg-surface-container-high hover:bg-surface-container-highest text-outline hover:text-on-surface'
                                 }`}
                               >
@@ -653,7 +653,7 @@ export const CreateTenantPage: React.FC = () => {
                       />
 
                       {/* Visual Color block preview & Native picker connector */}
-                      <div className="relative size-14 rounded-xl shadow-lg border border-outline-variant/20 flex-shrink-0 overflow-hidden">
+                      <div className="relative size-14 rounded-xl border border-outline-variant/15 flex-shrink-0 overflow-hidden">
                         <div 
                           className="absolute inset-0 transition-colors"
                           style={{ backgroundColor: primaryColor }}
@@ -673,7 +673,7 @@ export const CreateTenantPage: React.FC = () => {
 
                   {/* High-Fidelity Glassmorphic Preview Card */}
                   <Card variant="low" className="space-y-4">
-                    <div className="flex items-center gap-2 border-b border-outline-variant/10 pb-2.5">
+                    <div className="flex items-center gap-2 pb-2.5">
                       <Icon name="summarize" size={16} className="text-primary" />
                       <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Workspace Manifest Preview</span>
                     </div>
@@ -710,7 +710,7 @@ export const CreateTenantPage: React.FC = () => {
                     )}
                   </Card>
 
-                  <div className="pt-6 border-t border-outline-variant/10 flex justify-between items-center">
+                  <div className="pt-6 flex justify-between items-center">
                     <Button
                       type="button"
                       variant="secondary"
@@ -737,7 +737,7 @@ export const CreateTenantPage: React.FC = () => {
         </div>
       ) : (
         /* EDIT MODE: Tabbed Settings Console */
-        <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8 shadow-xl shadow-on-surface/5">
+        <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8 bg-surface-container-low/30">
           <form onSubmit={handleSubmit} className="space-y-8">
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -773,7 +773,7 @@ export const CreateTenantPage: React.FC = () => {
                       placeholder="#3366cc"
                       className="flex-1 space-y-0"
                     />
-                    <div className="relative size-12 rounded-xl border border-outline-variant/20 flex-shrink-0 overflow-hidden">
+                    <div className="relative size-12 rounded-xl border border-outline-variant/15 flex-shrink-0 overflow-hidden">
                       <div 
                         className="absolute inset-0"
                         style={{ backgroundColor: primaryColor }}
@@ -840,7 +840,7 @@ export const CreateTenantPage: React.FC = () => {
                 </div>
 
                 {isDomainOverLimit && (
-                  <div className="p-3 bg-error-container text-on-error-container rounded-xl flex items-center gap-3 border border-error/20 animate-fade-slide-up">
+                  <div className="p-3 bg-error-container text-on-error-container rounded-xl flex items-center gap-3 border border-error/15 animate-fade-slide-up">
                     <Icon name="warning" className="text-error" />
                     <Text variant="small" className="text-error font-medium">Mapped domains exceed the {tier} tier limit of {domainLimit}. Delete domains to save.</Text>
                   </div>
@@ -863,7 +863,7 @@ export const CreateTenantPage: React.FC = () => {
                           onClick={() => handleTogglePrimary(index)}
                           className={`font-label text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded transition-all cursor-pointer border-none ${
                             dom.isPrimary 
-                              ? 'bg-primary text-on-primary shadow-sm shadow-primary/10' 
+                              ? 'bg-primary text-on-primary' 
                               : 'bg-surface-container-high hover:bg-surface-container-highest text-outline'
                           }`}
                         >
@@ -910,7 +910,7 @@ export const CreateTenantPage: React.FC = () => {
             </div>
 
             {/* Form actions */}
-            <div className="pt-6 border-t border-outline-variant/10 flex justify-end gap-4">
+            <div className="pt-6 flex justify-end gap-4">
               <Button
                 type="button"
                 variant="secondary"

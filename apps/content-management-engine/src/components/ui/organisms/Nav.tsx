@@ -20,7 +20,7 @@ export const Nav: React.FC<any> = () => {
   ]
 
   return (
-    <nav className="alexandria-nav fixed left-0 top-0 h-screen w-72 lg:w-[18rem] z-[1000] bg-surface-container flex flex-col py-6 gap-y-1 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+    <nav className="alexandria-nav fixed left-0 top-0 h-screen w-72 lg:w-[18rem] z-[1000] bg-surface-container flex flex-col py-6 gap-y-1">
       <div className="px-6 pb-8">
         <h1 className="font-headline text-2xl font-black text-primary m-0">Hermes</h1>
         <p className="font-label uppercase tracking-widest text-[10px] text-on-surface-variant mt-1 m-0">CMS</p>
@@ -28,7 +28,7 @@ export const Nav: React.FC<any> = () => {
 
       <Link 
         href="/admin/draft/new"
-        className="mx-4 mb-6 py-3 px-4 btn-primary-gradient rounded-xl font-label text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 border-none cursor-pointer no-underline"
+        className="mx-4 mb-6 py-3 px-4 btn-primary-gradient rounded-xl font-label text-sm tracking-wide transition-all flex items-center justify-center gap-2 border-none cursor-pointer no-underline"
       >
         <span className="material-symbols-outlined !text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>add</span>
         New Entry
@@ -44,7 +44,7 @@ export const Nav: React.FC<any> = () => {
               href={link.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 no-underline group ${
                 isActive 
-                  ? 'bg-primary-container text-on-primary-container shadow-sm' 
+                  ? 'bg-primary-container text-on-primary-container' 
                   : 'text-on-surface-variant hover:bg-surface-variant'
               }`}
             >
@@ -59,7 +59,7 @@ export const Nav: React.FC<any> = () => {
         })}
       </div>
 
-      <div className="px-2 pb-4 border-t border-outline-variant/10 pt-4 mt-auto">
+      <div className="px-2 pb-4 pt-4 mt-auto">
         <Link
           href="/admin/help"
           className="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant rounded-xl font-label text-sm transition-all no-underline"
@@ -84,7 +84,7 @@ export const Nav: React.FC<any> = () => {
       </div>
 
       {user && (
-        <div className="mx-4 mt-2 p-3 bg-surface-container-high/40 rounded-2xl flex items-center justify-between gap-3 border border-outline-variant/5">
+        <div className="mx-4 mt-2 p-3 bg-surface-container-high/40 rounded-2xl flex items-center justify-between gap-3 border border-outline-variant/15">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-label text-xs font-bold shrink-0">
               {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : user.email?.slice(0, 2).toUpperCase()}

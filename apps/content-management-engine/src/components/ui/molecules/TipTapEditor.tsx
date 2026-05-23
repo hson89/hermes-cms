@@ -129,7 +129,7 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
   // ── Drafting / AI streaming state ──────────────────────────────────────
   if (isDrafting) {
     return (
-      <div className="relative p-6 rounded-xl bg-primary-fixed/20 border-l-2 border-primary -ml-4 transition-all">
+      <div className="relative p-6 rounded-xl bg-primary-fixed/20 -ml-4 transition-all">
         <div className="absolute -left-2 top-4 flex h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
           <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
@@ -166,7 +166,6 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
             <span className="material-symbols-outlined !text-lg">strikethrough_s</span>
           </ToolbarButton>
 
-          <div className="w-[1px] h-4 bg-outline-variant/20 mx-1 shrink-0" />
 
           <ToolbarButton title="Heading 2" isActive={editor.isActive('heading', { level: 2 })}
             onClick={() => run(() => editor.chain().focus().toggleHeading({ level: 2 }).run())}>
@@ -178,7 +177,6 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
             <span className="font-label text-xs font-bold px-0.5">H3</span>
           </ToolbarButton>
 
-          <div className="w-[1px] h-4 bg-outline-variant/20 mx-1 shrink-0" />
 
           <ToolbarButton title="Bullet list" isActive={editor.isActive('bulletList')}
             onClick={() => run(() => editor.chain().focus().toggleBulletList().run())}>
@@ -200,7 +198,6 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
             <span className="material-symbols-outlined !text-lg">code</span>
           </ToolbarButton>
 
-          <div className="w-[1px] h-4 bg-outline-variant/20 mx-1 shrink-0" />
 
           <ToolbarButton title="Undo (⌘Z)"
             onClick={() => run(() => editor.chain().focus().undo().run())}>
@@ -212,7 +209,6 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
             <span className="material-symbols-outlined !text-lg">redo</span>
           </ToolbarButton>
 
-          <div className="w-[1px] h-4 bg-outline-variant/20 mx-1 shrink-0" />
 
           <ToolbarButton title="Clear formatting"
             onClick={() => run(() => editor.chain().focus().unsetAllMarks().clearNodes().run())}>

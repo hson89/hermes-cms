@@ -8,7 +8,7 @@ export const RecoveryDialog: React.FC<{
 }> = ({ onResume, onDiscard }) => {
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-surface-container-lowest rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 border border-outline-variant/30 animate-in zoom-in-95 duration-300">
+      <div className="bg-surface-container-lowest rounded-2xl p-8 max-w-md w-full mx-4 border border-outline-variant/15 animate-in zoom-in-95 duration-300">
         <div className="w-16 h-16 rounded-full bg-primary-container/20 text-primary flex items-center justify-center mb-6 mx-auto">
           <span className="material-symbols-outlined !text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
         </div>
@@ -21,7 +21,7 @@ export const RecoveryDialog: React.FC<{
         <div className="flex flex-col gap-3">
           <button 
             onClick={onResume}
-            className="w-full bg-primary text-on-primary py-3 rounded-xl font-label font-bold tracking-wide hover:shadow-lg hover:shadow-primary/20 transition-all border-none cursor-pointer"
+            className="w-full bg-primary text-on-primary py-3 rounded-xl font-label font-bold tracking-wide transition-all border-none cursor-pointer"
           >
             Resume Session
           </button>

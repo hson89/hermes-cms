@@ -55,7 +55,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all animate-fade-in">
       <div 
-        className="bg-surface/90 backdrop-blur-[20px] max-w-md w-full rounded-2xl p-6 border border-outline-variant/15 shadow-2xl flex flex-col space-y-4 animate-fade-slide-up"
+        className="bg-surface/90 backdrop-blur-[20px] max-w-md w-full rounded-2xl p-6 border border-outline-variant/15 modal-shadow flex flex-col space-y-4 animate-fade-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -72,12 +72,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/10">
+        <div className="flex justify-end gap-3 pt-4">
           <button
             type="button"
             disabled={isConfirming}
             onClick={onCancel}
-            className="border border-outline-variant/30 text-on-surface hover:bg-surface-container py-2.5 px-4.5 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent focus:outline-none"
+            className="border border-outline-variant/15 text-on-surface hover:bg-surface-container py-2.5 px-4.5 rounded-xl transition-all font-label font-bold text-xs uppercase tracking-widest cursor-pointer bg-transparent focus:outline-none"
           >
             {cancelText}
           </button>

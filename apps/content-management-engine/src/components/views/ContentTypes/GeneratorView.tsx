@@ -287,8 +287,8 @@ export const GeneratorView: React.FC = () => {
         <div className="lg:col-span-7 space-y-6">
           
           {/* Identity details Card */}
-          <Card variant="low" className="border border-outline-variant/15 p-6 shadow-xl shadow-on-surface/5 space-y-4">
-            <div className="flex items-center gap-2 border-b border-outline-variant/10 pb-3">
+          <Card variant="low" className="border border-outline-variant/15 p-6 bg-surface-container-low/30 space-y-4">
+            <div className="flex items-center gap-2 pb-1">
               <Icon name="verified" className="text-primary" />
               <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Schema Properties</span>
             </div>
@@ -323,7 +323,7 @@ export const GeneratorView: React.FC = () => {
               />
             </div>
             
-            <div className="pt-4 border-t border-outline-variant/10 flex flex-col sm:flex-row gap-3 justify-end select-none">
+            <div className="pt-6 flex flex-col sm:flex-row gap-3 justify-end select-none">
               <Button
                 type="button"
                 variant="secondary"
@@ -358,12 +358,12 @@ export const GeneratorView: React.FC = () => {
               
               <div className="flex items-center gap-3">
                 {/* View toggle */}
-                <div className="flex gap-1 bg-surface-container-low/50 p-1 rounded-lg border border-outline-variant/10 select-none">
+                <div className="flex gap-1 bg-surface-container-low/50 p-1 rounded-lg border border-outline-variant/15 select-none">
                   <button
                     type="button"
                     onClick={() => setViewMode('preview')}
                     className={`text-[9px] font-label font-bold uppercase tracking-widest px-2.5 py-1 rounded border-none cursor-pointer ${
-                      viewMode === 'preview' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'bg-transparent text-outline'
+                      viewMode === 'preview' ? 'bg-surface-container-lowest text-primary' : 'bg-transparent text-outline'
                     }`}
                   >
                     Builder
@@ -372,7 +372,7 @@ export const GeneratorView: React.FC = () => {
                     type="button"
                     onClick={() => setViewMode('json')}
                     className={`text-[9px] font-label font-bold uppercase tracking-widest px-2.5 py-1 rounded border-none cursor-pointer ${
-                      viewMode === 'json' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'bg-transparent text-outline'
+                      viewMode === 'json' ? 'bg-surface-container-lowest text-primary' : 'bg-transparent text-outline'
                     }`}
                   >
                     JSON
@@ -383,7 +383,7 @@ export const GeneratorView: React.FC = () => {
                   type="button"
                   variant="secondary"
                   onClick={handleAddField}
-                  className="text-xs uppercase tracking-widest px-3 py-1 flex items-center gap-1.5 border border-outline-variant/30 hover:border-primary/50"
+                  className="text-xs uppercase tracking-widest px-3 py-1 flex items-center gap-1.5 border border-outline-variant/15 hover:border-primary/50"
                 >
                   <Icon name="add" size={14} /> Add Field
                 </Button>
@@ -391,11 +391,11 @@ export const GeneratorView: React.FC = () => {
             </div>
 
             {viewMode === 'json' ? (
-              <div className="bg-neutral-900 text-neutral-200 rounded-xl p-4 font-mono text-xs overflow-auto max-h-[450px] shadow-inner select-all leading-relaxed whitespace-pre">
+              <div className="bg-neutral-900 text-neutral-200 rounded-xl p-4 font-mono text-xs overflow-auto max-h-[450px] select-all leading-relaxed whitespace-pre">
                 {JSON.stringify({ name: contentTypeName, fields }, null, 2)}
               </div>
             ) : fields.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl border border-dashed border-outline-variant/30 bg-surface-container-lowest/30 flex flex-col items-center select-none">
+              <div className="p-12 text-center rounded-2xl border border-dashed border-outline-variant/15 bg-surface-container-lowest/30 flex flex-col items-center select-none">
                 <div className="size-12 rounded-full bg-primary/5 flex items-center justify-center mb-3">
                   <Icon name="layers_clear" className="text-outline" size={24} />
                 </div>
@@ -419,8 +419,8 @@ export const GeneratorView: React.FC = () => {
                       key={idx}
                       className={`rounded-xl border transition-all duration-300 overflow-hidden ${highlightClass} ${
                         expandedIndex === idx
-                          ? 'border-primary/50 bg-surface-container-low shadow-md'
-                          : 'border-outline-variant/15 bg-surface-container-lowest/40 hover:border-outline-variant/40 hover:bg-surface-container-low/20'
+                          ? 'border-primary/50 bg-surface-container-low'
+                          : 'border-outline-variant/15 bg-surface-container-lowest/40 hover:border-outline-variant/15 hover:bg-surface-container-low/20'
                       }`}
                     >
                       {/* Field item row header */}
@@ -459,12 +459,12 @@ export const GeneratorView: React.FC = () => {
                             
                             {/* Dynamic AI change indicator badges */}
                             {highlightType === 'added' && (
-                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/15">
                                 AI Added
                               </span>
                             )}
                             {highlightType === 'modified' && (
-                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                              <span className="visual-diff-badge text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/15">
                                 AI Refined
                               </span>
                             )}
@@ -472,7 +472,7 @@ export const GeneratorView: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="bg-primary/5 text-primary font-label font-bold text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-md border border-primary/10">
+                          <span className="bg-primary/5 text-primary font-label font-bold text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-md border border-primary/15">
                             {field.type}
                           </span>
                           <span className="material-symbols-outlined text-outline/60 text-lg transition-transform duration-300" style={{
@@ -485,7 +485,7 @@ export const GeneratorView: React.FC = () => {
 
                       {/* Field customizer drawer */}
                       {expandedIndex === idx && (
-                        <div className="p-5 border-t border-outline-variant/15 bg-surface-container-lowest space-y-4 animate-fade-slide-up">
+                        <div className="p-5 bg-surface-container-lowest space-y-4 animate-fade-slide-up">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                               label="Field Label"
@@ -533,7 +533,7 @@ export const GeneratorView: React.FC = () => {
                                   type="checkbox"
                                   checked={!!field.required}
                                   onChange={(e) => handleUpdateField(idx, { required: e.target.checked })}
-                                  className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
+                                  className="rounded border-outline-variant/15 text-primary focus:ring-primary/20 accent-primary"
                                 />
                                 Required
                               </label>
@@ -543,7 +543,7 @@ export const GeneratorView: React.FC = () => {
                                   type="checkbox"
                                   checked={!!field.unique}
                                   onChange={(e) => handleUpdateField(idx, { unique: e.target.checked })}
-                                  className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
+                                  className="rounded border-outline-variant/15 text-primary focus:ring-primary/20 accent-primary"
                                 />
                                 Unique
                               </label>
@@ -553,7 +553,7 @@ export const GeneratorView: React.FC = () => {
                                   type="checkbox"
                                   checked={!!field.localized}
                                   onChange={(e) => handleUpdateField(idx, { localized: e.target.checked })}
-                                  className="rounded border-outline-variant/30 text-primary focus:ring-primary/20 accent-primary"
+                                  className="rounded border-outline-variant/15 text-primary focus:ring-primary/20 accent-primary"
                                 />
                                 Localized
                               </label>
@@ -607,7 +607,7 @@ export const GeneratorView: React.FC = () => {
                             />
                           </div>
 
-                          <div className="pt-3 border-t border-outline-variant/10 flex justify-end gap-2 select-none">
+                          <div className="pt-6 flex justify-end gap-2 select-none">
                             <Button
                               type="button"
                               variant="secondary"

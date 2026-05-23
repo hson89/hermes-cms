@@ -4,7 +4,7 @@
 A scholarly, premium reading experience. Dense information made effortless through serif authority and generous whitespace.
 
 ## Colors
-- **Primary (`#3366cc`):** Links, primary actions, focus states only.
+- **Primary (`#094cb2`):** Links, primary actions, focus states only.
 - **Surface tiers** create hierarchy—no explicit borders. Use background shifts between `surface-container-lowest` → `surface-dim`.
 - **Tertiary (`#6d5e00`):** Archival gold for highlights and badges.
 - **No-Line Rule:** Never use 1px borders. Define boundaries through background color shifts.
@@ -12,7 +12,8 @@ A scholarly, premium reading experience. Dense information made effortless throu
 
 ## Typography
 - **Headlines:** Noto Serif — large, authoritative, generous leading.
-- **Body & Labels:** Inter — modern clarity for both dense text and archival metadata labels.
+- **Body:** Inter — modern clarity for dense text.
+- **Labels:** Public Sans — archival metadata feel.
 
 ## Elevation
 - Depth through tonal layering, not shadows. Stack surface tokens for natural elevation.

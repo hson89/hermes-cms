@@ -81,7 +81,7 @@ export const DashboardClient: React.FC = () => {
         {/* Hermes AI — Primary Entry Point */}
         <section className="relative w-full">
           <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full -z-10" />
-          <div className="bg-surface/60 backdrop-blur-[20px] rounded-2xl p-10 border border-outline-variant/15 shadow-[0_8px_32px_rgba(0,0,0,0.04)] flex flex-col md:flex-row items-center gap-8 group transition-all hover:shadow-[0_12px_48px_rgba(0,0,0,0.08)]">
+          <div className="bg-surface/60 backdrop-blur-[20px] rounded-2xl p-10 border border-outline-variant/15 flex flex-col md:flex-row items-center gap-8 group transition-all">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -109,11 +109,11 @@ export const DashboardClient: React.FC = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="E.g., Draft a blog post about the future of AI..."
-                  className="w-full h-16 pl-6 pr-16 bg-surface-container-lowest rounded-xl border border-outline-variant/20 font-body text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
+                  className="w-full h-16 pl-6 pr-16 bg-surface-container-lowest rounded-xl border border-outline-variant/15 font-body text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all"
                 />
                 <button 
                   type="submit"
-                  className="absolute right-3 top-3 w-10 h-10 bg-primary text-on-primary rounded-lg flex items-center justify-center hover:bg-primary-container hover:text-on-primary-container transition-all shadow-sm cursor-pointer border-none"
+                  className="absolute right-3 top-3 w-10 h-10 bg-primary text-on-primary rounded-lg flex items-center justify-center hover:bg-primary-container hover:text-on-primary-container transition-all cursor-pointer border-none"
                 >
                   <Icon name="arrow_forward" size={20} />
                 </button>
@@ -140,7 +140,7 @@ export const DashboardClient: React.FC = () => {
           <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between h-full transition-all hover:bg-surface-container-low hover:-translate-y-1 duration-300">
             <div>
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 rounded-lg bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-lg bg-primary text-on-primary flex items-center justify-center">
                   <Icon name="corporate_fare" filled />
                 </div>
                 <h3 className="font-headline text-xl font-bold text-on-surface m-0">Manage Tenants</h3>
@@ -165,7 +165,7 @@ export const DashboardClient: React.FC = () => {
           <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between h-full transition-all hover:bg-surface-container-low hover:-translate-y-1 duration-300">
             <div>
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 rounded-lg bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-lg bg-primary text-on-primary flex items-center justify-center">
                   <Icon name="account_tree" filled />
                 </div>
                 <h3 className="font-headline text-xl font-bold text-on-surface m-0">Define Content Types</h3>
@@ -183,7 +183,7 @@ export const DashboardClient: React.FC = () => {
           <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between h-full transition-all hover:bg-surface-container-low hover:-translate-y-1 duration-300">
             <div>
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 rounded-lg bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-lg bg-primary text-on-primary flex items-center justify-center">
                   <Icon name="edit_square" filled />
                 </div>
                 <h3 className="font-headline text-xl font-bold text-on-surface m-0">Curate Content</h3>

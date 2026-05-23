@@ -631,7 +631,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         {/* Right: utility icons + Save + Publish */}
         <div className="flex items-center gap-3 relative">
           {/* History */}
-          <div className="relative flex items-center gap-1 border-r border-outline-variant/20 pr-3">
+          <div className="relative flex items-center gap-1 border-r border-outline-variant/15 pr-3">
             <button
               onClick={() => { setShowVersionsDropdown(prev => !prev); setShowStyleHelp(false) }}
               title="View revision history"
@@ -640,8 +640,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
               <span className="material-symbols-outlined text-xl">history</span>
             </button>
             {showVersionsDropdown && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-2xl z-50 p-2 font-body animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="px-3 py-1.5 text-[9px] uppercase tracking-widest text-outline font-bold border-b border-outline-variant/10 select-none">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-surface-container-lowest rounded-xl border border-outline-variant/15 modal-shadow z-50 p-2 font-body animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="px-3 py-1.5 text-[9px] uppercase tracking-widest text-outline font-bold select-none">
                   Revision History
                 </div>
                 <div className="max-h-60 overflow-y-auto mt-1">
@@ -679,7 +679,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               <span className="material-symbols-outlined text-xl">settings</span>
             </button>
             {showStyleHelp && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-2xl z-50 p-4 font-body animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-surface-container-lowest rounded-xl border border-outline-variant/15 modal-shadow z-50 p-4 font-body animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="text-xs font-bold text-on-surface mb-3">Drafting Settings</div>
                 <div className="space-y-3">
                   <div>
@@ -687,7 +687,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
                     <select
                       value={selectedStyle || ''}
                       onChange={(e) => setSelectedStyle(e.target.value || null)}
-                      className="w-full bg-surface-container border border-outline-variant/20 rounded-lg p-2 text-xs font-body text-on-surface focus:outline-none focus:border-primary/50"
+                      className="w-full bg-surface-container border border-outline-variant/15 rounded-lg p-2 text-xs font-body text-on-surface focus:outline-none focus:border-primary/50"
                     >
                       <option value="">Default AI Style</option>
                       {styleModifiers.map(s => (
@@ -764,7 +764,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
                 })
               }}
               onEvent={handleAIEvent} 
-              initialPrompt={loading ? null : initialPrompt}
+              initialPrompt={loading ? null : (initialPromptSent ? null : initialPrompt)}
               onInitialPromptSent={() => setInitialPromptSent(true)}
               endpoint={
                 // If the URL had a ?prompt= and it hasn't been sent yet,

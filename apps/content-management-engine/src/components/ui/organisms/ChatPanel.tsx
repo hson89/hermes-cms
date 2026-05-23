@@ -246,7 +246,7 @@ const ParsedJsonBlock: React.FC<{ block: ParsedBlock }> = ({ block }) => {
       </button>
       
       {isExpanded && (
-        <div className="border-t border-outline-variant/10 bg-surface-container-lowest/80 p-3 max-h-60 overflow-y-auto custom-scrollbar font-mono text-[9px] text-on-surface-variant leading-relaxed select-text animate-in slide-in-from-top-1 duration-200">
+        <div className="border-t border-outline-variant/15 bg-surface-container-lowest/80 p-3 max-h-60 overflow-y-auto custom-scrollbar font-mono text-[9px] text-on-surface-variant leading-relaxed select-text animate-in slide-in-from-top-1 duration-200">
           <pre className="m-0 whitespace-pre-wrap">{displayJson}</pre>
         </div>
       )}
@@ -279,13 +279,13 @@ const MessageContentFormatter: React.FC<{
 
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-3">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/15">
               <span className="material-symbols-outlined text-[10px] mr-1">check_circle</span>
               Best Match
             </span>
           </div>
 
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-surface-container-lowest border border-outline-variant/15 rounded-xl p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
@@ -309,7 +309,7 @@ const MessageContentFormatter: React.FC<{
             </div>
 
             {showAlts && alternatives && alternatives.length > 0 && (
-              <div className="space-y-3 pt-3 border-t border-outline-variant/10 animate-in slide-in-from-top-1 duration-200">
+              <div className="space-y-3 pt-3 border-t border-outline-variant/15 animate-in slide-in-from-top-1 duration-200">
                 <p className="text-[10px] uppercase font-bold text-outline tracking-wider font-label">Alternatives</p>
                 <div className="flex flex-wrap gap-2">
                   {alternatives.map((alt: any) => (
@@ -317,7 +317,7 @@ const MessageContentFormatter: React.FC<{
                       key={alt.id}
                       type="button"
                       onClick={() => onSelectAlternative?.(alt)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/20 bg-surface-container hover:bg-surface-container-high hover:border-primary/30 text-xs font-medium text-on-surface-variant cursor-pointer transition-all active:scale-95"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/15 bg-surface-container hover:bg-surface-container-high hover:border-primary/30 text-xs font-medium text-on-surface-variant cursor-pointer transition-all active:scale-95"
                     >
                       {alt.name}
                     </button>
@@ -352,7 +352,7 @@ const MessageContentFormatter: React.FC<{
           return (
             <div 
               key={idx} 
-              className="flex items-center gap-2.5 px-3.5 py-2 my-2 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/10 select-none animate-in fade-in duration-300"
+              className="flex items-center gap-2.5 px-3.5 py-2 my-2 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/15 select-none animate-in fade-in duration-300"
             >
               <span className="material-symbols-outlined text-sm text-primary animate-pulse">{toolMeta.icon}</span>
               <span className="text-[10px] font-label font-bold uppercase tracking-wider text-primary">
@@ -375,7 +375,7 @@ const MessageContentFormatter: React.FC<{
           return (
             <div 
               key={idx} 
-              className="my-4 rounded-xl border border-tertiary/20 bg-gradient-to-br from-tertiary/5 via-surface-container-lowest to-surface-container-lowest p-4 relative overflow-hidden shadow-sm select-text animate-in fade-in duration-500"
+              className="my-4 rounded-xl border border-tertiary/20 bg-gradient-to-br from-tertiary/5 via-surface-container-lowest to-surface-container-lowest p-4 relative overflow-hidden select-text animate-in fade-in duration-500"
             >
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-tertiary" />
               <div className="flex items-center gap-2 mb-2 select-none">
@@ -533,7 +533,7 @@ const ThreadContainer: React.FC<{
     <div className="flex flex-col h-full bg-surface-container-lowest overflow-hidden font-body">
 
       {/* Chat Panel Header — matches new design */}
-      <div className="flex items-center justify-between bg-surface-container-lowest px-4 py-3.5 border-b border-outline-variant/15 select-none shrink-0 z-10">
+      <div className="flex items-center justify-between bg-surface-container-lowest px-4 py-3.5 select-none shrink-0 z-10">
         <div className="flex items-center gap-2.5">
           {/* AI icon badge */}
           <div className="w-8 h-8 rounded-lg bg-primary/8 border border-primary/15 flex items-center justify-center text-primary flex-shrink-0 relative">
@@ -564,7 +564,7 @@ const ThreadContainer: React.FC<{
         {/* Welcome message when thread is empty */}
         {messages.length === 0 && (
           <div className="flex justify-start w-full animate-fade-slide-up">
-            <div className="max-w-[95%] w-full rounded-2xl rounded-tl-sm p-4 text-xs leading-relaxed bg-surface-container-lowest border border-outline-variant/15 text-on-surface shadow-sm">
+            <div className="max-w-[95%] w-full rounded-2xl rounded-tl-sm p-4 text-xs leading-relaxed bg-surface-container-lowest border border-outline-variant/15 text-on-surface">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-label text-[10px] font-bold uppercase tracking-wider text-primary">
                   Hermes Agent
@@ -594,7 +594,7 @@ const ThreadContainer: React.FC<{
               className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full animate-fade-slide-up`}
             >
               {isError ? (
-                <div className="max-w-[85%] bg-error-container text-on-error-container rounded-2xl p-4 border border-error/15 flex items-start gap-3 shadow-sm">
+                <div className="max-w-[85%] bg-error-container text-on-error-container rounded-2xl p-4 border border-error/15 flex items-start gap-3">
                   <Icon name="error_outline" className="text-error mt-0.5 flex-shrink-0" />
                   <div className="flex flex-col gap-1">
                     <span className="font-label font-bold text-[8px] uppercase tracking-widest text-error">System Error</span>
@@ -607,8 +607,8 @@ const ThreadContainer: React.FC<{
                 <div
                   className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed transition-all duration-300 ${
                     isUser
-                      ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-sm shadow-sm'
-                      : 'bg-surface-container-lowest text-on-surface border border-outline-variant/15 rounded-tl-sm shadow-sm w-full max-w-[95%]'
+                      ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-sm'
+                      : 'bg-surface-container-lowest text-on-surface border border-outline-variant/15 rounded-tl-sm w-full max-w-[95%]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -637,7 +637,7 @@ const ThreadContainer: React.FC<{
         {/* Generation pipeline widget — shown as an AI message bubble while generating */}
         {isGenerating && (
           <div className="flex justify-start w-full animate-fade-slide-up">
-            <div className="max-w-[95%] w-full rounded-2xl rounded-tl-sm p-4 bg-surface-container-lowest border border-outline-variant/15 shadow-sm flex flex-col gap-3">
+            <div className="max-w-[95%] w-full rounded-2xl rounded-tl-sm p-4 bg-surface-container-lowest border border-outline-variant/15 flex flex-col gap-3">
               {/* Active tool indicator */}
               {statusText && (
                 <div className="bg-primary/8 border border-primary/15 rounded-lg p-2.5 flex items-center justify-between">
@@ -679,7 +679,7 @@ const ThreadContainer: React.FC<{
                           ) : isActive ? (
                             <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
                           ) : (
-                            <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                            <span className="size-4 rounded-full border-2 border-outline-variant/15 block" />
                           )}
                         </div>
                         <span className={`text-xs font-body ${isActive ? 'text-on-surface font-semibold' : isConfirmed ? 'text-on-surface-variant' : 'text-outline'}`}>
@@ -702,7 +702,7 @@ const ThreadContainer: React.FC<{
                             ) : isFieldGenerating ? (
                               <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
                             ) : (
-                              <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                              <span className="size-4 rounded-full border-2 border-outline-variant/15 block" />
                             )}
                           </div>
                           <span className={`text-xs font-body ${isFieldGenerating ? 'text-on-surface font-semibold' : isFieldCompleted ? 'text-on-surface-variant' : 'text-outline'}`}>
@@ -718,7 +718,7 @@ const ThreadContainer: React.FC<{
                         {isGenerating ? (
                           <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
                         ) : (
-                          <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                          <span className="size-4 rounded-full border-2 border-outline-variant/15 block" />
                         )}
                       </div>
                       <span className={`text-xs font-body ${isGenerating ? 'text-on-surface font-semibold' : 'text-outline'}`}>
@@ -744,7 +744,7 @@ const ThreadContainer: React.FC<{
                           ) : isValidating ? (
                             <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
                           ) : (
-                            <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                            <span className="size-4 rounded-full border-2 border-outline-variant/15 block" />
                           )}
                         </div>
                         <span className={`text-xs font-body ${isValidating ? 'text-primary font-medium' : isValidated ? 'text-on-surface-variant' : 'text-outline'}`}>
@@ -762,7 +762,7 @@ const ThreadContainer: React.FC<{
       </div>
 
       {/* Co-Creation Micro Actions */}
-      <div className="px-4 py-3 bg-surface-container-lowest border-t border-outline-variant/15 select-none shrink-0">
+      <div className="px-4 py-3 bg-surface-container-lowest select-none shrink-0">
         <p className="text-[10px] uppercase font-bold text-outline tracking-wider font-label mb-2">
           Co-Creation Micro Actions
         </p>
@@ -773,7 +773,7 @@ const ThreadContainer: React.FC<{
               type="button"
               disabled={isGenerating || isAiPaused}
               onClick={() => threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: preset.prompt }] })}
-              className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container-low text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none font-body"
+              className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-outline-variant/15 bg-surface-container-lowest hover:bg-surface-container-low text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none font-body"
             >
               <span className="material-symbols-outlined text-xs text-outline">{preset.icon}</span>
               <span>{preset.label}</span>
@@ -783,8 +783,8 @@ const ThreadContainer: React.FC<{
       </div>
 
       {/* Chat Input */}
-      <div className="p-4 bg-surface-container-lowest border-t border-outline-variant/15 shrink-0">
-        <div className="relative rounded-xl border border-outline-variant/30 bg-surface-container-lowest focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all shadow-sm">
+      <div className="p-4 bg-surface-container-lowest shrink-0">
+        <div className="relative rounded-xl border border-outline-variant/15 bg-surface-container-lowest focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all">
           <textarea
             rows={1}
             value={inputValue}
@@ -812,7 +812,7 @@ const ThreadContainer: React.FC<{
                   setInputValue('')
                 }
               }}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-on-primary hover:bg-primary/90 border-none flex-shrink-0 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-on-primary hover:bg-primary/90 border-none flex-shrink-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               {isGenerating ? (
                 <span className="size-3.5 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />
@@ -972,7 +972,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     return (
       <Card
         variant="low"
-        className="co-creation-chat flex flex-col h-[680px] bg-surface-container-lowest/80 backdrop-blur-md border border-outline-variant/15 rounded-2xl shadow-xl shadow-on-surface/5 overflow-hidden font-body"
+        className="co-creation-chat flex flex-col h-[680px] bg-surface-container-lowest/80 backdrop-blur-md border border-outline-variant/15 rounded-2xl overflow-hidden font-body"
       >
         {innerContent}
       </Card>

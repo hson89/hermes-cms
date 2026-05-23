@@ -221,8 +221,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
             </span>
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border font-label ${
               isAiPaused
-                ? 'bg-surface-container-high text-on-surface-variant border-outline-variant/30'
-                : 'bg-surface-container-lowest border-outline-variant/30 text-on-surface-variant shadow-sm'
+                ? 'bg-surface-container-high text-on-surface-variant border-outline-variant/15'
+                : 'bg-surface-container-lowest border-outline-variant/15 text-on-surface-variant'
             }`}>
               <span className="material-symbols-outlined text-xs text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
                 {isAiPaused ? 'pause' : 'bolt'}
@@ -309,8 +309,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 <button
                   onClick={() => !isAiPaused && !isApproved && setActiveInlinePrompt(prev => prev === field.name ? null : field.name)}
                   disabled={isAiPaused || isApproved}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-lowest border border-outline-variant/30 shadow-sm text-xs font-medium font-body hover:bg-surface-container-low transition-colors cursor-pointer border-solid disabled:opacity-40 disabled:cursor-not-allowed ${
-                    isInlineActive ? 'text-primary border-primary/30' : 'text-on-surface-variant'
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-lowest border border-outline-variant/15 text-xs font-medium font-body hover:bg-surface-container-low transition-colors cursor-pointer border-solid disabled:opacity-40 disabled:cursor-not-allowed ${
+                    isInlineActive ? 'text-primary border-primary/15' : 'text-on-surface-variant'
                   }`}
                 >
                   <span className="material-symbols-outlined text-xs text-outline">auto_awesome</span>
@@ -321,7 +321,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
             {/* Inline refinement prompt */}
             {isInlineActive && (
-              <div className="flex gap-2 p-3 bg-surface-container-lowest/80 backdrop-blur-[10px] rounded-xl border border-outline-variant/15 shadow-sm animate-in fade-in duration-300">
+              <div className="flex gap-2 p-3 bg-surface-container-lowest/80 backdrop-blur-[10px] rounded-xl border border-outline-variant/15 animate-in fade-in duration-300">
                 <input
                   type="text"
                   placeholder="Instruct the AI to refine this title..."
@@ -337,7 +337,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 />
                 <button
                   onClick={() => { const p = inlinePrompts[field.name]?.trim(); if (p) { onRefineField?.(field.name, p); setActiveInlinePrompt(null) } }}
-                  className="bg-primary text-on-primary px-3 py-1.5 rounded-lg font-label text-[10px] font-bold cursor-pointer border-none shadow-sm"
+                  className="bg-primary text-on-primary px-3 py-1.5 rounded-lg font-label text-[10px] font-bold cursor-pointer border-none"
                 >Refine</button>
                 <button
                   onClick={() => setActiveInlinePrompt(null)}
@@ -399,7 +399,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                       <button
                         onClick={() => onRegenerateField?.(field.name)}
-                        className="bg-white/95 backdrop-blur text-on-surface px-4 py-2 rounded-xl font-label text-xs font-bold border-none cursor-pointer flex items-center gap-1.5 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className="bg-white/95 backdrop-blur text-on-surface px-4 py-2 rounded-xl font-label text-xs font-bold border-none cursor-pointer flex items-center gap-1.5 hover:scale-[1.02] transition-all"
                       >
                         <Icon name="refresh" size={14} />
                         Regenerate Frame
@@ -409,7 +409,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 </div>
               ) : (
                 /* Empty state — matches new design */
-                <div className="flex justify-center px-6 pt-12 pb-16 border-2 border-outline-variant/20 border-dashed rounded-2xl bg-surface-container-lowest/50 hover:bg-surface-container-low/50 transition-colors relative overflow-hidden group-hover/cover:border-primary/30">
+                <div className="flex justify-center px-6 pt-12 pb-16 border-2 border-outline-variant/15 border-dashed rounded-2xl bg-surface-container-lowest/50 hover:bg-surface-container-low/50 transition-colors relative overflow-hidden group-hover/cover:border-primary/30">
                   <div className="space-y-4 text-center z-10 relative">
                     <div className="mx-auto h-12 w-12 text-outline-variant flex items-center justify-center">
                       <svg aria-hidden="true" className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -422,7 +422,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                     </div>
                     <button
                       onClick={() => onRegenerateField?.(field.name)}
-                      className="inline-flex items-center gap-2 px-4 py-2 border border-outline-variant/30 shadow-sm text-sm font-medium rounded-lg text-on-surface bg-surface-container-lowest hover:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/30 mt-4 transition-all cursor-pointer font-body"
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-outline-variant/15 text-sm font-medium rounded-lg text-on-surface bg-surface-container-lowest hover:bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/30 mt-4 transition-all cursor-pointer font-body"
                       type="button"
                     >
                       <span className="material-symbols-outlined text-sm text-primary">auto_awesome</span>
@@ -458,7 +458,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
               <div
                 key={field.name}
                 className={`group transition-all duration-300 ${
-                  isApproved ? 'p-4 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest/50' : ''
+                  isApproved ? 'p-4 rounded-2xl border border-outline-variant/15 bg-surface-container-lowest/50' : ''
                 }`}
               >
                 {/* Field header */}
@@ -477,7 +477,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
                   <div className="flex items-center gap-2">
                     {isModified && <Badge isNew={isModified} />}
-                    <div className="flex items-center gap-0.5 bg-surface-container-high/40 rounded-lg p-0.5 border border-outline-variant/10 select-none">
+                    <div className="flex items-center gap-0.5 bg-surface-container-high/40 rounded-lg p-0.5 border border-outline-variant/15 select-none">
                       {/* Inline refinement */}
                       <button
                         onClick={() => !isAiPaused && !isApproved && setActiveInlinePrompt(prev => prev === field.name ? null : field.name)}
@@ -522,7 +522,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
                 {/* Inline refinement prompt box */}
                 {isInlineActive && (
-                  <div className="flex gap-2 p-3 mb-3 bg-surface-container-lowest/80 backdrop-blur-[10px] rounded-xl border border-outline-variant/15 shadow-sm animate-in fade-in duration-300">
+                  <div className="flex gap-2 p-3 mb-3 bg-surface-container-lowest/80 backdrop-blur-[10px] rounded-xl border border-outline-variant/15 animate-in fade-in duration-300">
                     <input
                       type="text"
                       placeholder={`Refine '${field.label || field.name}'...`}
@@ -538,7 +538,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                     />
                     <button
                       onClick={() => { const p = inlinePrompts[field.name]?.trim(); if (p) { onRefineField?.(field.name, p); setActiveInlinePrompt(null) } }}
-                      className="bg-primary text-on-primary px-3 py-1.5 rounded-lg font-label text-[10px] font-bold cursor-pointer border-none shadow-sm hover:opacity-95"
+                      className="bg-primary text-on-primary px-3 py-1.5 rounded-lg font-label text-[10px] font-bold cursor-pointer border-none hover:opacity-95"
                     >Refine</button>
                     <button
                       onClick={() => setActiveInlinePrompt(null)}
@@ -563,18 +563,18 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       </div>
 
       {/* Floating Rich-Text Toolbar — fixed bottom center, matches new design */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-surface-container-lowest/95 backdrop-blur-xl border border-outline-variant/15 rounded-full px-4 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.08)] flex items-center gap-1 animate-in fade-in slide-in-from-bottom-3 duration-500">
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-surface-container-lowest/95 backdrop-blur-xl border border-outline-variant/15 rounded-full px-4 py-2 flex items-center gap-1 animate-in fade-in slide-in-from-bottom-3 duration-500">
         {/* Text formatting */}
         <button type="button" onClick={() => document.execCommand('bold')} title="Bold" className="p-1.5 text-outline hover:text-on-surface hover:bg-surface-container-high rounded-md transition-colors border-none bg-transparent cursor-pointer w-8 h-8 flex items-center justify-center font-serif font-bold text-sm">B</button>
         <button type="button" onClick={() => document.execCommand('italic')} title="Italic" className="p-1.5 text-outline hover:text-on-surface hover:bg-surface-container-high rounded-md transition-colors border-none bg-transparent cursor-pointer w-8 h-8 flex items-center justify-center font-serif italic text-sm">I</button>
         <button type="button" onClick={() => document.execCommand('underline')} title="Underline" className="p-1.5 text-outline hover:text-on-surface hover:bg-surface-container-high rounded-md transition-colors border-none bg-transparent cursor-pointer w-8 h-8 flex items-center justify-center underline text-sm font-body">U</button>
 
-        <div className="w-px h-4 bg-outline-variant/30 mx-1" />
+        <div className="w-px h-4 bg-outline-variant/15 mx-1" />
 
         <button type="button" onClick={() => document.execCommand('formatBlock', false, '<h2>')} title="Heading 2" className="p-1.5 text-outline hover:text-on-surface hover:bg-surface-container-high rounded-md transition-colors border-none bg-transparent cursor-pointer w-8 h-8 flex items-center justify-center font-semibold text-xs font-body">H2</button>
         <button type="button" onClick={() => document.execCommand('formatBlock', false, '<h3>')} title="Heading 3" className="p-1.5 text-outline hover:text-on-surface hover:bg-surface-container-high rounded-md transition-colors border-none bg-transparent cursor-pointer w-8 h-8 flex items-center justify-center font-semibold text-xs font-body">H3</button>
 
-        <div className="w-px h-4 bg-outline-variant/30 mx-1" />
+        <div className="w-px h-4 bg-outline-variant/15 mx-1" />
 
         <button type="button" onClick={() => document.execCommand('insertUnorderedList')} title="List" className="p-1.5 text-outline hover:text-on-surface hover:bg-surface-container-high rounded-md transition-colors border-none bg-transparent cursor-pointer w-8 h-8 flex items-center justify-center">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} /></svg>
@@ -583,7 +583,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} /></svg>
         </button>
 
-        <div className="w-px h-4 bg-outline-variant/30 mx-1" />
+        <div className="w-px h-4 bg-outline-variant/15 mx-1" />
 
         {/* AI Enhance button */}
         <button

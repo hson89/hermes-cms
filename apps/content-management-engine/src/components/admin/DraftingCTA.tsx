@@ -41,10 +41,10 @@ export const DraftingCTA: React.FC = () => {
   }, [contentTypeId])
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-md border border-outline-variant/15 rounded-3xl p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm shadow-on-surface/5 animate-soft-blur-in select-none">
-      <div className="flex items-center gap-5">
-        <div className="size-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-          <Icon name="auto_awesome" size={30} filled />
+    <div className="bg-surface-container-lowest/80 backdrop-blur-md border border-outline-variant/15 rounded-3xl p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 animate-soft-blur-in select-none">
+      <div className="flex items-center gap-6">
+        <div className="size-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center shrink-0">
+          <Icon name="auto_awesome" size={28} filled />
         </div>
         <div>
           <h3 className="font-headline text-xl font-bold text-on-surface m-0 leading-tight">

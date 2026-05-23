@@ -26,7 +26,7 @@ export const DraftingTemplate: React.FC<DraftingTemplateProps> = ({
           bg-surface-container-lowest
           ${!schemaPresent
             ? 'w-full max-w-2xl mx-auto'
-            : 'w-[380px] flex-shrink-0 border-r border-outline-variant/15 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]'
+            : 'w-[380px] flex-shrink-0 border-r border-outline-variant/15'
           }
         `}
       >

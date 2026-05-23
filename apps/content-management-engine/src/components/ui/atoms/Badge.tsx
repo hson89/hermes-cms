@@ -41,7 +41,7 @@ export const Badge: React.FC<BadgeProps> = ({
     primary: 'bg-primary/10 text-primary border-primary/20',
     success: 'bg-success-container/20 text-success border-success/20',
     danger: 'bg-error-container/20 text-error border-error/20',
-    neutral: 'bg-surface-variant text-on-surface-variant border-outline-variant/30',
+    neutral: 'bg-surface-variant text-on-surface-variant border-outline-variant/15',
     gold: 'bg-tertiary-container/20 text-tertiary border-tertiary/20'
   }
 

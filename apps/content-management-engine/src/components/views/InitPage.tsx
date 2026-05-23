@@ -127,7 +127,7 @@ export const InitPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row antialiased font-body bg-background text-on-surface">
       {/* Left Side: Editorial Image & Headline */}
-      <div className="hidden md:flex md:w-1/2 lg:w-5/12 bg-surface-container-lowest relative flex-col justify-between overflow-hidden shadow-2xl z-20">
+      <div className="hidden md:flex md:w-1/2 lg:w-5/12 bg-surface-container-lowest relative flex-col justify-between overflow-hidden z-20">
         {/* Abstract Image Background */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -160,14 +160,14 @@ export const InitPage: React.FC = () => {
       {/* Right Side: Setup Form */}
       <div className="w-full md:w-1/2 lg:w-7/12 flex flex-col justify-center bg-surface-container-low min-h-screen relative overflow-y-auto">
         {/* Mobile Brand Header */}
-        <div className="md:hidden p-6 bg-surface-container-lowest flex justify-center items-center shadow-sm relative z-10">
+        <div className="md:hidden p-6 bg-surface-container-lowest flex justify-center items-center relative z-10">
           <div className="text-2xl font-headline font-black text-primary tracking-tighter">Hermes AI</div>
         </div>
 
         <div className="w-full max-w-xl mx-auto p-8 lg:p-16 flex flex-col justify-center min-h-[inherit]">
           {/* Form Header */}
           <div className="mb-12 animate-soft-blur-in">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-container-lowest shadow-sm mb-6 border border-outline-variant/15">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-container-lowest mb-6 border border-outline-variant/15">
               <Icon 
                 name={step === 1 ? 'admin_panel_settings' : step === 2 ? 'business' : 'language'} 
                 filled 
@@ -191,7 +191,7 @@ export const InitPage: React.FC = () => {
           <form action={setupInitialAdmin} onSubmit={handleSubmit} className="space-y-10">
             {/* Error Display */}
             {error && (
-              <div className="p-4 bg-error-container/40 backdrop-blur-md text-on-error-container rounded-xl flex items-center gap-3 border border-error/20 animate-soft-blur-in">
+              <div className="p-4 bg-error-container/40 backdrop-blur-md text-on-error-container rounded-xl flex items-center gap-3 border border-error/15 animate-soft-blur-in">
                 <Icon name="error" className="text-error" size={20} />
                 <Text variant="small" className="font-semibold">{error}</Text>
               </div>
@@ -207,7 +207,7 @@ export const InitPage: React.FC = () => {
                   value={name}
                   onChange={(e: any) => { setName(e.target.value); setError('') }}
                   placeholder="e.g. Dr. Eleanor Vance"
-                  inputProps={{ className: 'ring-1 ring-outline-variant/30 border-0 focus:ring-2' } as any}
+                  inputProps={{ className: 'ring-1 ring-outline-variant/15 border-0 focus:ring-2' } as any}
                 />
                 
                 <FormField 
@@ -218,11 +218,11 @@ export const InitPage: React.FC = () => {
                   onChange={(e: any) => { setEmail(e.target.value); setError('') }}
                   type="email"
                   placeholder="eleanor@institution.edu"
-                  inputProps={{ className: 'ring-1 ring-outline-variant/30 border-0 focus:ring-2' } as any}
+                  inputProps={{ className: 'ring-1 ring-outline-variant/15 border-0 focus:ring-2' } as any}
                 />
               </div>
 
-              <div className="space-y-6 pt-4 border-t border-outline-variant/20">
+              <div className="space-y-6 pt-4">
                 <div className="relative">
                   <FormField 
                     label="Master Password"
@@ -232,7 +232,7 @@ export const InitPage: React.FC = () => {
                     onChange={(e: any) => { setPassword(e.target.value); setError('') }}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••••••"
-                    inputProps={{ className: 'ring-1 ring-outline-variant/30 border-0 focus:ring-2 pr-12' } as any}
+                    inputProps={{ className: 'ring-1 ring-outline-variant/15 border-0 focus:ring-2 pr-12' } as any}
                   />
                   <button 
                     type="button"
@@ -279,7 +279,7 @@ export const InitPage: React.FC = () => {
                   value={workspaceName}
                   onChange={(e: any) => { handleWorkspaceNameChange(e.target.value); setError('') }}
                   placeholder="e.g. Editorial Ops"
-                  inputProps={{ className: 'ring-1 ring-outline-variant/30 border-0 focus:ring-2' } as any}
+                  inputProps={{ className: 'ring-1 ring-outline-variant/15 border-0 focus:ring-2' } as any}
                 />
 
                 <FormField 
@@ -289,7 +289,7 @@ export const InitPage: React.FC = () => {
                   value={workspaceSlug}
                   onChange={(e: any) => { handleWorkspaceSlugChange(e.target.value); setError('') }}
                   placeholder="editorial-ops"
-                  inputProps={{ className: 'font-code text-primary ring-1 ring-outline-variant/30 border-0 focus:ring-2' } as any}
+                  inputProps={{ className: 'font-code text-primary ring-1 ring-outline-variant/15 border-0 focus:ring-2' } as any}
                 />
                 <Text variant="small" className="opacity-70 px-1 -mt-4">
                   Unique identifier used in system internal mappings and API routes.
@@ -307,11 +307,11 @@ export const InitPage: React.FC = () => {
                   value={workspaceDomain}
                   onChange={(e: any) => { handleDomainChange(e.target.value); setError('') }}
                   placeholder="e.g. editorial.org"
-                  inputProps={{ className: 'ring-1 ring-outline-variant/30 border-0 focus:ring-2' } as any}
+                  inputProps={{ className: 'ring-1 ring-outline-variant/15 border-0 focus:ring-2' } as any}
                 />
 
                 <div className="pt-4">
-                  <div className="bg-primary/5 dark:bg-primary/10 rounded-2xl p-8 border border-primary/10 space-y-6 relative overflow-hidden">
+                  <div className="bg-primary/5 dark:bg-primary/10 rounded-2xl p-8 border border-primary/15 space-y-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-6 opacity-5">
                       <Icon name="verified" size={80} />
                     </div>
@@ -328,7 +328,7 @@ export const InitPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="bg-white/80 dark:bg-surface-container/50 rounded-xl p-4 flex items-center justify-between border border-white/40 dark:border-white/5 shadow-sm">
+                    <div className="bg-white/80 dark:bg-surface-container/50 rounded-xl p-4 flex items-center justify-between border border-white/40 dark:border-white/5">
                       <div className="flex items-center gap-3 text-on-surface min-w-0">
                         <Icon name="lock" size={14} className="text-green-600 flex-shrink-0" />
                         <span className="font-display font-bold text-sm truncate">https://{workspaceDomain || 'domain.hermes.ai'}</span>

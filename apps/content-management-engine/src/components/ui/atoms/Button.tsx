@@ -17,7 +17,7 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = 'font-label font-bold tracking-wide rounded-full py-3.5 px-6 transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2'
   
   const variantStyles = {
-    primary: 'btn-primary-gradient hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
+    primary: 'btn-primary-gradient hover:scale-[1.02] active:scale-[0.98]',
     secondary: 'bg-surface-container-high text-primary hover:bg-surface-container-highest active:bg-surface-container',
     tertiary: 'bg-transparent text-primary hover:underline px-2 py-1',
   }

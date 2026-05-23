@@ -34,10 +34,10 @@ export const FloatingAIBar: React.FC<{
 
   return (
     <div 
-      className="fixed z-50 transform -translate-x-1/2 bg-inverse-surface/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-1.5 flex flex-col gap-2 min-w-[200px]"
+      className="fixed z-50 transform -translate-x-1/2 bg-inverse-surface/90 backdrop-blur-xl border border-outline-variant/15 rounded-xl modal-shadow p-1.5 flex flex-col gap-2 min-w-[200px]"
       style={{ left: position.x, top: position.y }}
     >
-      <div className="flex items-center gap-1 border-b border-white/10 pb-1.5 px-1.5">
+      <div className="flex items-center gap-1 pb-1.5 px-1.5">
         <button 
           onClick={() => { onRefine('simplify'); setVisible(false); }}
           className="flex-1 px-2 py-1 text-[10px] font-label text-inverse-on-surface hover:bg-white/10 rounded transition-colors border-none bg-transparent cursor-pointer"

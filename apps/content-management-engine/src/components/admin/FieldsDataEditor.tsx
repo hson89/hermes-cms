@@ -193,8 +193,8 @@ export const FieldsDataEditor: React.FC<any> = () => {
   // Placeholder when Content Type is not selected
   if (!contentTypeId) {
     return (
-      <div className="p-10 border-2 border-dashed border-outline-variant/30 rounded-3xl bg-surface-container-low/20 text-center flex flex-col items-center justify-center min-h-[220px]">
-        <div className="size-16 rounded-full bg-primary/5 text-primary flex items-center justify-center shadow-inner mb-4">
+      <div className="p-10 border-2 border-dashed border-outline-variant/15 rounded-3xl bg-surface-container-low/20 text-center flex flex-col items-center justify-center min-h-[220px]">
+        <div className="size-16 rounded-full bg-primary/5 text-primary flex items-center justify-center mb-4">
           <Icon name="layers" size={32} />
         </div>
         <Heading level={4} className="font-headline font-bold text-on-surface">Select a Content Type</Heading>
@@ -206,12 +206,12 @@ export const FieldsDataEditor: React.FC<any> = () => {
   }
 
   return (
-    <Card variant="low" className="border border-outline-variant/15 p-6 md:p-8 space-y-6 shadow-xl shadow-on-surface/5 relative overflow-hidden bg-surface-bright/80 backdrop-blur-md">
+    <Card variant="low" className="border border-outline-variant/15 p-6 md:p-8 space-y-6 relative overflow-hidden bg-surface-bright/80 backdrop-blur-md">
       
       {/* Editorial Header */}
-      <div className="flex items-center justify-between border-b border-outline-variant/10 pb-4 mb-2 select-none">
+      <div className="flex items-center justify-between pb-4 mb-2 select-none">
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Icon name="edit_note" size={22} filled />
           </div>
           <div>
@@ -242,8 +242,8 @@ export const FieldsDataEditor: React.FC<any> = () => {
                 key={field.name} 
                 className={`space-y-2 p-4 rounded-2xl border transition-all duration-300 relative ${
                   isHighlighted 
-                    ? 'border-emerald-500/50 bg-emerald-500/[0.03] scale-[1.005] shadow-lg shadow-emerald-500/5' 
-                    : 'border-outline-variant/10 hover:border-outline-variant/20 hover:bg-surface-container-low/10'
+                    ? 'border-emerald-500/50 bg-emerald-500/[0.03] scale-[1.005]' 
+                    : 'border-outline-variant/15 hover:bg-surface-container-low/10'
                 }`}
               >
                 {/* Field Header Label & AI Sparkle button */}
@@ -264,8 +264,8 @@ export const FieldsDataEditor: React.FC<any> = () => {
                       onClick={() => setRefinementField(refinementField === field.name ? null : field.name)}
                       className={`size-7 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
                         refinementField === field.name 
-                          ? 'bg-tertiary text-on-tertiary border-tertiary shadow-md' 
-                          : 'bg-tertiary/5 hover:bg-tertiary/10 text-tertiary border-tertiary/20 hover:scale-105 active:scale-95'
+                          ? 'bg-tertiary text-on-tertiary border-tertiary' 
+                          : 'bg-tertiary/5 hover:bg-tertiary/10 text-tertiary border-tertiary/15 hover:scale-105 active:scale-95'
                       }`}
                       title="Refine this specific field using Hermes AI"
                     >
@@ -378,7 +378,7 @@ export const FieldsDataEditor: React.FC<any> = () => {
                         type="checkbox"
                         checked={!!fieldVal}
                         onChange={(e) => handleFieldChange(field.name, e.target.checked)}
-                        className="size-5 rounded text-primary border-outline-variant/30 focus:ring-primary cursor-pointer accent-primary"
+                        className="size-5 rounded text-primary border-outline-variant/15 focus:ring-primary cursor-pointer accent-primary"
                         disabled={isFieldRefining}
                       />
                       <label htmlFor={`canvas-${field.name}`} className="font-body text-sm font-semibold text-on-surface-variant cursor-pointer select-none">
@@ -410,7 +410,7 @@ export const FieldsDataEditor: React.FC<any> = () => {
                       onChange={(e) => handleFieldChange(field.name, e.target.value)}
                       placeholder={`Compose rich editorial narrative here...`}
                       rows={5}
-                      className="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl px-4 py-3.5 font-body text-on-surface text-base focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary transition-all shadow-sm resize-y leading-relaxed"
+                      className="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl px-4 py-3.5 font-body text-on-surface text-base focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary transition-all resize-y leading-relaxed"
                       disabled={isFieldRefining}
                     />
                   )}
@@ -433,7 +433,7 @@ export const FieldsDataEditor: React.FC<any> = () => {
 
                   {/* Fallback for complex list field types in CMS (e.g. array, blocks) */}
                   {(field.type === 'array' || field.type === 'blocks') && (
-                    <div className="space-y-2 p-3 bg-surface-container-low/30 border border-outline-variant/10 rounded-xl font-mono text-xs select-all text-on-surface-variant">
+                    <div className="space-y-2 p-3 bg-surface-container-low/30 border border-outline-variant/15 rounded-xl font-mono text-xs select-all text-on-surface-variant">
                       <span className="text-[10px] text-outline font-label uppercase font-bold block mb-1">Raw JSON Editor (List Field Structure)</span>
                       <textarea
                         value={typeof fieldVal === 'object' ? JSON.stringify(fieldVal, null, 2) : String(fieldVal)}
@@ -446,7 +446,7 @@ export const FieldsDataEditor: React.FC<any> = () => {
                           }
                         }}
                         rows={4}
-                        className="w-full bg-surface-container-lowest/60 rounded-lg border border-outline-variant/10 p-2 text-xs font-mono font-normal outline-none"
+                        className="w-full bg-surface-container-lowest/60 rounded-lg border border-outline-variant/15 p-2 text-xs font-mono font-normal outline-none"
                       />
                     </div>
                   )}
