@@ -38,7 +38,7 @@ export const CreateTenantPage: React.FC = () => {
   const [isDomainAuto, setIsDomainAuto] = useState(true)
 
   // Branding State
-  const [primaryColor, setPrimaryColor] = useState('#094cb2')
+  const [primaryColor, setPrimaryColor] = useState('#3366cc')
 
   // Load existing tenant if in Edit Mode
   useEffect(() => {
@@ -58,7 +58,7 @@ export const CreateTenantPage: React.FC = () => {
             setStatus(data.status || 'active')
             setTier(data.tier || 'standard')
             setDomains(data.domains || [])
-            setPrimaryColor(data.branding?.primaryColor || '#094cb2')
+            setPrimaryColor(data.branding?.primaryColor || '#3366cc')
           }
         })
         .catch((err) => {
@@ -648,7 +648,7 @@ export const CreateTenantPage: React.FC = () => {
                           value: primaryColor,
                           onChange: (e) => setPrimaryColor((e.target as HTMLInputElement).value)
                         }}
-                        placeholder="#094cb2"
+                        placeholder="#3366cc"
                         className="flex-1 space-y-0"
                       />
 
@@ -770,7 +770,7 @@ export const CreateTenantPage: React.FC = () => {
                         value: primaryColor,
                         onChange: (e) => setPrimaryColor((e.target as HTMLInputElement).value)
                       }}
-                      placeholder="#094cb2"
+                      placeholder="#3366cc"
                       className="flex-1 space-y-0"
                     />
                     <div className="relative size-12 rounded-xl border border-outline-variant/20 flex-shrink-0 overflow-hidden">

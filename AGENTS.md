@@ -120,8 +120,8 @@ hermes-cms/
 
 The visual language is codename **"Alexandria — High-End Editorial"**.
 Refer to `DESIGN.md` at the project root for full token definitions:
-- Primary: `#094cb2`, Tertiary/gold: `#6d5e00`
-- Fonts: Noto Serif (headlines), Inter (body), Public Sans (labels)
+- Primary: `#3366cc`, Tertiary/gold: `#6d5e00`
+- Fonts: Noto Serif (headlines), Inter (body & labels)
 - Glassmorphism floating menus, gradient CTAs, no hard borders
 - Tonal elevation via surface tokens, not box-shadows
 

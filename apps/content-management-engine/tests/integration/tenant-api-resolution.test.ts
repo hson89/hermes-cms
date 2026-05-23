@@ -152,7 +152,7 @@ describe('Tenant API Resolution Endpoint', () => {
           { hostname, isPrimary: true }
         ],
         branding: {
-          primaryColor: '#094cb2',
+          primaryColor: '#3366cc',
         }
       },
       overrideAccess: true,
@@ -168,6 +168,6 @@ describe('Tenant API Resolution Endpoint', () => {
     expect(body.id).toBe(tenant.id)
     expect(body.slug).toBe(slug)
     expect(body.status).toBe('active')
-    expect(body.branding.primaryColor).toBe('#094cb2')
+    expect(body.branding.primaryColor).toBe('#3366cc')
   })
 })

@@ -119,8 +119,8 @@ Super-admin bypass: users with `role === 'super-admin'`.
 
 ## Design System ("Alexandria")
 
-- **Primary**: `#094cb2` · **Tertiary/gold**: `#6d5e00`
-- **Fonts**: Noto Serif (headlines), Inter (body), Public Sans (labels)
+- **Primary**: `#3366cc` · **Tertiary/gold**: `#6d5e00`
+- **Fonts**: Noto Serif (headlines), Inter (body & labels)
 - **Style**: Glassmorphism, gradient CTAs, tonal elevation (no box-shadows),
   no hard borders (ghost borders at 15% opacity max)
 - **Corners**: Minimum `sm` roundness — never sharp

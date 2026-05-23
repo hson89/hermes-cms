@@ -28,7 +28,7 @@ export const Nav: React.FC<any> = () => {
 
       <Link 
         href="/admin/draft/new"
-        className="mx-4 mb-6 py-3 px-4 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-xl font-label text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 border-none cursor-pointer no-underline"
+        className="mx-4 mb-6 py-3 px-4 bg-primary text-on-primary hover:brightness-90 rounded-xl font-label text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 border-none cursor-pointer no-underline"
       >
         <span className="material-symbols-outlined !text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>add</span>
         New Entry
