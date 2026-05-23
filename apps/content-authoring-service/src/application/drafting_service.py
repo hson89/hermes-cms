@@ -13,7 +13,7 @@ from src.domain.content_drafting.prompts import get_drafting_prompt, get_healing
 from src.application.ai_service import AIService
 from src.infrastructure.tools.schema_resolver import schema_resolver
 from src.infrastructure.tools.image_generator import image_generator
-from src.infrastructure.repositories.session_repository import SQLSessionRepository
+from src.application.stream_utils import handle_graph_stream
 from src.application.refine_service import RefineService
 from src.domain.ai_agent_session.models import AIAgentSession
 from src.domain.content_drafting.cost_calculator import calculate_cost, get_model_metadata
@@ -228,142 +228,18 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
             }
 
         resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
-        full_content = ""
-        emitted_fields = set()
-        current_field = None
-        schema_fields = [f.get("name") for f in schema_json.get("fields", [])] if schema_json else []
+        
+        async for event in handle_graph_stream(
+            graph=drafting_graph,
+            event_inputs=event_inputs,
+            config=config,
+            schema_json=schema_json,
+            resolved_model=resolved_model,
+            ai_service=self.ai_service,
+            event_type="DRAFT_COMPLETE"
+        ):
+            yield event
 
-        total_input_tokens = 0
-        total_output_tokens = 0
-
-        async for event in drafting_graph.astream_events(event_inputs, config=config, version="v2"):
-            kind = event["event"]
-            node_name = event.get("metadata", {}).get("langgraph_node")
-            
-            if kind == "on_chat_model_stream" and node_name == "call_drafting_llm":
-                chunk = event["data"]["chunk"]
-                if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
-                    total_input_tokens += chunk.usage_metadata.get('input_tokens', 0)
-                    total_output_tokens += chunk.usage_metadata.get('output_tokens', 0)
-
-                content = chunk.content
-                if isinstance(content, list):
-                    content = "".join([c.get("text", "") if isinstance(c, dict) else str(c) for c in content])
-                
-                if content:
-                    full_content += content
-                    yield {"event": "TEXT_DELTA", "data": content}
-                    
-                    # Heuristic field detection for FIELD_START/FIELD_COMPLETE
-                    potential_fields = re.findall(r'"([^"]+)":\s*"', full_content[max(0, len(full_content)-100):])
-                    for field in potential_fields:
-                        if field not in emitted_fields and field in schema_fields:
-                            if current_field:
-                                yield {"event": "FIELD_COMPLETE", "data": {"field": current_field}}
-                            current_field = field
-                            emitted_fields.add(field)
-                            yield {"event": "FIELD_START", "data": {"field": field}}
-
-            elif kind == "on_tool_start" and node_name == "call_drafting_llm":
-                tool_name = event["name"]
-                yield {"event": "TEXT_DELTA", "data": f"\n[Executing {tool_name}...]\n"}
-
-        if current_field:
-            yield {"event": "FIELD_COMPLETE", "data": {"field": current_field}}
-
-        try:
-            has_json_block = "```" in full_content
-            has_raw_json = full_content.strip().startswith("{") and full_content.strip().endswith("}")
-            
-            if not has_json_block and not has_raw_json:
-                return
-
-            match = re.search(r"```(?:json)?\s*(.*?)\s*```", full_content, re.DOTALL)
-            clean_content = match.group(1).strip() if match else full_content.strip()
-            
-            start_idx = clean_content.find('{')
-            end_idx = clean_content.rfind('}')
-            if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
-                json_str = clean_content[start_idx:end_idx + 1]
-            else:
-                json_str = clean_content
-            
-            draft_data = json.loads(json_str)
-            cost = calculate_cost(
-                model_identifier=resolved_model,
-                input_tokens=total_input_tokens,
-                output_tokens=total_output_tokens
-            )
-            
-            await drafting_graph.aupdate_state(
-                config,
-                {"current_draft_json": draft_data},
-                as_node="call_drafting_llm"
-            )
-
-            yield {
-                "event": "DRAFT_COMPLETE", 
-                "data": {
-                    "draft": draft_data, 
-                    "sessionId": resolved_session_id,
-                    "usage_metadata": {
-                        "input_tokens": total_input_tokens,
-                        "output_tokens": total_output_tokens,
-                        "total_tokens": total_input_tokens + total_output_tokens,
-                        "cost_microdollars": cost
-                    }
-                }
-            }
-        except Exception as e:
-            try:
-                healing_template = get_healing_prompt(self.ai_service.langfuse_client if self.ai_service else None)
-                healing_prompt = healing_template.messages[0].prompt.format(
-                    full_content=full_content,
-                    schema_json=json.dumps(schema_json, indent=2)
-                )
-
-                healing_model = self.ai_service.get_model(model_override=resolved_model)
-                healing_res = await healing_model.ainvoke([HumanMessage(content=healing_prompt)])
-                healing_content = healing_res.content.strip()
-                
-                match_healed = re.search(r"```(?:json)?\s*(.*?)\s*```", healing_content, re.DOTALL)
-                clean_healed = match_healed.group(1).strip() if match_healed else healing_content.strip()
-                
-                start_idx_healed = clean_healed.find('{')
-                end_idx_healed = clean_healed.rfind('}')
-                if start_idx_healed != -1 and end_idx_healed != -1 and start_idx_healed < end_idx_healed:
-                    json_str_healed = clean_healed[start_idx_healed:end_idx_healed + 1]
-                else:
-                    json_str_healed = clean_healed
-                
-                draft_healed = json.loads(json_str_healed)
-                cost = calculate_cost(
-                    model_identifier=resolved_model,
-                    input_tokens=total_input_tokens,
-                    output_tokens=total_output_tokens
-                )
-                
-                await drafting_graph.aupdate_state(
-                    config,
-                    {"current_draft_json": draft_healed},
-                    as_node="call_drafting_llm"
-                )
-
-                yield {
-                    "event": "DRAFT_COMPLETE", 
-                    "data": {
-                        "draft": draft_healed, 
-                        "sessionId": resolved_session_id,
-                        "usage_metadata": {
-                            "input_tokens": total_input_tokens,
-                            "output_tokens": total_output_tokens,
-                            "total_tokens": total_input_tokens + total_output_tokens,
-                            "cost_microdollars": cost
-                        }
-                    }
-                }
-            except Exception as healing_err:
-                yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON: {e}. Healing also failed: {healing_err}. Raw content: {full_content[:2000]}"}}
 
     async def refine_draft_stream(
         self,

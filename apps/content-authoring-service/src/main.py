@@ -147,37 +147,28 @@ class SessionMessageRequest(BaseModel):
         return v.strip()
 
 
-class DraftRequest(BaseModel):
-    """Payload for POST /api/ai/draft."""
-
-    prompt: str
-    content_type_slug: str | None = None
-    content_schema: dict | None = None
+class AIBaseRequest(BaseModel):
+    """Base model for common AI request fields."""
     tenant_id: str
     user_id: str
     locale: str = "en"
     style_modifier_id: str | None = None
     style_modifier_prompt: str | None = None
     model_override: str | None = None
-    # Accept both camelCase (from CMS proxy) and snake_case variants
     modelOverride: str | None = None
-    session_id: str | None = None
     langfuse_trace_id: str | None = None
 
-    @field_validator("tenant_id", "user_id", "session_id", "content_type_slug", mode="before")
+    @field_validator("tenant_id", "user_id", mode="before")
     @classmethod
     def coerce_id_to_str(cls, v: Any) -> str:
         if v is None:
             return v
         return str(v)
 
-
     def resolved_model_override(self) -> str | None:
         """
         Return the model override only when the requested provider has credentials
-        configured in the environment.  Prevents a tenant-configured openai model
-        from overriding the service's own provider settings (e.g. nvidia) when the
-        OpenAI key is not available.
+        configured in the environment.
         """
         import os
         raw = self.model_override or self.modelOverride
@@ -192,30 +183,36 @@ class DraftRequest(BaseModel):
             "mistral":   os.environ.get("MISTRAL_API_KEY", ""),
             "nvidia":    os.environ.get("NVIDIA_API_KEY", ""),
         }
-        # Placeholder / missing keys start with "your-" or are empty
         api_key = key_map.get(provider, "")
         if not api_key or api_key.startswith("your-"):
             return None
         return raw
 
 
-class RefineRequest(BaseModel):
+class DraftRequest(AIBaseRequest):
+    """Payload for POST /api/ai/draft."""
+
+    prompt: str
+    content_type_slug: str | None = None
+    content_schema: dict | None = None
+    session_id: str | None = None
+
+    @field_validator("session_id", "content_type_slug", mode="before")
+    @classmethod
+    def coerce_slug_to_str(cls, v: Any) -> str:
+        if v is None:
+            return v
+        return str(v)
+
+
+class RefineRequest(AIBaseRequest):
     """Payload for POST /api/ai/refine."""
 
     prompt: str
     current_draft_json: dict
     content_schema: dict
-    tenant_id: str
-    user_id: str
-    locale: str = "en"
-    langfuse_trace_id: str | None = None
+    session_id: str | None = None
 
-    @field_validator("tenant_id", "user_id", mode="before")
-    @classmethod
-    def coerce_id_to_str(cls, v: Any) -> str:
-        if v is None:
-            return v
-        return str(v)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -304,6 +301,10 @@ async def refine_draft(
                 user_id=body.user_id,
                 db=db,
                 locale=body.locale,
+                style_modifier_id=body.style_modifier_id,
+                style_modifier_prompt=body.style_modifier_prompt,
+                model_override=body.resolved_model_override(),
+                session_id=body.session_id,
                 langfuse_trace_id=body.langfuse_trace_id,
                 drafting_graph=request.app.state.drafting_graph,
             ):

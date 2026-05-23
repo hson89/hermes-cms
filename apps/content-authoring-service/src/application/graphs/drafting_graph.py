@@ -93,10 +93,17 @@ async def call_drafting_llm(state: DraftingState, config: RunnableConfig) -> Dic
 
     # 2. Invoke LLM and get response
     callbacks = config.get("callbacks", [])
-    response = await model_with_tools.ainvoke(formatted_messages, config={"callbacks": callbacks})
+    
+    # Use astream to ensure tokens are emitted for astream_events(graph)
+    full_response = None
+    async for chunk in model_with_tools.astream(formatted_messages, config={"callbacks": callbacks}):
+        if full_response is None:
+            full_response = chunk
+        else:
+            full_response += chunk
 
     return {
-        "messages": [response]
+        "messages": [full_response]
     }
 
 
