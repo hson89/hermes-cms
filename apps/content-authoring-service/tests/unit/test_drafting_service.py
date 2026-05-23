@@ -1,4 +1,5 @@
 import pytest
+import json
 from unittest.mock import MagicMock, AsyncMock, patch
 from src.application.drafting_service import DraftingService
 
@@ -10,29 +11,42 @@ def mock_ai_service():
 def drafting_service(mock_ai_service):
     return DraftingService(ai_service=mock_ai_service)
 
+class MockDraftingGraph:
+    def __init__(self, events=None):
+        self.aget_state = AsyncMock(return_value=None)
+        self.aupdate_state = AsyncMock()
+        self.events = events or []
+        self.called_inputs = None
+        self.called_config = None
+
+    async def astream_events(self, inputs, config=None, version="v2"):
+        self.called_inputs = inputs
+        self.called_config = config
+        for event in self.events:
+            yield event
+
 @pytest.mark.asyncio
 async def test_generate_draft_stream_yields_events(drafting_service, mock_ai_service):
-    # Mock internal astream behavior
-    mock_model = MagicMock()
-    mock_model_with_tools = MagicMock()
     mock_db = AsyncMock()
     
-    mock_chunk1 = MagicMock()
-    mock_chunk1.content = "Thought: I should start with a title."
-    mock_chunk2 = MagicMock()
-    mock_chunk2.content = '\n```json\n{"title": "Hello World", "slug": "hello-world", "body": "This is a test."}\n```'
+    mock_chunk1 = MagicMock(content="Thought: I should start with a title.", usage_metadata=None)
+    mock_chunk2 = MagicMock(content='\n```json\n{"title": "Hello World", "slug": "hello-world", "body": "This is a test."}\n```', usage_metadata=None)
     
-    async def mock_astream(*args, **kwargs):
-        yield mock_chunk1
-        yield mock_chunk2
-        
-    mock_ai_service.get_model.return_value = mock_model
-    mock_model.bind_tools.return_value = mock_model_with_tools
-    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
+    events_list = [
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk1}
+        },
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk2}
+        }
+    ]
+    mock_graph = MockDraftingGraph(events_list)
 
-    # Patch the repository behavior
     with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class:
-        
         mock_repo = mock_repo_class.return_value
         mock_repo.get_by_id.return_value = None
         mock_repo.save = AsyncMock()
@@ -44,44 +58,37 @@ async def test_generate_draft_stream_yields_events(drafting_service, mock_ai_ser
             schema_json={"fields": [{"name": "title", "type": "text"}]},
             tenant_id="tenant-1",
             user_id="user-1",
-            db=mock_db
+            db=mock_db,
+            drafting_graph=mock_graph
         ):
             events.append(event)
     
-    for event in events:
-        print(f"DEBUG: Event: {event['event']}")
-        if event['event'] == 'ERROR':
-            print(f"DEBUG: Error Data: {event['data']}")
-    
     assert len(events) > 0
     assert events[0]["event"] == "TEXT_DELTA"
-    # The last event should be DRAFT_COMPLETE because the chunks combined form a valid JSON
     assert any(e["event"] == "DRAFT_COMPLETE" for e in events)
 
 @pytest.mark.asyncio
 async def test_generate_draft_with_style_modifier(drafting_service, mock_ai_service):
-    mock_model = MagicMock()
-    mock_model_with_tools = MagicMock()
     mock_db = AsyncMock()
+    mock_chunk = MagicMock(content='{"title": "Styled Content"}', usage_metadata=None)
     
-    mock_chunk = MagicMock()
-    mock_chunk.content = '{"title": "Styled Content"}'
-    
-    async def mock_astream(*args, **kwargs):
-        yield mock_chunk
-        
-    mock_ai_service.get_model.return_value = mock_model
-    mock_model.bind_tools.return_value = mock_model_with_tools
-    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
+    events_list = [
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk}
+        }
+    ]
+    mock_graph = MockDraftingGraph(events_list)
 
     with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class:
-        
         mock_repo = mock_repo_class.return_value
         mock_repo.get_by_id.return_value = None
         mock_repo.save = AsyncMock()
 
         style_prompt = "Make it sound like a pirate."
         
+        events = []
         async for _ in drafting_service.generate_draft_stream(
             prompt="Hello",
             content_type_slug="post",
@@ -89,58 +96,24 @@ async def test_generate_draft_with_style_modifier(drafting_service, mock_ai_serv
             tenant_id="t1",
             user_id="u1",
             db=mock_db,
-            style_modifier_prompt=style_prompt
+            style_modifier_prompt=style_prompt,
+            drafting_graph=mock_graph
         ):
             pass
         
-        # Verify that astream was called
-        mock_model_with_tools.astream.assert_called()
-
+        assert mock_graph.called_inputs is not None
+        assert mock_graph.called_inputs["style_modifier_prompt"] == style_prompt
 
 @pytest.mark.asyncio
 async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_service):
-    """
-    Verify that when content_type_slug or schema_json is missing (bootstrap flow),
-    the generator checks for existing schemas, generates a new schema, registers it in Payload CMS,
-    and then falls through to stream the actual draft content from the LLM drafting chain.
-    """
     mock_db = AsyncMock()
-    mock_ai_service.generate_schema = AsyncMock(return_value={
-        "schema": {
-            "name": "Contact Form",
-            "slug": "contact-form",
-            "fields": [
-                {"name": "fullName", "type": "text", "label": "Full Name"},
-                {"name": "consent", "type": "boolean", "label": "Consent"},
-                {"name": "phone", "type": "number", "label": "Phone"}
-            ]
-        },
-        "sessionId": "123e4567-e89b-12d3-a456-426614174000",
-        "message": "Schema co-created successfully."
-    })
+    mock_ai_service.generate_schema = AsyncMock()
 
-    # Mock the LangChain LLM used for matching and drafting
     mock_model = MagicMock()
-    mock_model_with_tools = MagicMock()
-    
-    mock_match_res = MagicMock()
-    mock_match_res.content = "NONE" # No matching content type
-    
-    mock_chunk1 = MagicMock()
-    mock_chunk1.content = "Thought: Drafting contact form..."
-    mock_chunk2 = MagicMock()
-    mock_chunk2.content = ' {"fullName": "John Doe", "consent": true, "phone": 1234567}'
-    
-    async def mock_astream(*args, **kwargs):
-        yield mock_chunk1
-        yield mock_chunk2
-        
-    mock_ai_service.get_model.return_value = mock_model
+    mock_match_res = MagicMock(content="NONE")
     mock_model.ainvoke = AsyncMock(return_value=mock_match_res)
-    mock_model.bind_tools.return_value = mock_model_with_tools
-    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
+    mock_ai_service.get_model.return_value = mock_model
 
-    # Mock HTTP client responses
     class MockResponse:
         def __init__(self, json_data, status_code):
             self._json = json_data
@@ -151,7 +124,6 @@ async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_se
         def text(self):
             return json.dumps(self._json)
 
-    # Mock the database repository and httpx client
     with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class, \
          patch("httpx.AsyncClient", autospec=True) as mock_client_class:
         
@@ -161,20 +133,6 @@ async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_se
 
         mock_client = mock_client_class.return_value.__aenter__.return_value
         mock_client.get = AsyncMock(return_value=MockResponse({"docs": []}, 200))
-        mock_client.post = AsyncMock(return_value=MockResponse({
-            "id": "mock-ct-id",
-            "name": "Contact Form",
-            "slug": "contact-form",
-            "schema": {
-                "name": "Contact Form",
-                "slug": "contact-form",
-                "fields": [
-                    {"name": "fullName", "type": "text", "label": "Full Name"},
-                    {"name": "consent", "type": "boolean", "label": "Consent"},
-                    {"name": "phone", "type": "number", "label": "Phone"}
-                ]
-            }
-        }, 201))
 
         events = []
         async for event in drafting_service.generate_draft_stream(
@@ -187,50 +145,40 @@ async def test_generate_draft_stream_bootstrap_flow(drafting_service, mock_ai_se
         ):
             events.append(event)
 
-    # 1. Assert generate_schema was NOT called (we do not automatically co-create schemas if none matches)
     mock_ai_service.generate_schema.assert_not_called()
-
-    # 2. Verify events: should contain the warning TEXT_DELTA
     assert any(e["event"] == "TEXT_DELTA" for e in events)
     warning_event = next(e for e in events if e["event"] == "TEXT_DELTA" and "I couldn't find a matching content type" in e["data"])
     assert warning_event is not None
-    
-    # 3. Verify no schema updated or draft complete events are yielded
     assert not any(e["event"] == "SCHEMA_UPDATED" for e in events)
     assert not any(e["event"] == "DRAFT_COMPLETE" for e in events)
 
-
 @pytest.mark.asyncio
 async def test_generate_draft_stream_bootstrap_flow_with_matching(drafting_service, mock_ai_service):
-    """
-    Verify that when content_type_slug or schema_json is missing (bootstrap flow),
-    and there is an existing content type matching the user prompt,
-    the generator reuses it and falls through to stream the actual draft content.
-    """
     mock_db = AsyncMock()
 
-    # Mock the LangChain LLM used for matching and drafting
     mock_model = MagicMock()
-    mock_model_with_tools = MagicMock()
-    
     mock_match_res = MagicMock()
-    mock_match_res.content = "existing-article" # Matched slug
-    
-    mock_chunk1 = MagicMock()
-    mock_chunk1.content = "Thought: Drafting article..."
-    mock_chunk2 = MagicMock()
-    mock_chunk2.content = '\n```json\n{"title": "Matched Fuel Saving Info", "slug": "matched-fuel-saving", "body": "matched content"}\n```'
-    
-    async def mock_astream(*args, **kwargs):
-        yield mock_chunk1
-        yield mock_chunk2
-        
-    mock_ai_service.get_model.return_value = mock_model
+    mock_match_res.content = "existing-article"
     mock_model.ainvoke = AsyncMock(return_value=mock_match_res)
-    mock_model.bind_tools.return_value = mock_model_with_tools
-    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
+    mock_ai_service.get_model.return_value = mock_model
 
-    # Mock HTTP client responses
+    mock_chunk1 = MagicMock(content="Thought: Drafting article...", usage_metadata=None)
+    mock_chunk2 = MagicMock(content='\n```json\n{"title": "Matched Fuel Saving Info", "slug": "matched-fuel-saving", "body": "matched content"}\n```', usage_metadata=None)
+    
+    events_list = [
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk1}
+        },
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk2}
+        }
+    ]
+    mock_graph = MockDraftingGraph(events_list)
+
     class MockResponse:
         def __init__(self, json_data, status_code):
             self._json = json_data
@@ -241,7 +189,6 @@ async def test_generate_draft_stream_bootstrap_flow_with_matching(drafting_servi
         def text(self):
             return json.dumps(self._json)
 
-    # Mock the database repository and httpx client
     with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class, \
          patch("httpx.AsyncClient", autospec=True) as mock_client_class:
         
@@ -276,55 +223,40 @@ async def test_generate_draft_stream_bootstrap_flow_with_matching(drafting_servi
             schema_json=None,
             tenant_id="tenant-123",
             user_id="user-123",
-            db=mock_db
+            db=mock_db,
+            drafting_graph=mock_graph
         ):
             events.append(event)
 
-    # SCHEMA GENERATION should NOT be called since a match was found!
     mock_ai_service.generate_schema.assert_not_called()
-
-    # 1. Verify match reused
     assert any("Reusing existing" in e.get("data", "") for e in events if e["event"] == "TEXT_DELTA")
-    
-    # 2. Verify schema event
     assert any(e["event"] == "SCHEMA_UPDATED" for e in events)
     schema_event = next(e for e in events if e["event"] == "SCHEMA_UPDATED")
     assert schema_event["data"]["contentType"]["id"] == "existing-ct-id"
     assert schema_event["data"]["contentType"]["slug"] == "existing-article"
-    
-    # 3. Verify draft completed
     assert any(e["event"] == "DRAFT_COMPLETE" for e in events)
     draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
     assert draft_event["data"]["draft"]["title"] == "Matched Fuel Saving Info"
 
-
 @pytest.mark.asyncio
 async def test_generate_draft_stream_self_healing(drafting_service, mock_ai_service):
-    """
-    Verify that when the model output is plain text (not valid JSON),
-    the generator catches the parse error, invokes the healing model,
-    and successfully yields the parsed JSON draft from the healed response.
-    """
     mock_db = AsyncMock()
-
-    # Mock the LLM used for primary generation (which returns plain text) and healing (which returns JSON)
     mock_model = MagicMock()
-    mock_model_with_tools = MagicMock()
-    
-    mock_chunk = MagicMock()
-    mock_chunk.content = "Thought: Generating...\n```json\n{\n  \"title\": \"Saving Fuel\" (malformed JSON)\n"
-    
-    async def mock_astream(*args, **kwargs):
-        yield mock_chunk
-        
     mock_ai_service.get_model.return_value = mock_model
-    mock_model.bind_tools.return_value = mock_model_with_tools
-    mock_model_with_tools.astream = MagicMock(side_effect=mock_astream)
 
-    # Healing response
-    mock_healed_res = MagicMock()
-    mock_healed_res.content = '{"title": "Saving Fuel Healed", "body": "healed content"}'
+    mock_healed_res = MagicMock(content='{"title": "Saving Fuel Healed", "body": "healed content"}')
     mock_model.ainvoke = AsyncMock(return_value=mock_healed_res)
+
+    mock_chunk = MagicMock(content="Thought: Generating...\n```json\n{\n  \"title\": \"Saving Fuel\" (malformed JSON)\n", usage_metadata=None)
+    
+    events_list = [
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk}
+        }
+    ]
+    mock_graph = MockDraftingGraph(events_list)
 
     with patch("src.application.drafting_service.SQLSessionRepository", autospec=True) as mock_repo_class:
         mock_repo = mock_repo_class.return_value
@@ -338,20 +270,13 @@ async def test_generate_draft_stream_self_healing(drafting_service, mock_ai_serv
             schema_json={"fields": [{"name": "title", "type": "text"}, {"name": "body", "type": "text"}]},
             tenant_id="tenant-123",
             user_id="user-123",
-            db=mock_db
+            db=mock_db,
+            drafting_graph=mock_graph
         ):
             events.append(event)
 
-    # 1. Verify astream was called for streaming primary content
-    mock_model_with_tools.astream.assert_called()
-    
-    # 2. Verify ainvoke was called on the healing model
     mock_model.ainvoke.assert_called()
-
-    # 3. Verify healing succeeded and returned valid schema data
     assert any(e["event"] == "DRAFT_COMPLETE" for e in events)
     draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
     assert draft_event["data"]["draft"]["title"] == "Saving Fuel Healed"
     assert draft_event["data"]["draft"]["body"] == "healed content"
-
-

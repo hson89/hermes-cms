@@ -261,35 +261,38 @@ def test_validator_rejects_invalid_unique_or_localized_types():
 async def test_corrective_loop_succeeds_on_first_retry():
     """
     Verify that the corrective feedback loop triggers when the LLM returns an invalid
-    field type, and succeeds when the LLM corrects it on the subsequent retry.
+    schema structure (duplicate fields), and succeeds when the LLM corrects it on the subsequent retry.
     """
     from src.application.ai_service import AIService
+    from src.domain.content_drafting.structures import ContentSchemaOutput, FieldDefinition
 
     tenant_id = uuid4()
     user_id = uuid4()
     ai_service = AIService()
 
-    # Mock response 1: returns invalid 'markdown' field type
-    response1 = MagicMock()
-    response1.content = json.dumps({
-        "name": "Article",
-        "fields": [
-            {"name": "body", "type": "markdown", "required": True, "label": "Body"}
-        ]
-    })
+    # Pydantic structured output 1: returns duplicate fields causing InvalidSchemaError
+    response1 = ContentSchemaOutput(
+        name="Article",
+        fields=[
+            FieldDefinition(name="body", type="text", required=True, label="Body"),
+            FieldDefinition(name="body", type="richText", required=True, label="Body")
+        ],
+        explanation="Initial malformed schema with duplicate body fields"
+    )
 
-    # Mock response 2: returns corrected 'richText' field type
-    response2 = MagicMock()
-    response2.content = json.dumps({
-        "name": "Article",
-        "fields": [
-            {"name": "body", "type": "richText", "required": True, "label": "Body"}
-        ]
-    })
+    # Pydantic structured output 2: returns corrected body field with type 'richText'
+    response2 = ContentSchemaOutput(
+        name="Article",
+        fields=[
+            FieldDefinition(name="body", type="richText", required=True, label="Body")
+        ],
+        explanation="Healed schema with single rich text body field"
+    )
 
     mock_llm = MagicMock()
-    # first call returns response1, second call returns response2
-    mock_llm.ainvoke = AsyncMock(side_effect=[response1, response2])
+    mock_structured_llm = MagicMock()
+    mock_structured_llm.ainvoke = AsyncMock(side_effect=[response1, response2])
+    mock_llm.with_structured_output.return_value = mock_structured_llm
 
     with patch("src.application.ai_service.init_chat_model", return_value=mock_llm), \
          patch("src.application.ai_service.settings") as mock_settings:
@@ -305,32 +308,36 @@ async def test_corrective_loop_succeeds_on_first_retry():
         assert result["status"] == SessionStatus.COMPLETED
         assert result["schema"]["fields"][0]["type"] == "richText"
         # Verify ainvoke was called exactly twice (1 initial + 1 corrective loop)
-        assert mock_llm.ainvoke.call_count == 2
+        assert mock_structured_llm.ainvoke.call_count == 2
 
 
 @pytest.mark.asyncio
 async def test_corrective_loop_raises_after_max_retries():
     """
-    Verify that if the LLM keeps returning invalid field types even after 3 corrective feedback attempts,
+    Verify that if the LLM keeps returning invalid schema structures even after 3 corrective feedback attempts,
     the generator raises a ValueError and marks the session as FAILED.
     """
     from src.application.ai_service import AIService
+    from src.domain.content_drafting.structures import ContentSchemaOutput, FieldDefinition
 
     tenant_id = uuid4()
     user_id = uuid4()
     ai_service = AIService()
 
-    # Returns invalid field type consistently
-    bad_response = MagicMock()
-    bad_response.content = json.dumps({
-        "name": "Article",
-        "fields": [
-            {"name": "body", "type": "unsupported_type", "required": True, "label": "Body"}
-        ]
-    })
+    # Returns duplicate fields consistently to keep raising errors
+    bad_response = ContentSchemaOutput(
+        name="Article",
+        fields=[
+            FieldDefinition(name="body", type="text", required=True, label="Body"),
+            FieldDefinition(name="body", type="richText", required=True, label="Body")
+        ],
+        explanation="Persistent duplicate body fields"
+    )
 
     mock_llm = MagicMock()
-    mock_llm.ainvoke = AsyncMock(return_value=bad_response)
+    mock_structured_llm = MagicMock()
+    mock_structured_llm.ainvoke = AsyncMock(return_value=bad_response)
+    mock_llm.with_structured_output.return_value = mock_structured_llm
 
     with patch("src.application.ai_service.init_chat_model", return_value=mock_llm), \
          patch("src.application.ai_service.settings") as mock_settings:
@@ -338,7 +345,7 @@ async def test_corrective_loop_raises_after_max_retries():
         mock_settings.LANGCHAIN_MODEL_PROVIDER = "openai"
         mock_settings.LANGCHAIN_ENDPOINT_URL = None
         
-        with pytest.raises(ValueError, match="Failed to generate a valid schema after 3 retries"):
+        with pytest.raises(ValueError, match="Failed to generate a valid schema. Last error:.*"):
             await ai_service.generate_schema(
                 prompt="test persistent invalid schemas",
                 tenant_id=tenant_id,

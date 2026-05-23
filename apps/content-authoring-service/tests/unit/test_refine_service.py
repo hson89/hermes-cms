@@ -1,4 +1,5 @@
 import pytest
+import json
 from unittest.mock import MagicMock, AsyncMock, patch
 from src.application.refine_service import RefineService
 
@@ -10,34 +11,45 @@ def mock_ai_service():
 def refine_service(mock_ai_service):
     return RefineService(ai_service=mock_ai_service)
 
+class MockDraftingGraph:
+    def __init__(self, events=None):
+        self.aget_state = AsyncMock(return_value=None)
+        self.aupdate_state = AsyncMock()
+        self.events = events or []
+        self.called_inputs = None
+        self.called_config = None
+
+    async def astream_events(self, inputs, config=None, version="v2"):
+        self.called_inputs = inputs
+        self.called_config = config
+        for event in self.events:
+            yield event
+
 @pytest.mark.asyncio
 async def test_refine_draft_stream_yields_events(refine_service, mock_ai_service):
-    mock_model = MagicMock()
     mock_db = AsyncMock()
     
-    mock_chunk1 = MagicMock()
-    mock_chunk1.content = "Refining content..."
-    mock_chunk2 = MagicMock()
-    mock_chunk2.content = ' {"title": "Refined Hello World"}'
+    mock_chunk1 = MagicMock(content="Refining content...", usage_metadata=None)
+    mock_chunk2 = MagicMock(content=' {"title": "Refined Hello World"}', usage_metadata=None)
     
-    async def mock_astream(*args, **kwargs):
-        yield mock_chunk1
-        yield mock_chunk2
-        
-    mock_ai_service.get_model.return_value = mock_model
+    events_list = [
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk1}
+        },
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk2}
+        }
+    ]
+    mock_graph = MockDraftingGraph(events_list)
 
-    with patch("src.application.refine_service.get_refinement_prompt") as mock_get_prompt, \
-         patch("src.application.refine_service.SQLSessionRepository", autospec=True) as mock_repo_class:
-        
-        mock_prompt = MagicMock()
-        mock_get_prompt.return_value = mock_prompt
+    with patch("src.application.refine_service.SQLSessionRepository", autospec=True) as mock_repo_class:
         mock_repo = mock_repo_class.return_value
         mock_repo.get_by_id.return_value = None
         mock_repo.save = AsyncMock()
-
-        mock_chain = MagicMock()
-        mock_chain.astream = MagicMock(side_effect=mock_astream)
-        mock_prompt.__or__.return_value = mock_chain
 
         events = []
         async for event in refine_service.refine_draft_stream(
@@ -46,7 +58,8 @@ async def test_refine_draft_stream_yields_events(refine_service, mock_ai_service
             schema_json={},
             tenant_id="tenant-1",
             user_id="user-1",
-            db=mock_db
+            db=mock_db,
+            drafting_graph=mock_graph
         ):
             events.append(event)
     
@@ -55,32 +68,26 @@ async def test_refine_draft_stream_yields_events(refine_service, mock_ai_service
 
 @pytest.mark.asyncio
 async def test_refine_draft_with_style_modifier(refine_service, mock_ai_service):
-    mock_model = MagicMock()
     mock_db = AsyncMock()
+    mock_chunk = MagicMock(content='{"title": "Styled Refined Content"}', usage_metadata=None)
     
-    mock_chunk = MagicMock()
-    mock_chunk.content = '{"title": "Styled Refined Content"}'
-    
-    async def mock_astream(*args, **kwargs):
-        yield mock_chunk
-        
-    mock_ai_service.get_model.return_value = mock_model
+    events_list = [
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk}
+        }
+    ]
+    mock_graph = MockDraftingGraph(events_list)
 
-    with patch("src.application.refine_service.get_refinement_prompt") as mock_get_prompt, \
-         patch("src.application.refine_service.SQLSessionRepository", autospec=True) as mock_repo_class:
-        
-        mock_prompt = MagicMock()
-        mock_get_prompt.return_value = mock_prompt
+    with patch("src.application.refine_service.SQLSessionRepository", autospec=True) as mock_repo_class:
         mock_repo = mock_repo_class.return_value
         mock_repo.get_by_id.return_value = None
         mock_repo.save = AsyncMock()
 
-        mock_chain = MagicMock()
-        mock_chain.astream = MagicMock(side_effect=mock_astream)
-        mock_prompt.__or__.return_value = mock_chain
-
         style_prompt = "Make it sound like a pirate."
         
+        events = []
         async for _ in refine_service.refine_draft_stream(
             prompt="Refine this",
             current_draft_json={"title": "Old"},
@@ -88,11 +95,10 @@ async def test_refine_draft_with_style_modifier(refine_service, mock_ai_service)
             tenant_id="t1",
             user_id="u1",
             db=mock_db,
-            style_modifier_prompt=style_prompt
+            style_modifier_prompt=style_prompt,
+            drafting_graph=mock_graph
         ):
             pass
         
-        # Verify that style_modifier_instructions was passed to astream
-        mock_chain.astream.assert_called_once()
-        call_args = mock_chain.astream.call_args[0][0]
-        assert call_args["style_modifier_instructions"] == style_prompt
+        assert mock_graph.called_inputs is not None
+        assert mock_graph.called_inputs["style_modifier_prompt"] == style_prompt

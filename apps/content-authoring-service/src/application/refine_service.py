@@ -44,76 +44,100 @@ class RefineService:
         model_override: Optional[str] = None,
         session_id: Optional[str] = None,
         langfuse_trace_id: Optional[str] = None,
+        drafting_graph: Optional[Any] = None,
     ) -> AsyncGenerator[dict[str, Any], None]:
         """
         Refines an existing draft based on user feedback.
         """
-        repo = SQLSessionRepository(db)
-        
-        if session_id:
-            try:
-                session = await repo.get_by_id(UUID(session_id))
-                if not session or str(session.tenant_id) != tenant_id:
-                    session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
-            except (ValueError, AttributeError):
-                session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
-        else:
-            session = AIAgentSession(tenant_id=tenant_id, user_id=user_id)
-            
-        session.add_message("user", f"Refine draft: {prompt}")
-        await repo.save(session)
+        import uuid
+        from datetime import datetime, timezone
+        from langchain_core.messages import HumanMessage, AIMessage
 
-        # Use style modifier instructions
+        if drafting_graph is None:
+            from src.application.graphs.drafting_graph import drafting_graph as compiled_graph
+            drafting_graph = compiled_graph
+
+        resolved_session_id = session_id or str(uuid.uuid4())
         style_modifier_instructions = style_modifier_prompt or ""
-        resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
-        refinement_prompt = get_refinement_prompt(self.ai_service.langfuse_client)
-        model = self.ai_service.get_model(model_override=resolved_model)
-        chain = refinement_prompt | model
-        
+
         # Initialize Langfuse handler
         langfuse_handler = self.ai_service._get_langfuse_handler(
             trace_id=langfuse_trace_id,
-            session_id=str(session.id)
+            session_id=resolved_session_id
         )
-        config = {}
-        if langfuse_handler:
-            config = {
-                "callbacks": [langfuse_handler],
-                "metadata": {
-                    "langfuse_user_id": user_id,
-                    "langfuse_session_id": str(session.id),
-                    "langfuse_tags": ["content-refinement", f"tenant:{tenant_id}"],
-                }
+        config = {
+            "configurable": {
+                "thread_id": resolved_session_id,
+                "ai_service": self.ai_service,
+                "langfuse_client": self.ai_service.langfuse_client,
+                "model_override": model_override,
+            },
+            "callbacks": [langfuse_handler] if langfuse_handler else [],
+            "metadata": {
+                "langfuse_user_id": user_id,
+                "langfuse_session_id": resolved_session_id,
+                "langfuse_tags": ["content-refinement", f"tenant:{tenant_id}"],
+            }
+        }
+
+        state_container = await drafting_graph.aget_state(config)
+
+        if not state_container or not state_container.values:
+            # First turn: Initialize state
+            inputs = {
+                "messages": [HumanMessage(content=prompt)],
+                "tenant_id": tenant_id,
+                "user_id": user_id,
+                "schema_json": schema_json,
+                "current_draft_json": current_draft_json,
+                "validation_payloads": [],
+                "content_type_slug": None,
+                "locale": locale,
+                "style_modifier_prompt": style_modifier_instructions,
+                "original_user_request": prompt,
+                "user_input": prompt,
+                "is_refinement": True,
+            }
+            event_inputs = inputs
+        else:
+            # Subsequent turn: Append user turn
+            await drafting_graph.aupdate_state(
+                config,
+                {"messages": [HumanMessage(content=prompt)], "current_draft_json": current_draft_json},
+                as_node="execute_tools"
+            )
+            event_inputs = {
+                "user_input": prompt,
+                "is_refinement": True,
+                "current_draft_json": current_draft_json,
             }
 
-        history = session.to_langchain_messages()
-
+        resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
         full_content = ""
         total_input_tokens = 0
         total_output_tokens = 0
-        
-        async for chunk in chain.astream(
-            {
-                "locale": locale,
-                "style_modifier_instructions": style_modifier_instructions,
-                "current_draft_json": json.dumps(current_draft_json, indent=2),
-                "refinement_input": prompt,
-                "schema_json": json.dumps(schema_json, indent=2),
-                "history": history,
-            },
-            config=config
-        ):
-            if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
-                total_input_tokens += chunk.usage_metadata.get('input_tokens', 0)
-                total_output_tokens += chunk.usage_metadata.get('output_tokens', 0)
 
-            if hasattr(chunk, 'content'):
+        async for event in drafting_graph.astream_events(event_inputs, config=config, version="v2"):
+            kind = event["event"]
+            node_name = event.get("metadata", {}).get("langgraph_node")
+            
+            if kind == "on_chat_model_stream" and node_name == "call_drafting_llm":
+                chunk = event["data"]["chunk"]
+                if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
+                    total_input_tokens += chunk.usage_metadata.get('input_tokens', 0)
+                    total_output_tokens += chunk.usage_metadata.get('output_tokens', 0)
+
                 content = chunk.content
-                full_content += content
-                yield {"event": "TEXT_DELTA", "data": content}
+                if isinstance(content, list):
+                    content = "".join([c.get("text", "") if isinstance(c, dict) else str(c) for c in content])
+                
+                if content:
+                    full_content += content
+                    yield {"event": "TEXT_DELTA", "data": content}
 
-        session.add_message("assistant", full_content)
-        await repo.save(session)
+            elif kind == "on_tool_start" and node_name == "call_drafting_llm":
+                tool_name = event["name"]
+                yield {"event": "TEXT_DELTA", "data": f"\n[Executing {tool_name}...]\n"}
 
         try:
             start_idx = full_content.find('{')
@@ -123,19 +147,23 @@ class RefineService:
             else:
                 json_str = full_content
             refined_data = json.loads(json_str)
-            
-            # Calculate cost
             cost = calculate_cost(
                 model_identifier=resolved_model,
                 input_tokens=total_input_tokens,
                 output_tokens=total_output_tokens
             )
             
+            await drafting_graph.aupdate_state(
+                config,
+                {"current_draft_json": refined_data},
+                as_node="call_drafting_llm"
+            )
+
             yield {
                 "event": "REFINE_COMPLETE", 
                 "data": {
                     "draft": refined_data, 
-                    "sessionId": str(session.id),
+                    "sessionId": resolved_session_id,
                     "usage_metadata": {
                         "input_tokens": total_input_tokens,
                         "output_tokens": total_output_tokens,
@@ -146,7 +174,6 @@ class RefineService:
             }
         except Exception as e:
             try:
-                # Healing block: attempt to recover plain text output into structured JSON schema format
                 healing_template = get_healing_prompt(self.ai_service.langfuse_client if self.ai_service else None)
                 healing_prompt = healing_template.messages[0].prompt.format(
                     full_content=full_content,
@@ -168,18 +195,23 @@ class RefineService:
                     json_str_healed = clean_healed
                 
                 refined_healed = json.loads(json_str_healed)
-                
                 cost = calculate_cost(
                     model_identifier=resolved_model,
                     input_tokens=total_input_tokens,
                     output_tokens=total_output_tokens
                 )
                 
+                await drafting_graph.aupdate_state(
+                    config,
+                    {"current_draft_json": refined_healed},
+                    as_node="call_drafting_llm"
+                )
+
                 yield {
                     "event": "REFINE_COMPLETE", 
                     "data": {
                         "draft": refined_healed, 
-                        "sessionId": str(session.id),
+                        "sessionId": resolved_session_id,
                         "usage_metadata": {
                             "input_tokens": total_input_tokens,
                             "output_tokens": total_output_tokens,

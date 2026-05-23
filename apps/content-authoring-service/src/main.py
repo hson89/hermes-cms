@@ -41,8 +41,21 @@ from src.infrastructure.auth import require_internal_secret as _require_internal
 async def lifespan(app: FastAPI):  # noqa: ANN001
     """Application lifespan – initialise / teardown shared resources."""
     app.state.ai_service = AIService()
-    yield
-    # Teardown (DB connections, etc.) goes here.
+    
+    # Decoupled setup: Execute checkpointer setup exactly once on startup
+    from src.infrastructure.database import get_db_checkpointer
+    async with get_db_checkpointer() as saver:
+        await saver.setup()
+        app.state.checkpointer = saver
+        
+        # Compile graphs with checkpointer exactly once to prevent rebuild overhead
+        from src.application.graphs.schema_graph import builder as schema_builder
+        from src.application.graphs.drafting_graph import builder as drafting_builder
+        
+        app.state.schema_graph = schema_builder.compile(checkpointer=saver)
+        app.state.drafting_graph = drafting_builder.compile(checkpointer=saver)
+        
+        yield
 
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -249,6 +262,7 @@ async def generate_draft(
                 model_override=body.resolved_model_override(),
                 session_id=body.session_id,
                 langfuse_trace_id=body.langfuse_trace_id,
+                drafting_graph=request.app.state.drafting_graph,
             ):
                 if await request.is_disconnected():
                     break
@@ -291,6 +305,7 @@ async def refine_draft(
                 db=db,
                 locale=body.locale,
                 langfuse_trace_id=body.langfuse_trace_id,
+                drafting_graph=request.app.state.drafting_graph,
             ):
                 if await request.is_disconnected():
                     break
@@ -332,6 +347,7 @@ async def generate_schema(
             current_schema=body.current_schema,
             db=db,
             langfuse_trace_id=body.langfuse_trace_id,
+            schema_graph=request.app.state.schema_graph,
         )
         return GenerateSchemaResponse(
             session_id=result["sessionId"],
@@ -363,7 +379,7 @@ async def get_session(
 ) -> dict:
     """Return the current status and context of an AIAgentSession."""
     ai_service: AIService = request.app.state.ai_service
-    session = await ai_service.get_session(session_id, db=db)
+    session = await ai_service.get_session(session_id, db=db, schema_graph=request.app.state.schema_graph)
     if session is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -466,6 +482,7 @@ async def post_session_message(
                 current_schema=body.current_schema,
                 db=db,
                 langfuse_trace_id=body.langfuse_trace_id,
+                schema_graph=request.app.state.schema_graph,
             ):
                 yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
         except ValueError as exc:
