@@ -22,8 +22,8 @@ export const Nav: React.FC<any> = () => {
   return (
     <nav className="alexandria-nav fixed left-0 top-0 h-screen w-72 lg:w-[18rem] z-[1000] bg-surface-container flex flex-col py-6 gap-y-1 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
       <div className="px-6 pb-8">
-        <h1 className="font-headline text-2xl font-black text-primary m-0">Alexandria</h1>
-        <p className="font-label uppercase tracking-widest text-[10px] text-on-surface-variant mt-1 m-0">AI Headless CMS</p>
+        <h1 className="font-headline text-2xl font-black text-primary m-0">Hermes</h1>
+        <p className="font-label uppercase tracking-widest text-[10px] text-on-surface-variant mt-1 m-0">CMS</p>
       </div>
 
       <Link 

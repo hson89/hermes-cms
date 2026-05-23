@@ -4,11 +4,11 @@ shell commands, and other important information, read the current plan:
 /home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/plan.md
 <!-- SPECKIT END -->
 
-# Hermes AI — Gemini Agent Context
+# Hermes CMS — Gemini Agent Context
 
 ## Quick Reference
 
-- **Product name**: Hermes AI (always use this in UI, docs, and branding)
+- **Product name**: Hermes CMS (always use this in UI, docs, and branding)
 - **Constitution**: `.specify/memory/constitution.md` (v2.1.0) — read before any
   architectural decisions
 - **Design system**: `DESIGN.md` ("Alexandria — High-End Editorial")

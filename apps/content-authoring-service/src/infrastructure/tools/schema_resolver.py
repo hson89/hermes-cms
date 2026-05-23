@@ -5,15 +5,15 @@ T016 - Build schema_resolver LangChain tool
 """
 
 import httpx
-from typing import Any
-from langchain_core.tools import tool
+from typing import Any, Annotated
+from langchain_core.tools import tool, InjectedToolArg
 from src.infrastructure.config import settings
 
 @tool
 async def schema_resolver(
     content_type_slug: str,
     updates: dict[str, Any],
-    tenant_id: str,
+    tenant_id: Annotated[str, InjectedToolArg],
 ) -> str:
     """
     Updates the structural definition (schema) of a content type in the CMS. 
@@ -34,11 +34,8 @@ async def schema_resolver(
     
     try:
         async with httpx.AsyncClient() as client:
-            # First, find the content type by slug to get its ID
-            # Payload REST API uses slugs for collection access, but ContentTypes is a collection itself.
-            # So it's /api/content-types?where[slug][equals]=...
-            
-            find_url = f"{cms_url}/api/content-types?where[slug][equals]={content_type_slug}"
+            # First, find the content type by slug and tenant to get its ID to ensure logical tenant isolation
+            find_url = f"{cms_url}/api/content-types?where[slug][equals]={content_type_slug}&where[tenant][equals]={tenant_id}"
             response = await client.get(find_url, headers=headers)
             response.raise_for_status()
             docs = response.json().get("docs", [])

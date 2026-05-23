@@ -41,7 +41,7 @@
 
 ### User Story 1 - Schema-Based AI Drafting (Priority: P1)
 
-As a content author, I want to ask Alexandria AI to draft an entry based on a specific content type so that I can quickly generate a structured starting point for my content.
+As a content author, I want to ask Hermes AI to draft an entry based on a specific content type so that I can quickly generate a structured starting point for my content.
 
 **Why this priority**: This is the core value proposition of the "AI-First" CMS, allowing rapid content creation.
 
@@ -86,7 +86,7 @@ As a content author, I want to set a global style and tone modifier so that all 
 
 ### User Story 4 - AI-Driven Image Generation (Priority: P4)
 
-As a content author, I want to ask Alexandria AI to generate relevant images for my schema's media fields so that I can automatically populate media elements within my structured draft.
+As a content author, I want to ask Hermes AI to generate relevant images for my schema's media fields so that I can automatically populate media elements within my structured draft.
 
 **Why this priority**: Enhances the completeness of the draft by co-creating rich media assets alongside text, matching the active design aesthetics.
 
@@ -138,7 +138,7 @@ As a content author, I want to recover my unsaved drafting sessions from network
 ### Functional Requirements
 
 - **FR-001**: System MUST provide a comprehensive workspace layout consisting of:
-  - **Side Navigation Bar**: Fixed left, containing "Alexandria" branding, "New Entry" action, and navigation links (Command Center, Editor, Library, Developer Portal).
+  - **Side Navigation Bar**: Fixed left, containing "Hermes" branding, "New Entry" action, and navigation links (Command Center, Editor, Library, Developer Portal).
   - **Top App Bar**: Fixed top (right of Side Nav), glassmorphic (`backdrop-blur-xl`), containing the Workspace title ("The Content Oracle"), Drafts/Published filters, and Save/Publish actions.
   - **Main Split-View Workspace**: Below Top App Bar, featuring an **AI Agent Panel** on the left and a **Structured Editor** on the right.
 - **FR-002**: System MUST automatically identify the target Content Type (schema) from natural language prompts, or dynamically create/modify it inline via the shared `content-authoring-service` toolset if the schema does not exist.

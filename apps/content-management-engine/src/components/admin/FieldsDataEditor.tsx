@@ -267,7 +267,7 @@ export const FieldsDataEditor: React.FC<any> = () => {
                           ? 'bg-tertiary text-on-tertiary border-tertiary shadow-md' 
                           : 'bg-tertiary/5 hover:bg-tertiary/10 text-tertiary border-tertiary/20 hover:scale-105 active:scale-95'
                       }`}
-                      title="Refine this specific field using Alexandria AI"
+                      title="Refine this specific field using Hermes AI"
                     >
                       <Icon name="auto_awesome" size={14} filled={refinementField === field.name} />
                     </button>

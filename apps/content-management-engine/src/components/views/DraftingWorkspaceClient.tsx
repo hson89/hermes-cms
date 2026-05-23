@@ -532,60 +532,55 @@ export const DraftingWorkspaceClient: React.FC = () => {
 
       {showRecovery && <RecoveryDialog onResume={handleResume} onDiscard={handleDiscard} />}
       
-      {/* TopAppBar matching 'The Content Oracle' mockup */}
-      <header className="flex justify-between items-center px-8 w-full bg-surface-bright/80 dark:bg-surface-container-low/80 backdrop-blur-xl h-16 shrink-0 z-40 border-b border-outline-variant/15">
-        <div className="flex items-center gap-6">
-          <a 
-            className="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary pb-1 font-body text-sm tracking-tight cursor-pointer" 
+      {/* Top Header — Drafts/Published/Archived tabs + Save/Publish actions */}
+      <header className="flex justify-between items-center px-6 w-full bg-surface-container-lowest border-b border-outline-variant/15 h-16 shrink-0 z-40">
+        {/* Left: tab navigation */}
+        <nav className="flex gap-1 h-full items-end">
+          <a
+            className="text-primary font-medium text-sm border-b-2 border-primary pb-[19px] pt-5 px-1 font-body cursor-pointer"
             onClick={() => router.push('/admin/collections/content-items')}
           >
             Drafts
           </a>
-          <a 
-            className="text-on-surface-variant dark:text-outline-variant hover:bg-surface-variant/50 dark:hover:bg-surface-container-highest/50 transition-colors px-2 py-1 rounded font-body text-sm tracking-tight cursor-pointer"
+          <a
+            className="text-on-surface-variant hover:text-on-surface font-medium text-sm pb-[19px] pt-5 px-1 font-body cursor-pointer transition-colors"
             onClick={() => router.push('/admin/collections/content-items')}
           >
             Published
           </a>
-          <a 
-            className="text-on-surface-variant dark:text-outline-variant hover:bg-surface-variant/50 dark:hover:bg-surface-container-highest/50 transition-colors px-2 py-1 rounded font-body text-sm tracking-tight cursor-pointer"
+          <a
+            className="text-on-surface-variant hover:text-on-surface font-medium text-sm pb-[19px] pt-5 px-1 font-body cursor-pointer transition-colors"
             onClick={() => router.push('/admin/collections/content-items')}
           >
             Archived
           </a>
-        </div>
-        
-        <div className="flex items-center gap-4 relative">
-          {/* History Button & Dropdown */}
-          <div className="relative">
-            <button 
-              onClick={() => {
-                setShowVersionsDropdown(prev => !prev)
-                setShowStyleHelp(false)
-              }}
+        </nav>
+
+        {/* Right: utility icons + Save + Publish */}
+        <div className="flex items-center gap-3 relative">
+          {/* History */}
+          <div className="relative flex items-center gap-1 border-r border-outline-variant/20 pr-3">
+            <button
+              onClick={() => { setShowVersionsDropdown(prev => !prev); setShowStyleHelp(false) }}
               title="View revision history"
-              className="text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer"
+              className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer"
             >
               <span className="material-symbols-outlined text-xl">history</span>
             </button>
             {showVersionsDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-surface-container-lowest dark:bg-surface-container-low rounded-xl border border-outline-variant/15 shadow-2xl z-50 p-2 font-body animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-2xl z-50 p-2 font-body animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="px-3 py-1.5 text-[9px] uppercase tracking-widest text-outline font-bold border-b border-outline-variant/10 select-none">
                   Revision History
                 </div>
-                <div className="max-h-60 overflow-y-auto mt-1 custom-scrollbar">
+                <div className="max-h-60 overflow-y-auto mt-1">
                   {versions.length === 0 ? (
                     <div className="px-3 py-4 text-xs text-outline italic text-center">No revision history yet.</div>
                   ) : (
                     versions.map((ver, idx) => (
                       <button
                         key={idx}
-                        onClick={() => {
-                          setSession((prev: any) => ({ ...prev, draftData: ver.data }))
-                          handleSave(ver.data)
-                          setShowVersionsDropdown(false)
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors flex flex-col gap-1 cursor-pointer border-none bg-transparent"
+                        onClick={() => { setSession((prev: any) => ({ ...prev, draftData: ver.data })); handleSave(ver.data); setShowVersionsDropdown(false) }}
+                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-high transition-colors flex flex-col gap-1 cursor-pointer border-none bg-transparent"
                       >
                         <span className="text-xs font-semibold text-on-surface flex items-center justify-between">
                           {ver.label}
@@ -602,24 +597,18 @@ export const DraftingWorkspaceClient: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Settings Button (Active tone/style status) */}
-          <div className="relative">
-            <button 
-              onClick={() => {
-                setShowStyleHelp(prev => !prev)
-                setShowVersionsDropdown(false)
-              }}
+            {/* Settings */}
+            <button
+              onClick={() => { setShowStyleHelp(prev => !prev); setShowVersionsDropdown(false) }}
               title="Style Settings"
-              className="text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer"
+              className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer"
             >
               <span className="material-symbols-outlined text-xl">settings</span>
             </button>
             {showStyleHelp && (
-              <div className="absolute right-0 mt-2 w-72 bg-surface-container-lowest dark:bg-surface-container-low rounded-xl border border-outline-variant/15 shadow-2xl z-50 p-4 font-body animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="text-xs font-bold text-on-surface mb-2">Alexandria Drafting Settings</div>
-                
+              <div className="absolute right-0 top-full mt-2 w-72 bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-2xl z-50 p-4 font-body animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="text-xs font-bold text-on-surface mb-3">Drafting Settings</div>
                 <div className="space-y-3">
                   <div>
                     <label className="text-[9px] font-label font-bold uppercase tracking-widest text-outline block mb-1">Tone & Style</label>
@@ -635,7 +624,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
                     </select>
                   </div>
                   {selectedStyle && (
-                    <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/20 text-[11px] text-on-surface-variant leading-relaxed">
+                    <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/15 text-[11px] text-on-surface-variant leading-relaxed">
                       <strong>{styleModifiers.find(s => s.id === selectedStyle)?.name}:</strong>{' '}
                       {styleModifiers.find(s => s.id === selectedStyle)?.description || 'Active tone parameters.'}
                     </div>
@@ -645,13 +634,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
             )}
           </div>
 
-          <button className="text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-colors flex items-center justify-center border-none bg-transparent cursor-pointer">
-            <span className="material-symbols-outlined text-xl">account_circle</span>
-          </button>
-          
-          <div className="h-6 w-px bg-surface-dim mx-2"></div>
-          
-          <button 
+          {/* Save */}
+          <button
             onClick={() => {
               if (id && id !== 'new' && id !== 'undefined') {
                 handleSave(session?.draftData)
@@ -659,14 +643,15 @@ export const DraftingWorkspaceClient: React.FC = () => {
                 handlePromote('draft')
               }
             }}
-            className="text-primary font-label uppercase tracking-widest text-xs font-bold hover:underline px-4 py-2 border-none bg-transparent cursor-pointer"
+            className="text-on-surface font-medium text-sm hover:text-primary transition-colors border-none bg-transparent cursor-pointer font-body px-1"
           >
             Save
           </button>
-          
-          <button 
+
+          {/* Publish */}
+          <button
             onClick={() => handlePromote('published')}
-            className="bg-gradient-to-r from-primary to-surface-tint text-on-primary font-label uppercase tracking-widest text-xs font-bold px-6 py-2 rounded-full hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all border-none cursor-pointer shadow-sm"
+            className="bg-on-surface hover:bg-on-surface/90 text-surface-container-lowest font-medium text-sm py-2 px-5 rounded-lg transition-colors border-none cursor-pointer font-body"
           >
             Publish
           </button>

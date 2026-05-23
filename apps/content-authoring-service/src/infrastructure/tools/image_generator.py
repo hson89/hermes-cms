@@ -21,9 +21,6 @@ async def image_generator(
     Returns the URL of the generated image (or a high-quality placeholder URL if real generation is disabled).
     After receiving the URL, you MUST continue and complete the JSON draft.
     """
-    # Check if we are running unit tests
-    is_testing = "pytest" in sys.modules or "unittest" in sys.modules
-    
     # Check if we should bypass real image generation (enabled by default for local development)
     # Also bypass if the API key is the default placeholder string
     api_key = settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY", "")
@@ -31,7 +28,7 @@ async def image_generator(
     
     bypass = settings.BYPASS_IMAGE_GENERATION or is_placeholder_key
     
-    if bypass and not is_testing:
+    if bypass:
         # Return a premium Alexandria-themed abstract gradient placeholder
         placeholder_url = settings.FALLBACK_IMAGE_URL
         return f"Generated Image URL: {placeholder_url}"

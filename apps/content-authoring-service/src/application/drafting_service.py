@@ -404,7 +404,13 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                         try:
                             # Tool execution might need tenant_id/user_id etc which are often in context or args
                             # The tools should be defined to handle their own dependencies or we pass them
-                            result = await tool.ainvoke(tc['args'])
+                            tool_args = dict(tc['args']) if isinstance(tc['args'], dict) else {}
+                            if tc['name'] == 'schema_resolver':
+                                if 'tenant_id' not in tool_args:
+                                    tool_args['tenant_id'] = tenant_id
+                                if ('content_type_slug' not in tool_args or not tool_args['content_type_slug']) and content_type_slug:
+                                    tool_args['content_type_slug'] = content_type_slug
+                            result = await tool.ainvoke(tool_args)
                             messages.append(ToolMessage(content=json.dumps(result), tool_call_id=tc['id']))
                         except Exception as e:
                             messages.append(ToolMessage(content=f"Error: {str(e)}", tool_call_id=tc['id']))

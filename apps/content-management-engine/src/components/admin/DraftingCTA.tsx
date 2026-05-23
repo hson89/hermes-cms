@@ -48,7 +48,7 @@ export const DraftingCTA: React.FC = () => {
         </div>
         <div>
           <h3 className="font-headline text-xl font-bold text-on-surface m-0 leading-tight">
-            {contentTypeName ? `Draft ${contentTypeName} with Alexandria AI` : 'Drafting with Alexandria AI'}
+            {contentTypeName ? `Draft ${contentTypeName} with Hermes AI` : 'Drafting with Hermes AI'}
           </h3>
           <p className="font-body text-sm text-on-surface-variant mt-1.5 max-w-md leading-relaxed">
             Instead of manual entry, use our AI architect to research, structure, and generate high-end editorial content based on your active schema.

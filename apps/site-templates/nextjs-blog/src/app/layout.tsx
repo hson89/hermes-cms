@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata = {
   title: 'The Digital Curator — Hermes AI Blog',
-  description: 'A premium, high-end editorial reading experience powered by Hermes AI Headless CMS.',
+  description: 'A premium, high-end editorial reading experience powered by Hermes CMS.',
 }
 
 export default function RootLayout({

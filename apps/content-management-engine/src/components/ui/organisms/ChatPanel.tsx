@@ -14,6 +14,7 @@ import { Heading } from '../atoms/Heading'
 import { Badge } from '../atoms/Badge'
 import { Card } from '../molecules/Card'
 import { CustomSseAdapter } from '../../../services/CustomSseAdapter'
+import { mapSessionHistoryToMessages, shouldLoadHistory } from '../../../services/chat-history'
 
 interface PresetAction {
   label: string
@@ -435,43 +436,43 @@ const ThreadContainer: React.FC<{
     : 'Hello! I am your Hermes AI Content Drafter. Describe the content you want to create or refine, and I will generate it for you step-by-step.'
 
   return (
-    <div className="flex flex-col h-full bg-surface-container-lowest/30 overflow-hidden font-body">
-      
-      {/* Premium Editorial Header */}
-      <div className="flex items-center justify-between bg-surface-container-low/50 px-5 py-4 border-b border-outline-variant/15 select-none shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary relative">
-            <span className="material-symbols-outlined text-lg animate-pulse">{activeIcon}</span>
+    <div className="flex flex-col h-full bg-surface-container-lowest overflow-hidden font-body">
+
+      {/* Chat Panel Header — matches new design */}
+      <div className="flex items-center justify-between bg-surface-container-lowest px-4 py-3.5 border-b border-outline-variant/15 select-none shrink-0 z-10">
+        <div className="flex items-center gap-2.5">
+          {/* AI icon badge */}
+          <div className="w-8 h-8 rounded-lg bg-primary/8 border border-primary/15 flex items-center justify-center text-primary flex-shrink-0 relative">
+            <span className="material-symbols-outlined text-lg">{activeIcon}</span>
             {isGenerating && (
-              <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-surface-bright animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-emerald-500 ring-2 ring-surface-container-lowest" />
             )}
           </div>
           <div>
-            <Heading level={5} className="font-serif text-sm font-bold text-on-surface leading-tight">
-              {activeTitle}
-            </Heading>
-            <span className="block text-[8px] font-label font-bold uppercase tracking-widest text-outline">
+            <p className="text-sm font-bold text-on-surface leading-none font-body">{activeTitle}</p>
+            <p className="text-[10px] uppercase tracking-wider text-outline font-label font-semibold mt-0.5">
               {activeSubtitle}
-            </span>
+            </p>
           </div>
         </div>
 
-        {statusText && (
-          <Badge size="sm" variant="subtle" color="primary" className="animate-pulse py-0.5 px-2 text-[9px] uppercase tracking-widest">
-            {statusText}
-          </Badge>
+        {/* Status badge — "Thinking..." when generating, otherwise nothing */}
+        {isGenerating && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/8 text-primary border border-primary/15 animate-pulse font-label">
+            {statusText || 'Thinking...'}
+          </span>
         )}
       </div>
 
       {/* Bubble Message List */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-surface-container-lowest/40 custom-scrollbar">
-        
-        {/* Render Welcome message if there are no user messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 bg-surface-container-lowest/60 custom-scrollbar">
+
+        {/* Welcome message when thread is empty */}
         {messages.length === 0 && (
           <div className="flex justify-start w-full animate-fade-slide-up">
-            <div className="max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed bg-surface-container-low/60 text-on-surface border border-outline-variant/10 rounded-tl-none shadow-inner">
-              <div className="flex items-center gap-2 mb-1.5 opacity-60">
-                <span className="font-label text-[8px] font-bold uppercase tracking-widest">
+            <div className="max-w-[95%] w-full rounded-2xl rounded-tl-sm p-4 text-xs leading-relaxed bg-surface-container-lowest border border-outline-variant/15 text-on-surface shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-label text-[10px] font-bold uppercase tracking-wider text-primary">
                   Hermes Agent
                 </span>
               </div>
@@ -510,18 +511,18 @@ const ThreadContainer: React.FC<{
                 </div>
               ) : (
                 <div
-                  className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed transition-all duration-300 ${
+                  className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed transition-all duration-300 ${
                     isUser
-                      ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-none shadow-sm'
-                      : 'bg-surface-container-low/60 text-on-surface border border-outline-variant/10 rounded-tl-none shadow-inner'
+                      ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-sm shadow-sm'
+                      : 'bg-surface-container-lowest text-on-surface border border-outline-variant/15 rounded-tl-sm shadow-sm w-full max-w-[95%]'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1.5 opacity-60">
-                    <span className="font-label text-[8px] font-bold uppercase tracking-widest">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`font-label text-[10px] font-bold uppercase tracking-wider ${isUser ? 'text-on-surface-variant' : 'text-primary'}`}>
                       {isUser ? 'You' : 'Hermes Agent'}
                     </span>
                     {msg.createdAt && (
-                      <span className="text-[8px] font-mono">
+                      <span className="text-[10px] text-outline font-mono">
                         {msg.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     )}
@@ -533,52 +534,81 @@ const ThreadContainer: React.FC<{
           )
         })}
 
-        {/* Custom generation pipeline checkpoints */}
+        {/* Generation pipeline widget — shown as an AI message bubble while generating */}
         {isGenerating && (
           <div className="flex justify-start w-full animate-fade-slide-up">
-            <div className="max-w-[85%] rounded-2xl p-4 bg-surface-container-lowest border border-outline-variant/15 rounded-tl-none shadow-sm flex flex-col gap-3">
-              <span className="font-label text-[8px] font-bold uppercase tracking-widest text-outline">Generation Pipeline</span>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Icon 
-                    name={statusText ? "hourglass_empty" : "check_circle"} 
-                    className={`!text-sm ${statusText ? "text-primary animate-spin" : "text-tertiary"}`} 
-                    filled={!statusText}
-                  />
-                  <span className={`text-[11px] font-body ${statusText ? "text-on-surface font-medium" : "text-outline line-through"}`}>
-                    Connecting & Initializing Handshake
-                  </span>
+            <div className="max-w-[95%] w-full rounded-2xl rounded-tl-sm p-4 bg-surface-container-lowest border border-outline-variant/15 shadow-sm flex flex-col gap-3">
+              {/* Active tool indicator */}
+              {statusText && (
+                <div className="bg-primary/8 border border-primary/15 rounded-lg p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm text-primary animate-pulse">image_search</span>
+                    <span className="text-xs font-semibold text-primary uppercase tracking-wide font-label">
+                      {statusText}
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    <span className="size-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="size-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '100ms' }} />
+                    <span className="size-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '200ms' }} />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Icon 
-                    name={statusText === 'Generating content layout...' ? "hourglass_empty" : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText ? "check_circle" : "radio_button_unchecked")} 
-                    className={`!text-sm ${(statusText === 'Generating content layout...' || statusText === 'Thinking...') ? "text-primary animate-spin" : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText ? "text-tertiary" : "text-outline")}`}
-                    filled={statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText}
-                  />
-                  <span className={`text-[11px] font-body ${(statusText === 'Generating content layout...' || statusText === 'Thinking...') ? "text-on-surface font-medium" : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText ? "text-outline line-through" : "text-outline")}`}>
-                    Analyzing Structural Layout & Fields
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Icon 
-                    name={statusText === 'Enforcing schema constraints...' ? "hourglass_empty" : (statusText === 'Self-healing JSON errors...' || !statusText ? "check_circle" : "radio_button_unchecked")} 
-                    className={`!text-sm ${statusText === 'Enforcing schema constraints...' ? "text-primary animate-spin" : (statusText === 'Self-healing JSON errors...' || !statusText ? "text-tertiary" : "text-outline")}`}
-                    filled={statusText === 'Self-healing JSON errors...' || !statusText}
-                  />
-                  <span className={`text-[11px] font-body ${statusText === 'Enforcing schema constraints...' ? "text-on-surface font-medium" : (statusText === 'Self-healing JSON errors...' || !statusText ? "text-outline line-through" : "text-outline")}`}>
-                    Synthesizing Narrative Prose
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Icon 
-                    name={statusText === 'Self-healing JSON errors...' ? "hourglass_empty" : (!statusText ? "check_circle" : "radio_button_unchecked")} 
-                    className={`!text-sm ${statusText === 'Self-healing JSON errors...' ? "text-primary animate-spin" : (!statusText ? "text-tertiary" : "text-outline")}`}
-                    filled={!statusText}
-                  />
-                  <span className={`text-[11px] font-body ${statusText === 'Self-healing JSON errors...' ? "text-on-surface font-medium" : (!statusText ? "text-outline line-through" : "text-outline")}`}>
-                    Validating Editorial Integrity
-                  </span>
-                </div>
+              )}
+
+              {/* Pipeline steps */}
+              <div>
+                <p className="text-[10px] uppercase font-bold text-outline tracking-wider font-label mb-2">Generation Pipeline</p>
+                <ul className="space-y-2 relative before:absolute before:inset-y-2 before:left-[7px] before:w-px before:bg-outline-variant/30">
+                  {/* Step 1 — always done once we're here */}
+                  <li className="flex items-start gap-2 relative z-10">
+                    <div className="mt-0.5 bg-surface-container-lowest">
+                      <Icon name="check_circle" className="!text-base text-primary" filled />
+                    </div>
+                    <span className="text-xs text-on-surface-variant font-body font-medium">Connecting & Initializing Handshake</span>
+                  </li>
+                  {/* Step 2 */}
+                  <li className="flex items-start gap-2 relative z-10">
+                    <div className="mt-0.5 bg-surface-container-lowest">
+                      {(statusText === 'Generating content layout...' || statusText === 'Thinking...')
+                        ? <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
+                        : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText)
+                          ? <Icon name="check_circle" className="!text-base text-primary" filled />
+                          : <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                      }
+                    </div>
+                    <span className={`text-xs font-body ${(statusText === 'Generating content layout...' || statusText === 'Thinking...') ? 'text-on-surface font-semibold' : (statusText === 'Enforcing schema constraints...' || statusText === 'Self-healing JSON errors...' || !statusText) ? 'text-on-surface-variant' : 'text-outline'}`}>
+                      Analyzing Structural Layout & Fields
+                    </span>
+                  </li>
+                  {/* Step 3 */}
+                  <li className="flex items-start gap-2 relative z-10">
+                    <div className="mt-0.5 bg-surface-container-lowest">
+                      {statusText === 'Enforcing schema constraints...'
+                        ? <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
+                        : (statusText === 'Self-healing JSON errors...' || !statusText)
+                          ? <Icon name="check_circle" className="!text-base text-primary" filled />
+                          : <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                      }
+                    </div>
+                    <span className={`text-xs font-body ${statusText === 'Enforcing schema constraints...' ? 'text-primary font-medium' : (statusText === 'Self-healing JSON errors...' || !statusText) ? 'text-on-surface-variant' : 'text-outline'}`}>
+                      Synthesizing Narrative Prose
+                    </span>
+                  </li>
+                  {/* Step 4 */}
+                  <li className="flex items-start gap-2 relative z-10">
+                    <div className="mt-0.5 bg-surface-container-lowest">
+                      {statusText === 'Self-healing JSON errors...'
+                        ? <span className="size-4 rounded-full border-2 border-primary border-t-transparent animate-spin block" />
+                        : !statusText
+                          ? <Icon name="check_circle" className="!text-base text-primary" filled />
+                          : <span className="size-4 rounded-full border-2 border-outline-variant/50 block" />
+                      }
+                    </div>
+                    <span className={`text-xs font-body ${statusText === 'Self-healing JSON errors...' ? 'text-primary font-medium' : !statusText ? 'text-on-surface-variant' : 'text-outline'}`}>
+                      Validating Editorial Integrity
+                    </span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -586,11 +616,11 @@ const ThreadContainer: React.FC<{
         <div ref={chatEndRef} />
       </div>
 
-      {/* Preset Action Pills */}
-      <div className="px-5 py-3 bg-surface-container-low/20 border-t border-outline-variant/10 select-none shrink-0">
-        <span className="block text-[8px] font-label font-bold uppercase tracking-widest text-outline mb-2">
+      {/* Co-Creation Micro Actions */}
+      <div className="px-4 py-3 bg-surface-container-lowest border-t border-outline-variant/15 select-none shrink-0">
+        <p className="text-[10px] uppercase font-bold text-outline tracking-wider font-label mb-2">
           Co-Creation Micro Actions
-        </span>
+        </p>
         <div className="flex gap-2 overflow-x-auto pb-1 max-w-full no-scrollbar">
           {presets.map((preset) => (
             <button
@@ -598,18 +628,18 @@ const ThreadContainer: React.FC<{
               type="button"
               disabled={isGenerating || isAiPaused}
               onClick={() => threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: preset.prompt }] })}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:border-primary/50 text-outline hover:text-primary transition-all duration-300 text-[10px] font-medium cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+              className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container-low text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none font-body"
             >
-              <span className="material-symbols-outlined text-xs">{preset.icon}</span>
+              <span className="material-symbols-outlined text-xs text-outline">{preset.icon}</span>
               <span>{preset.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Textarea Inputs area */}
-      <div className="p-4 bg-surface-container-lowest/30 border-t border-outline-variant/15 shrink-0">
-        <div className="bg-surface-container-lowest border border-outline-variant/15 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 rounded-2xl flex items-center gap-2 p-2 shadow-sm transition-all">
+      {/* Chat Input */}
+      <div className="p-4 bg-surface-container-lowest border-t border-outline-variant/15 shrink-0">
+        <div className="relative rounded-xl border border-outline-variant/30 bg-surface-container-lowest focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all shadow-sm">
           <textarea
             rows={1}
             value={inputValue}
@@ -624,27 +654,30 @@ const ThreadContainer: React.FC<{
               }
             }}
             disabled={isGenerating || isAiPaused}
-            placeholder={isAiPaused ? "AI is paused. Resume AI in Content Refinement to interact." : "Instruct the AI to create, refine, or edit..."}
-            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none outline-none pl-3 py-2 text-xs text-on-surface placeholder-outline/50 resize-none max-h-24 font-body leading-relaxed disabled:opacity-60"
+            placeholder={isAiPaused ? "AI is paused. Resume AI to interact." : "Instruct the AI to create, refine, or edit..."}
+            className="block w-full border-0 bg-transparent py-3 pl-4 pr-12 text-sm text-on-surface placeholder:text-outline/60 focus:ring-0 resize-none max-h-24 font-body leading-relaxed disabled:opacity-60 outline-none"
           />
-          
-          <button
-            type="button"
-            disabled={isGenerating || !inputValue.trim() || isAiPaused}
-            onClick={() => {
-              if (inputValue.trim() && !isGenerating && !isAiPaused) {
-                threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: inputValue }] })
-                setInputValue('')
-              }
-            }}
-            className="size-9 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary flex items-center justify-center border-none flex-shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
-          >
-            {isGenerating ? (
-              <span className="size-4 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />
-            ) : (
-              <Icon name="arrow_upward" size={16} className="text-on-primary" />
-            )}
-          </button>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <button
+              type="button"
+              disabled={isGenerating || !inputValue.trim() || isAiPaused}
+              onClick={() => {
+                if (inputValue.trim() && !isGenerating && !isAiPaused) {
+                  threadRuntime.append({ role: 'user', content: [{ type: 'text' as const, text: inputValue }] })
+                  setInputValue('')
+                }
+              }}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-on-primary hover:bg-primary/90 border-none flex-shrink-0 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+            >
+              {isGenerating ? (
+                <span className="size-3.5 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -725,8 +758,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const lastLoadedSessionIdRef = useRef<string | null>(null)
   useEffect(() => {
     const sessionIdStr = sessionId ? String(sessionId) : ''
-    const isUuid = sessionIdStr.includes('-')
-    if (!isUuid || sessionIdStr === lastLoadedSessionIdRef.current) return
+
+    if (!shouldLoadHistory(sessionId, lastLoadedSessionIdRef.current, isGenerating)) {
+      // Catch initial session transition during active generation and record the transition ref
+      const isUuid = sessionIdStr.includes('-')
+      if (isUuid && isGenerating && !lastLoadedSessionIdRef.current) {
+        lastLoadedSessionIdRef.current = sessionIdStr
+      }
+      return
+    }
 
     async function loadHistory() {
       try {
@@ -735,13 +775,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         if (!res.ok) throw new Error('Failed to fetch session history')
         const data = await res.json()
         if (data.context && Array.isArray(data.context) && data.context.length > 0) {
-          const mappedMessages = data.context
-            .filter((msg: any) => msg.role !== 'system')
-            .map((msg: any) => ({
-              id: `${sessionIdStr}-msg-${msg.timestamp || Math.random()}`,
-              role: msg.role,
-              content: [{ type: 'text' as const, text: msg.content }],
-            }))
+          const mappedMessages = mapSessionHistoryToMessages(data.context, sessionIdStr)
           runtime.thread.reset(mappedMessages)
         }
       } catch (err) {
@@ -750,11 +784,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
 
     loadHistory()
-  }, [sessionId, runtime])
+  }, [sessionId, runtime, isGenerating])
 
   const presets = mode === 'schema' ? SCHEMA_PRESETS : DRAFT_PRESETS
   const activeIcon = mode === 'schema' ? 'psychiatry' : 'smart_toy'
-  const activeTitle = mode === 'schema' ? 'Architect Companion' : 'Alexandria AI'
+  const activeTitle = mode === 'schema' ? 'Architect Companion' : 'Hermes AI'
   const activeSubtitle = mode === 'schema' ? 'Hermes AI Co-Creation' : 'Content Strategist & Drafter'
 
   const innerContent = (

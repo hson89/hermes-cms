@@ -1,6 +1,6 @@
 # Astro Portfolio Starter
 
-This is a pre-configured Astro template designed to connect seamlessly with the Hermes AI Headless CMS.
+This is a pre-configured Astro template designed to connect seamlessly with the Hermes CMS.
 
 ## Environment Variables
 

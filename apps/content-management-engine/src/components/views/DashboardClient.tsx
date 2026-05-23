@@ -78,7 +78,7 @@ export const DashboardClient: React.FC = () => {
           </div>
         </section>
 
-        {/* Alexandria AI — Primary Entry Point */}
+        {/* Hermes AI — Primary Entry Point */}
         <section className="relative w-full">
           <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full -z-10" />
           <div className="bg-surface/60 backdrop-blur-[20px] rounded-2xl p-10 border border-outline-variant/15 shadow-[0_8px_32px_rgba(0,0,0,0.04)] flex flex-col md:flex-row items-center gap-8 group transition-all hover:shadow-[0_12px_48px_rgba(0,0,0,0.08)]">
@@ -87,7 +87,7 @@ export const DashboardClient: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Icon name="auto_awesome" className="text-primary" size={20} />
                 </div>
-                <h2 className="font-headline text-2xl font-bold text-on-surface m-0">Alexandria AI</h2>
+                <h2 className="font-headline text-2xl font-bold text-on-surface m-0">Hermes AI</h2>
               </div>
               <p className="font-body text-on-surface-variant text-lg leading-relaxed mb-0 max-w-xl">
                 I am your scholarly co-author. Tell me what you want to create, and I will find the right schema and draft it for you instantly.

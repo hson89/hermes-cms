@@ -1,6 +1,6 @@
-# Hermes AI
+# Hermes CMS
 
-Hermes AI is an AI-powered, multi-tenant headless CMS designed to accelerate content creation and delivery. It combines the power of Payload CMS with a custom Python-based AI microservice to provide generative schema design and intelligent "Copilot" content editing.
+Hermes CMS is an AI-powered, multi-tenant headless CMS designed to accelerate content creation and delivery. It combines the power of Payload CMS with a custom Python-based AI microservice to provide generative schema design and intelligent "Copilot" content editing.
 
 ## Architecture
 
