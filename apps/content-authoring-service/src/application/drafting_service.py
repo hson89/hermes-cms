@@ -245,6 +245,7 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                             "schema": schema_json,
                         },
                         "prompt": prompt,
+                        "sessionId": str(session_id),
                     }
                 }
 

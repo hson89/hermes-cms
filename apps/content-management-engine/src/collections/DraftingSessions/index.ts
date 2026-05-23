@@ -100,6 +100,11 @@ export const DraftingSessions: CollectionConfig = {
       },
     },
     {
+      name: 'aiSessionId',
+      type: 'text',
+      label: 'AI Session ID',
+    },
+    {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',

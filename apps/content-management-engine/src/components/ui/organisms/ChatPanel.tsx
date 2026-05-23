@@ -61,6 +61,273 @@ const markdownComponents: any = {
   )
 }
 
+interface ParsedBlock {
+  type: 'text' | 'tool' | 'json' | 'editorial'
+  content?: string
+  toolName?: string
+  jsonContent?: string
+  isComplete?: boolean
+  raw: string
+}
+
+const parseMessageContent = (text: string): ParsedBlock[] => {
+  const blocks: ParsedBlock[] = []
+  let currentText = text
+
+  // 1. Extract <final_response> blocks
+  const finalResponseStart = currentText.indexOf('<final_response>')
+  let editorialContent = ''
+  let editorialRaw = ''
+  let hasEditorial = false
+  let editorialComplete = false
+
+  if (finalResponseStart !== -1) {
+    hasEditorial = true
+    const startTagLength = '<final_response>'.length
+    const finalResponseEnd = currentText.indexOf('</final_response>', finalResponseStart)
+    
+    if (finalResponseEnd !== -1) {
+      editorialContent = currentText.substring(finalResponseStart + startTagLength, finalResponseEnd).trim()
+      editorialRaw = currentText.substring(finalResponseStart, finalResponseEnd + '</final_response>'.length)
+      editorialComplete = true
+    } else {
+      editorialContent = currentText.substring(finalResponseStart + startTagLength).trim()
+      editorialRaw = currentText.substring(finalResponseStart)
+    }
+    
+    currentText = currentText.replace(editorialRaw, '')
+  }
+
+  // 2. Extract tool executions: [Executing tool_name...]
+  const toolRegex = /\[Executing\s+([a-zA-Z0-9_-]+)\s*\.\.\.\]/g
+  let match: RegExpExecArray | null
+  const toolBlocks: { toolName: string; raw: string }[] = []
+  
+  while ((match = toolRegex.exec(currentText)) !== null) {
+    toolBlocks.push({
+      toolName: match[1],
+      raw: match[0],
+    })
+  }
+
+  let processedText = currentText
+  toolBlocks.forEach((tb, i) => {
+    processedText = processedText.replace(tb.raw, `___TOOL_BLOCK_PLACEHOLDER_${i}___`)
+  })
+
+  // 3. Extract JSON block
+  let jsonStart = -1
+  let jsonRaw = ''
+  let jsonContent = ''
+  let jsonComplete = false
+
+  const mdJsonStart = processedText.indexOf('```json')
+  if (mdJsonStart !== -1) {
+    const mdJsonEnd = processedText.indexOf('```', mdJsonStart + 7)
+    if (mdJsonEnd !== -1) {
+      jsonRaw = processedText.substring(mdJsonStart, mdJsonEnd + 3)
+      jsonContent = processedText.substring(mdJsonStart + 7, mdJsonEnd).trim()
+      jsonComplete = true
+      jsonStart = mdJsonStart
+    } else {
+      jsonRaw = processedText.substring(mdJsonStart)
+      jsonContent = processedText.substring(mdJsonStart + 7).trim()
+      jsonStart = mdJsonStart
+    }
+  } else {
+    const braceStart = processedText.indexOf('{')
+    if (braceStart !== -1) {
+      const lastBrace = processedText.lastIndexOf('}')
+      if (lastBrace !== -1 && lastBrace > braceStart) {
+        jsonRaw = processedText.substring(braceStart, lastBrace + 1)
+        jsonContent = jsonRaw
+        jsonComplete = true
+        jsonStart = braceStart
+      } else {
+        jsonRaw = processedText.substring(braceStart)
+        jsonContent = jsonRaw
+        jsonStart = braceStart
+      }
+    }
+  }
+
+  if (jsonStart !== -1) {
+    processedText = processedText.replace(jsonRaw, '___JSON_BLOCK_PLACEHOLDER___')
+  }
+
+  // 4. Split by placeholders
+  const parts = processedText.split(/(___JSON_BLOCK_PLACEHOLDER___|___TOOL_BLOCK_PLACEHOLDER_\d+___)/g)
+
+  parts.forEach(part => {
+    if (!part) return
+
+    if (part === '___JSON_BLOCK_PLACEHOLDER___') {
+      blocks.push({
+        type: 'json',
+        jsonContent,
+        isComplete: jsonComplete,
+        raw: jsonRaw
+      })
+    } else if (part.startsWith('___TOOL_BLOCK_PLACEHOLDER_')) {
+      const matchIndex = parseInt(part.match(/\d+/)![0], 10)
+      const tb = toolBlocks[matchIndex]
+      if (tb) {
+        blocks.push({
+          type: 'tool',
+          toolName: tb.toolName,
+          raw: tb.raw
+        })
+      }
+    } else {
+      if (part.trim()) {
+        blocks.push({
+          type: 'text',
+          content: part,
+          raw: part
+        })
+      }
+    }
+  })
+
+  if (hasEditorial) {
+    blocks.push({
+      type: 'editorial',
+      content: editorialContent,
+      isComplete: editorialComplete,
+      raw: editorialRaw
+    })
+  }
+
+  return blocks
+}
+
+const ParsedJsonBlock: React.FC<{ block: ParsedBlock }> = ({ block }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  let displayJson = block.jsonContent || ''
+  if (block.isComplete && block.jsonContent) {
+    try {
+      displayJson = JSON.stringify(JSON.parse(block.jsonContent), null, 2)
+    } catch (_) {}
+  }
+
+  return (
+    <div className="my-3 rounded-xl border border-outline-variant/15 bg-surface-container-low/30 overflow-hidden transition-all duration-300 hover:border-primary/20">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-left border-none bg-transparent cursor-pointer hover:bg-surface-container-high/20 transition-colors"
+      >
+        <div className="flex items-center gap-2 select-none">
+          <span className="material-symbols-outlined text-sm text-outline">data_object</span>
+          <span className="text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant">
+            {block.isComplete ? 'Generated Content Structure' : 'Constructing Content Structure'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 select-none">
+          {!block.isComplete && (
+            <span className="size-2 rounded-full bg-amber-500 animate-ping" />
+          )}
+          <span className="text-[9px] bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full font-label font-semibold">
+            {block.isComplete ? 'Complete' : 'Streaming'}
+          </span>
+          <span 
+            className="material-symbols-outlined text-sm text-outline transition-transform duration-300"
+            style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }}
+          >
+            keyboard_arrow_down
+          </span>
+        </div>
+      </button>
+      
+      {isExpanded && (
+        <div className="border-t border-outline-variant/10 bg-surface-container-lowest/80 p-3 max-h-60 overflow-y-auto custom-scrollbar font-mono text-[9px] text-on-surface-variant leading-relaxed select-text animate-in slide-in-from-top-1 duration-200">
+          <pre className="m-0 whitespace-pre-wrap">{displayJson}</pre>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const MessageContentFormatter: React.FC<{ textContent: string; isUser: boolean }> = ({ textContent, isUser }) => {
+  const blocks = useMemo(() => parseMessageContent(textContent), [textContent])
+
+  if (isUser) {
+    return <ReactMarkdown components={markdownComponents}>{textContent}</ReactMarkdown>
+  }
+
+  return (
+    <div className="space-y-2">
+      {blocks.map((block, idx) => {
+        if (block.type === 'text') {
+          return (
+            <ReactMarkdown key={idx} components={markdownComponents}>
+              {block.content || ''}
+            </ReactMarkdown>
+          )
+        }
+
+        if (block.type === 'tool') {
+          const toolName = block.toolName || ''
+          const toolMeta = {
+            image_generator: { label: 'Generating Editorial Image', icon: 'image' },
+            schema_resolver: { label: 'Resolving Content Schema', icon: 'schema' }
+          }[toolName] || { label: `Running ${toolName}`, icon: 'build' }
+
+          return (
+            <div 
+              key={idx} 
+              className="flex items-center gap-2.5 px-3.5 py-2 my-2 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/10 select-none animate-in fade-in duration-300"
+            >
+              <span className="material-symbols-outlined text-sm text-primary animate-pulse">{toolMeta.icon}</span>
+              <span className="text-[10px] font-label font-bold uppercase tracking-wider text-primary">
+                {toolMeta.label}...
+              </span>
+              <div className="ml-auto flex gap-1">
+                <span className="size-1.5 rounded-full bg-primary animate-bounce delay-100" />
+                <span className="size-1.5 rounded-full bg-primary animate-bounce delay-200" />
+                <span className="size-1.5 rounded-full bg-primary animate-bounce delay-300" />
+              </div>
+            </div>
+          )
+        }
+
+        if (block.type === 'json') {
+          return <ParsedJsonBlock key={idx} block={block} />
+        }
+
+        if (block.type === 'editorial') {
+          return (
+            <div 
+              key={idx} 
+              className="my-4 rounded-xl border border-tertiary/20 bg-gradient-to-br from-tertiary/5 via-surface-container-lowest to-surface-container-lowest p-4 relative overflow-hidden shadow-sm select-text animate-in fade-in duration-500"
+            >
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-tertiary" />
+              <div className="flex items-center gap-2 mb-2 select-none">
+                <span className="material-symbols-outlined text-sm text-tertiary">auto_awesome</span>
+                <span className="text-[9px] font-label font-bold uppercase tracking-widest text-tertiary">
+                  Editorial Summary
+                </span>
+                {!block.isComplete && (
+                  <span className="ml-auto text-[8px] uppercase tracking-widest text-outline animate-pulse">
+                    Typing...
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-on-surface-variant font-body leading-relaxed font-serif">
+                <ReactMarkdown components={markdownComponents}>
+                  {block.content || ''}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )
+        }
+
+        return null
+      })}
+    </div>
+  )
+}
+
 // Custom presets aligned with premium co-creation micro-actions
 const SCHEMA_PRESETS: PresetAction[] = [
   {
@@ -259,7 +526,7 @@ const ThreadContainer: React.FC<{
                       </span>
                     )}
                   </div>
-                  <ReactMarkdown components={markdownComponents}>{textContent}</ReactMarkdown>
+                  <MessageContentFormatter textContent={textContent} isUser={isUser} />
                 </div>
               )}
             </div>
@@ -453,6 +720,37 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   // 3. Initialize assistant-ui runtime using our customized adapter
   const runtime = useLocalRuntime(customAdapter)
+
+  // 4. Fetch persistent chat history from the FastAPI service if sessionId is a valid UUID
+  const lastLoadedSessionIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    const sessionIdStr = sessionId ? String(sessionId) : ''
+    const isUuid = sessionIdStr.includes('-')
+    if (!isUuid || sessionIdStr === lastLoadedSessionIdRef.current) return
+
+    async function loadHistory() {
+      try {
+        lastLoadedSessionIdRef.current = sessionIdStr
+        const res = await fetch(`/api/content-types/sessions/${sessionIdStr}`)
+        if (!res.ok) throw new Error('Failed to fetch session history')
+        const data = await res.json()
+        if (data.context && Array.isArray(data.context) && data.context.length > 0) {
+          const mappedMessages = data.context
+            .filter((msg: any) => msg.role !== 'system')
+            .map((msg: any) => ({
+              id: `${sessionIdStr}-msg-${msg.timestamp || Math.random()}`,
+              role: msg.role,
+              content: [{ type: 'text' as const, text: msg.content }],
+            }))
+          runtime.thread.reset(mappedMessages)
+        }
+      } catch (err) {
+        console.error('Error loading chat history:', err)
+      }
+    }
+
+    loadHistory()
+  }, [sessionId, runtime])
 
   const presets = mode === 'schema' ? SCHEMA_PRESETS : DRAFT_PRESETS
   const activeIcon = mode === 'schema' ? 'psychiatry' : 'smart_toy'

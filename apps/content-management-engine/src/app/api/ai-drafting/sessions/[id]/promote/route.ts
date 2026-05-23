@@ -108,11 +108,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       },
     })
 
-    // 3. Atomically delete the session
-    await payload.delete({
-      collection: 'drafting-sessions',
-      id,
-    })
+    // 3. Keep the session alive so the chat session remains for user continuity.
+    // If a new content type was created, update the session with the new contentType.
+    if (!session.contentType) {
+      await payload.update({
+        collection: 'drafting-sessions',
+        id,
+        data: {
+          contentType: contentTypeId,
+        },
+      })
+    }
 
     return NextResponse.json(contentItem)
   } catch (e: any) {

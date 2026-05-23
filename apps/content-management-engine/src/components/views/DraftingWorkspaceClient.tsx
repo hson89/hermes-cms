@@ -256,7 +256,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
         body: JSON.stringify({ 
           draftData, 
           contentType: session.contentType,
-          tenantId: effectiveTenantId 
+          tenantId: effectiveTenantId,
+          aiSessionId: session.aiSessionId
         }),
       })
     } catch (err) {
@@ -396,7 +397,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
     const { event: eventType, data } = event
 
     if (eventType === 'SCHEMA_UPDATED') {
-      const { contentType: newCT, prompt: carryPrompt } = data
+      const { contentType: newCT, prompt: carryPrompt, sessionId: newAiSessionId } = data
       setContentType(newCT)
       setSchema(newCT.fields || [])
       setSession((prev: any) => {
@@ -404,10 +405,14 @@ export const DraftingWorkspaceClient: React.FC = () => {
           fetch(`/api/ai-drafting/sessions/${prev.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contentType: newCT.id, tenantId: effectiveTenantId }),
+            body: JSON.stringify({ 
+              contentType: newCT.id, 
+              tenantId: effectiveTenantId,
+              aiSessionId: newAiSessionId || prev.aiSessionId
+            }),
           }).catch(err => console.error('Failed to persist schema update to session:', err))
         }
-        return { ...prev, contentType: newCT.id }
+        return { ...prev, contentType: newCT.id, aiSessionId: newAiSessionId || prev.aiSessionId }
       })
       const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
       // Use window.history.replaceState to change URL without triggering unmount/remount
@@ -447,10 +452,24 @@ export const DraftingWorkspaceClient: React.FC = () => {
       })
     } else if (eventType === 'DRAFT_COMPLETE' || eventType === 'REFINE_COMPLETE') {
       setDraftingFields(new Set())
-      const { draft } = data
+      const { draft, sessionId: activeAiSessionId } = data
       setSession((prev: any) => {
-        const updated = { ...prev, draftData: { ...prev.draftData, ...draft } }
-        handleSave(updated.draftData)
+        const updated = { 
+          ...prev, 
+          draftData: { ...prev.draftData, ...draft },
+          aiSessionId: activeAiSessionId || prev.aiSessionId
+        }
+        // Save draft and session ID to database immediately
+        fetch(`/api/ai-drafting/sessions/${prev.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            draftData: updated.draftData,
+            aiSessionId: updated.aiSessionId,
+            contentType: prev.contentType,
+            tenantId: effectiveTenantId 
+          }),
+        }).catch(err => console.error('Failed to auto-save draft session:', err))
         return updated
       })
     }
@@ -661,7 +680,26 @@ export const DraftingWorkspaceClient: React.FC = () => {
             <ChatPanel 
               mode="draft"
               isCard={false}
-              sessionId={session?.id} 
+              sessionId={session?.aiSessionId || session?.id}
+              onSessionIdChange={(newAiSessionId) => {
+                setSession((prev: any) => {
+                  if (!prev) return prev
+                  const updated = { ...prev, aiSessionId: newAiSessionId }
+                  
+                  // Persist immediately to CMS
+                  fetch(`/api/ai-drafting/sessions/${prev.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                      aiSessionId: newAiSessionId,
+                      contentType: prev.contentType,
+                      tenantId: effectiveTenantId 
+                    }),
+                  }).catch(err => console.error('Failed to persist resolved session ID:', err))
+                  
+                  return updated
+                })
+              }}
               onEvent={handleAIEvent} 
               initialPrompt={loading ? null : initialPrompt}
               onInitialPromptSent={() => setInitialPromptSent(true)}

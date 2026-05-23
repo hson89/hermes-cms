@@ -396,6 +396,14 @@ async def get_session(
         "created_at": session.created_at.isoformat(),
         "updated_at": session.updated_at.isoformat(),
         "schema": schema_data,
+        "context": [
+            {
+                "role": msg.role,
+                "content": msg.content,
+                "timestamp": msg.timestamp.isoformat(),
+            }
+            for msg in session.context
+        ],
     }
 
 
