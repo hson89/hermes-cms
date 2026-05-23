@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 
@@ -6,9 +7,21 @@ import config from '../../src/payload.config'
  */
 describe('Tenant Soft-Delete', () => {
   let payload: any
+  const createdTenants: string[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should allow setting status to archived', async () => {
@@ -27,6 +40,7 @@ describe('Tenant Soft-Delete', () => {
       },
       overrideAccess: true,
     })
+    createdTenants.push(tenant.id)
 
     expect(tenant.status).toBe('active')
 

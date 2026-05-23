@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 
@@ -6,9 +7,31 @@ import config from '../../src/payload.config'
  */
 describe('Audit Logging', () => {
   let payload: any
+  const testHostname = `non-existent-${Date.now()}.com`
 
   beforeAll(async () => {
     payload = await getPayload({ config })
+  })
+
+  afterAll(async () => {
+    if (!payload) return
+
+    // Clean up audit logs created during this test
+    const logs = await payload.find({
+      collection: 'audit-logs',
+      where: {
+        'metadata.hostname': { equals: testHostname }
+      },
+      overrideAccess: true,
+      depth: 0,
+    })
+    for (const log of logs.docs) {
+      await payload.delete({
+        collection: 'audit-logs',
+        id: log.id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should log a warning to audit-logs when resolution fails', async () => {
@@ -16,14 +39,14 @@ describe('Audit Logging', () => {
     const service = new TenantService(payload)
 
     // Resolve a non-existent hostname
-    await service.resolveTenantByHostname('non-existent.com')
+    await service.resolveTenantByHostname(testHostname)
 
     // Check audit logs
     const logs = await payload.find({
       collection: 'audit-logs',
       where: {
         action: { equals: 'TENANT_RESOLUTION_FAILURE' },
-        'metadata.hostname': { equals: 'non-existent.com' }
+        'metadata.hostname': { equals: testHostname }
       },
       sort: '-createdAt',
       overrideAccess: true,
@@ -31,6 +54,6 @@ describe('Audit Logging', () => {
 
     expect(logs.docs.length).toBeGreaterThan(0)
     expect(logs.docs[0].severity).toBe('warning')
-    expect(logs.docs[0].metadata.hostname).toBe('non-existent.com')
+    expect(logs.docs[0].metadata.hostname).toBe(testHostname)
   })
 })

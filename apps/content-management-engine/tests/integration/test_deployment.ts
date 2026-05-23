@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 import { HostedSite, Tenant, User } from '../../src/payload-types'
@@ -13,6 +14,8 @@ describe('HostedSites Integration', () => {
   let tenantB: Tenant
   let editorA: any
   let editorB: any
+  const createdTenants: any[] = []
+  const createdHostedSites: any[] = []
 
   beforeAll(async () => {
     payload = await getPayload({ config })
@@ -27,6 +30,7 @@ describe('HostedSites Integration', () => {
         domains: [{ hostname: `a-${uniqueId}.com`, isPrimary: true }],
       },
     })
+    createdTenants.push(tenantA.id)
 
     tenantB = await payload.create({
       collection: 'tenants',
@@ -36,6 +40,7 @@ describe('HostedSites Integration', () => {
         domains: [{ hostname: `b-${uniqueId}.com`, isPrimary: true }],
       },
     })
+    createdTenants.push(tenantB.id)
 
     // Setup Mock Users
     editorA = {
@@ -54,8 +59,25 @@ describe('HostedSites Integration', () => {
   })
 
   afterAll(async () => {
+    if (!payload) return
     // Wait for any remaining background deployment timeouts to clear
     await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    for (const id of createdHostedSites) {
+      await payload.delete({
+        collection: 'hosted-sites',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
+
+    for (const id of createdTenants) {
+      await payload.delete({
+        collection: 'tenants',
+        id,
+        overrideAccess: true,
+      }).catch(() => {})
+    }
   })
 
   it('should create a HostedSite with correct initial status', async () => {
@@ -68,6 +90,7 @@ describe('HostedSites Integration', () => {
       },
       user: editorA,
     })
+    createdHostedSites.push(site.id)
 
     expect(site.status).toBe('pending')
     const siteTenantId = typeof site.tenant === 'object' ? site.tenant.id : site.tenant
@@ -85,6 +108,7 @@ describe('HostedSites Integration', () => {
       },
       user: editorA,
     })
+    createdHostedSites.push(siteA.id)
 
     // Tenant B should NOT see Site A
     const resultB = await payload.find({
@@ -118,6 +142,7 @@ describe('HostedSites Integration', () => {
       },
       user: editorA,
     })
+    createdHostedSites.push(site.id)
 
     // The afterChange hook triggers DeploymentService.triggerDeployment
     // which starts by setting status to 'deploying'
