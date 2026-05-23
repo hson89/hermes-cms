@@ -43,6 +43,9 @@ export const DraftingWorkspaceClient: React.FC = () => {
   const [versions, setVersions] = useState<Array<{ timestamp: Date; label: string; data: any }>>([])
   const [showVersionsDropdown, setShowVersionsDropdown] = useState(false)
   const [showStyleHelp, setShowStyleHelp] = useState(false)
+  const [bestMatch, setBestMatch] = useState<any>(null)
+  const [alternatives, setAlternatives] = useState<any[]>([])
+  const [showAlternatives, setShowAlternatives] = useState(false)
 
   const effectiveTenantId = useMemo(() => {
     return session?.tenant?.id || session?.tenant || currentTenantId || activeTenantId
@@ -177,6 +180,29 @@ export const DraftingWorkspaceClient: React.FC = () => {
             })
             const newSession = await createRes.json()
             setSession(newSession)
+          }
+        }
+        
+        // Pre-fetch all other existing content types as alternatives
+        const finalTenantId = resolvedTenantId || activeTenantId
+        if (finalTenantId) {
+          try {
+            const ctsRes = await fetch(`/api/content-types?where[tenant][equals]=${finalTenantId}&limit=100`)
+            if (ctsRes.ok) {
+              const ctsData = await ctsRes.json()
+              if (ctsData?.docs) {
+                const currentId = contentTypeId || session?.contentType || (recoveredSession?.contentType)
+                const alts = ctsData.docs.filter((c: any) => c.id !== currentId)
+                setAlternatives(alts)
+                
+                const currentCt = ctsData.docs.find((c: any) => c.id === currentId)
+                if (currentCt) {
+                  setBestMatch(currentCt)
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Failed to pre-fetch content types:', err)
           }
         }
       } catch (err) {
@@ -392,12 +418,58 @@ export const DraftingWorkspaceClient: React.FC = () => {
     }
   }, [id, session?.id, session?.draftData, effectiveTenantId, router])
 
+  const handleSelectAlternative = useCallback(async (selectedCT: any) => {
+    if (!session?.id) return
+    setLoading(true)
+    try {
+      const ctRes = await fetch(`/api/content-types/${selectedCT.id}`)
+      const ctData = await ctRes.json()
+      
+      setContentType(ctData)
+      setSchema(ctData.schema?.fields || ctData.fields || [])
+      setBestMatch(ctData)
+      
+      await fetch(`/api/ai-drafting/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          contentType: selectedCT.id, 
+          tenantId: effectiveTenantId,
+          draftData: {}
+        }),
+      })
+      
+      setSession((prev: any) => ({
+        ...prev,
+        contentType: selectedCT.id,
+        draftData: {}
+      }))
+
+      setVersions([])
+      
+      const carryPrompt = initialPrompt || session?.draftData?.prompt || ''
+      const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
+      const targetUrl = `/admin/draft/${selectedCT.id}${queryParam}`
+      window.history.replaceState(null, '', targetUrl)
+      
+      window.location.href = targetUrl
+    } catch (err) {
+      console.error('Failed to select alternative content type:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [session, effectiveTenantId, initialPrompt])
+
   // 3. Handle AI Events
   const handleAIEvent = useCallback(async (event: any) => {
     const { event: eventType, data } = event
 
     if (eventType === 'SCHEMA_UPDATED') {
-      const { contentType: newCT, prompt: carryPrompt, sessionId: newAiSessionId } = data
+      const { contentType: newCT, prompt: carryPrompt, sessionId: newAiSessionId, alternatives: altList } = data
+      setBestMatch(newCT)
+      if (altList) {
+        setAlternatives(altList)
+      }
       setContentType(newCT)
       setSchema(newCT.fields || [])
       setSession((prev: any) => {
@@ -665,6 +737,9 @@ export const DraftingWorkspaceClient: React.FC = () => {
             <ChatPanel 
               mode="draft"
               isCard={false}
+              bestMatch={bestMatch}
+              alternatives={alternatives}
+              onSelectAlternative={handleSelectAlternative}
               sessionId={session?.aiSessionId || session?.id}
               onSessionIdChange={(newAiSessionId) => {
                 setSession((prev: any) => {

@@ -121,6 +121,21 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                 content_type_slug = matched_ct.get("slug")
                 content_type_name = matched_ct.get("name")
                 content_type_id = matched_ct.get("id")
+                
+                # Fetch alternatives from existing types
+                alternatives = []
+                for ct in existing_types:
+                    if ct.get("id") != content_type_id:
+                        schema_alt = ct.get("schema", {})
+                        alternatives.append({
+                            "id": ct.get("id"),
+                            "name": ct.get("name"),
+                            "slug": ct.get("slug"),
+                            "description": ct.get("description") or "Standard content schema",
+                            "fields": schema_alt.get("fields", []),
+                            "schema": schema_alt,
+                        })
+                
                 yield {"event": "TEXT_DELTA", "data": f"Reusing existing content type: **{content_type_name}**\n\n"}
                 
                 yield {
@@ -134,6 +149,7 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
                             "schema": schema_json,
                         },
                         "prompt": prompt,
+                        "alternatives": alternatives,
                     }
                 }
             else:

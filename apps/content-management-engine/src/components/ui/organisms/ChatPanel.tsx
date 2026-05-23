@@ -38,6 +38,9 @@ export interface ChatPanelProps {
   endpoint?: string
   additionalBody?: any
   isAiPaused?: boolean
+  bestMatch?: any
+  alternatives?: any[]
+  onSelectAlternative?: (ct: any) => void
 }
 
 // Custom Markdown components to match Alexandria Design System within chat bubbles
@@ -249,11 +252,81 @@ const ParsedJsonBlock: React.FC<{ block: ParsedBlock }> = ({ block }) => {
   )
 }
 
-const MessageContentFormatter: React.FC<{ textContent: string; isUser: boolean }> = ({ textContent, isUser }) => {
+const MessageContentFormatter: React.FC<{
+  textContent: string
+  isUser: boolean
+  bestMatch?: any
+  alternatives?: any[]
+  onSelectAlternative?: (ct: any) => void
+}> = ({ textContent, isUser, bestMatch, alternatives, onSelectAlternative }) => {
+  const [showAlts, setShowAlts] = useState(false)
   const blocks = useMemo(() => parseMessageContent(textContent), [textContent])
 
   if (isUser) {
     return <ReactMarkdown components={markdownComponents}>{textContent}</ReactMarkdown>
+  }
+
+  const isSchemaMatch = !isUser && (textContent.includes("Reusing existing content type:") || textContent.includes("Reused existing content type:"))
+
+  if (isSchemaMatch && bestMatch) {
+    return (
+      <div className="space-y-4 font-body animate-in fade-in duration-500">
+        <ReactMarkdown components={markdownComponents}>
+          {textContent}
+        </ReactMarkdown>
+
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
+              <span className="material-symbols-outlined text-[10px] mr-1">check_circle</span>
+              Best Match
+            </span>
+          </div>
+
+          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-lg">schema</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-on-surface">{bestMatch.name}</h3>
+                  <p className="text-xs text-outline">{bestMatch.description || 'Standard content schema'}</p>
+                </div>
+              </div>
+              
+              {alternatives && alternatives.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAlts(!showAlts)}
+                  className="text-xs font-semibold text-primary hover:text-primary-container transition-colors cursor-pointer border-none bg-transparent"
+                >
+                  {showAlts ? 'Hide Alternatives' : 'Select Different'}
+                </button>
+              )}
+            </div>
+
+            {showAlts && alternatives && alternatives.length > 0 && (
+              <div className="space-y-3 pt-3 border-t border-outline-variant/10 animate-in slide-in-from-top-1 duration-200">
+                <p className="text-[10px] uppercase font-bold text-outline tracking-wider font-label">Alternatives</p>
+                <div className="flex flex-wrap gap-2">
+                  {alternatives.map((alt: any) => (
+                    <button
+                      key={alt.id}
+                      type="button"
+                      onClick={() => onSelectAlternative?.(alt)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/20 bg-surface-container hover:bg-surface-container-high hover:border-primary/30 text-xs font-medium text-on-surface-variant cursor-pointer transition-all active:scale-95"
+                    >
+                      {alt.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -390,6 +463,9 @@ const ThreadContainer: React.FC<{
   initialPrompt?: string | null
   onInitialPromptSent?: () => void
   onEvent?: (event: any) => void
+  bestMatch?: any
+  alternatives?: any[]
+  onSelectAlternative?: (ct: any) => void
 }> = ({
   mode,
   isGenerating,
@@ -403,6 +479,9 @@ const ThreadContainer: React.FC<{
   initialPrompt,
   onInitialPromptSent,
   onEvent,
+  bestMatch,
+  alternatives,
+  onSelectAlternative,
 }) => {
   const messages = useThread((s) => s.messages)
   const isRunning = useThread((s) => s.isRunning)
@@ -527,7 +606,13 @@ const ThreadContainer: React.FC<{
                       </span>
                     )}
                   </div>
-                  <MessageContentFormatter textContent={textContent} isUser={isUser} />
+                  <MessageContentFormatter 
+                    textContent={textContent} 
+                    isUser={isUser} 
+                    bestMatch={bestMatch}
+                    alternatives={alternatives}
+                    onSelectAlternative={onSelectAlternative}
+                  />
                 </div>
               )}
             </div>
@@ -700,6 +785,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   endpoint = '/api/ai/draft',
   additionalBody = {},
   isAiPaused = false,
+  bestMatch,
+  alternatives,
+  onSelectAlternative,
 }) => {
   // Controlled vs uncontrolled state for generating status text and state
   const [localIsGenerating, setLocalIsGenerating] = useState(false)
@@ -807,6 +895,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           initialPrompt={initialPrompt}
           onInitialPromptSent={onInitialPromptSent}
           onEvent={onEvent}
+          bestMatch={bestMatch}
+          alternatives={alternatives}
+          onSelectAlternative={onSelectAlternative}
         />
       </ThreadPrimitive.Root>
     </AssistantRuntimeProvider>
