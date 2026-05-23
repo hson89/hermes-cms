@@ -3,6 +3,9 @@ from unittest.mock import MagicMock
 from src.domain.content_drafting.prompts import (
     get_drafting_prompt,
     get_refinement_prompt,
+    get_schema_generation_prompt,
+    get_copilot_prompt,
+    get_healing_prompt,
     DRAFTING_SYSTEM_PROMPT,
     DRAFTING_USER_PROMPT,
     REFINEMENT_SYSTEM_PROMPT,
@@ -99,3 +102,72 @@ def test_get_refinement_prompt_success():
     
     assert prompt.config["metadata"]["langfuse_system_prompt_version"] == 24
     assert prompt.config["metadata"]["langfuse_user_prompt_version"] == 24
+
+
+def test_get_schema_generation_prompt_success():
+    class CustomPrompt:
+        def __init__(self, name):
+            self.version = 10
+            self.name = name
+            
+        def get_langchain_prompt(self):
+            return f"Custom remote {self.name}"
+
+    class CustomLangfuseClient:
+        def get_prompt(self, name, label):
+            return CustomPrompt(name)
+
+    client = CustomLangfuseClient()
+    prompt = get_schema_generation_prompt(client)
+    
+    messages = prompt.messages
+    system_val = messages[0].content
+    
+    assert system_val == "Custom remote schema-generation-system"
+    assert prompt.config["metadata"]["langfuse_system_prompt_version"] == 10
+
+
+def test_get_copilot_prompt_success():
+    class CustomPrompt:
+        def __init__(self, name):
+            self.version = 15
+            self.name = name
+            
+        def get_langchain_prompt(self):
+            return f"Custom remote {self.name}"
+
+    class CustomLangfuseClient:
+        def get_prompt(self, name, label):
+            return CustomPrompt(name)
+
+    client = CustomLangfuseClient()
+    prompt = get_copilot_prompt(client)
+    
+    messages = prompt.messages
+    system_val = messages[0].prompt.template
+    
+    assert system_val == "Custom remote copilot-system"
+    assert prompt.config["metadata"]["langfuse_system_prompt_version"] == 15
+
+
+def test_get_healing_prompt_success():
+    class CustomPrompt:
+        def __init__(self, name):
+            self.version = 5
+            self.name = name
+            
+        def get_langchain_prompt(self):
+            return f"Custom remote {self.name}"
+
+    class CustomLangfuseClient:
+        def get_prompt(self, name, label):
+            return CustomPrompt(name)
+
+    client = CustomLangfuseClient()
+    prompt = get_healing_prompt(client)
+    
+    messages = prompt.messages
+    system_val = messages[0].prompt.template
+    
+    assert system_val == "Custom remote content-healing-system"
+    assert prompt.config["metadata"]["langfuse_system_prompt_version"] == 5

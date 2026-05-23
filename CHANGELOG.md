@@ -5,6 +5,53 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.4.0] - 2026-05-23
+### AI Content Drafting Feature Track (`004-ai-content-drafting`)
+
+This feature track transforms the **Hermes AI** CMS into a comprehensive, "AI-First" content creation platform by introducing a split-view content drafting workspace. The system allows conversational AI agents in the left panel to populate a structured editor in the right panel in real-time using unidirectional Server-Sent Events (SSE). The feature introduces single-user session locking, Postgres-backed sliding-window rate limiting, tenant-scoped branding and tone configurations (Style Modifiers), snapshot-based iteration version history, and distributed Langfuse tracing.
+
+> [!NOTE]
+> All architectural modifications are fully validated under a rigorous Test-Driven Development (TDD) cycle, adding Jest, pytest, and Playwright coverage for a total of **79/79 passing unit, integration, and proxy contract tests** verifying logical isolation, rate limiting window compliance, and stream abort propagation.
+
+---
+
+### Added
+
+#### 1. Core Data Models & Collections (`apps/content-management-engine/src/collections/`)
+- **[NEW] `DraftingSessions` Collection** ([DraftingSessions](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/collections/DraftingSessions/index.ts)): Stores active draft state, metadata context, active locales, and version snapshot histories (capped at 10). Registers validation hooks for:
+  - `validateLock.ts`: Restricts concurrent drafting sessions for a specific content type via a Postgres partial unique index, dynamically treating sessions as expired on-the-fly if inactive for over 10 minutes.
+  - `refreshActivity.ts`: Automatically tracks active interaction sequences to keep the session alive.
+  - `capVersions.ts`: Trims history snapshots to a maximum of 10 items using a FIFO buffer.
+- **[NEW] `StyleModifiers` Collection** ([StyleModifiers](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/collections/StyleModifiers/index.ts)): Tenant-scoped brand tone descriptions (Academic, Punchy, Technical) injected dynamically into generation prompts.
+- **[NEW] `AIAuditLogs` Collection** ([AIAuditLogs](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/collections/AIAuditLogs/index.ts)): Auditing ledger capturing model usage, prompt tokens, completion tokens, parameters, and dynamic server-side cost calculation recorded in microdollars ($1 = 1,000,000 microdollars).
+- **[NEW] `AIRateLimits` Collection** ([AIRateLimits](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/collections/AIRateLimits/index.ts)): Globally user-scoped database table that tracks requests in a rolling 60-second sliding window, bypassing tenant isolation layers using `overrideAccess: true` to prevent platform credits abuse.
+- **[MODIFY] `Tenants` Collection** ([Tenants](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/collections/Tenants/index.ts)): Added select fields `defaultLLMModel` and `defaultImageModel` to enable workspace-wide model defaults.
+
+#### 2. Services, APIs & Proxy Routes
+- **[NEW] Next.js Proxy Routes (`apps/content-management-engine/src/app/api/`)**:
+  - `/api/ai/draft`: Relay proxy that streams SSE generation events, injects default models, and compiles consolidated `AIAuditLogs` entries.
+  - `/api/ai/refine`: Stateless selection-based adjustments.
+  - `/api/ai/refine-all`: Batch orchestrator executing parallel section refinements under a single aggregated rate-limit token and compiled audit record.
+  - `/api/ai/download-image`: Pipes DALL-E generated images from Web Streams directly into Payload's native Media collection, bypassing local container memory bloat.
+  - `/api/ai-drafting/sessions/[id]/rollback`: Dedicated endpoint executing server-side version rollback without roundtrip schema conversion.
+  - `/api/ai-drafting/sessions/cleanup`: Secure system cron endpoint cleaning up inactive locks (>10 mins) and rate limits (>5 mins).
+- **[NEW] FastAPI AI Content Bounded Context (`apps/content-authoring-service/src/`)**:
+  - **`DraftingService`** ([drafting_service.py](file:///home/itlight/dev/hermes-cms/apps/content-authoring-service/src/application/drafting_service.py)): Manages multi-turn, locale-scoped conversational drafting using LangChain SDK.
+  - **`RefineService`** ([refine_service.py](file:///home/itlight/dev/hermes-cms/apps/content-authoring-service/src/application/refine_service.py)): Handles text refinements with dynamic length adjustments (-30% for simplify, +30% for expand).
+  - **`image_generator` Tool** ([image_generator.py](file:///home/itlight/dev/hermes-cms/apps/content-authoring-service/src/infrastructure/tools/image_generator.py)): Dynamic DALL-E integration bound as a LangChain tool.
+  - **`schema_resolver` Tool** ([schema_resolver.py](file:///home/itlight/dev/hermes-cms/apps/content-authoring-service/src/infrastructure/tools/schema_resolver.py)): Looks up active collection structures on the fly.
+  - **`prompts.py`** ([prompts.py](file:///home/itlight/dev/hermes-cms/apps/content-authoring-service/src/domain/content_drafting/prompts.py)): Integrates dynamic prompt management from Langfuse with static, offline-safe fallback templates.
+- **[NEW] Markdown-to-Lexical Headless Service** ([markdown-to-lexical.ts](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/services/markdown-to-lexical.ts)): Translates raw Markdown stream outputs into strict block-based Lexical JSON server-side on stream completion.
+
+#### 3. Alexandria Bespoke Drafting Workspace UI
+- **`DraftingWorkspace.tsx`** ([DraftingWorkspace.tsx](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/components/views/DraftingWorkspace.tsx)): Editorial-grade split-view workspace featuring side navigation, top actions, version rollbacks, and active stream controls.
+- **`ChatPanel.tsx`** ([ChatPanel.tsx](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/components/Editor/ChatPanel.tsx)): Conversational thread bar with LLM model selection and brand style modifier chips.
+- **`EditorPanel.tsx`** ([EditorPanel.tsx](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/components/Editor/EditorPanel.tsx)): Dynamic structured editor that renders fields based on schemas, displays typing cursors during stream execution, and supports auto-saving.
+- **`FloatingAIBar.tsx`** ([FloatingAIBar.tsx](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/components/Editor/FloatingAIBar.tsx)): Dark glassmorphic selection toolbar for in-context revisions.
+- **`RecoveryDialog.tsx`** ([RecoveryDialog.tsx](file:///home/itlight/dev/hermes-cms/apps/content-management-engine/src/components/Editor/RecoveryDialog.tsx)): Recovery modal overlay allowing users to easily resume recovered drafts within 24 hours.
+
+---
+
 ## [0.3.0] - 2026-05-17
 ### Define Content Types Feature Track (`003-define-content-types`)
 

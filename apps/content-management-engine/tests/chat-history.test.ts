@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { mapSessionHistoryToMessages, shouldLoadHistory, HistoryMessage } from '../src/services/chat-history'
+import { mapSessionHistoryToMessages, shouldLoadHistory, isSchemaReuseMessage, HistoryMessage } from '../src/services/chat-history'
 
 describe('mapSessionHistoryToMessages', () => {
   const sessionId = 'test-session-123'
@@ -158,4 +158,20 @@ describe('shouldLoadHistory', () => {
     expect(shouldLoadHistory(anotherUuid, validUuid, true)).toBe(true)
   })
 })
+
+describe('isSchemaReuseMessage', () => {
+  it('should return true for assistant messages containing reuse notification patterns', () => {
+    expect(isSchemaReuseMessage('assistant', 'Reusing existing content type: Blogs')).toBe(true)
+    expect(isSchemaReuseMessage('assistant', 'Reused existing content type: Posts')).toBe(true)
+  })
+
+  it('should return false for user messages even if they contain the pattern', () => {
+    expect(isSchemaReuseMessage('user', 'Reusing existing content type: Blogs')).toBe(false)
+  })
+
+  it('should return false for assistant messages that do not contain the reuse pattern', () => {
+    expect(isSchemaReuseMessage('assistant', 'Creating a brand new schema called Blogs')).toBe(false)
+  })
+})
+
 

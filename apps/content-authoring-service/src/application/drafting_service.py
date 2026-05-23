@@ -9,7 +9,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, Tool
 from langchain_core.runnables import RunnableConfig
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.content_drafting.prompts import get_drafting_prompt
+from src.domain.content_drafting.prompts import get_drafting_prompt, get_healing_prompt
 from src.application.ai_service import AIService
 from src.infrastructure.tools.schema_resolver import schema_resolver
 from src.infrastructure.tools.image_generator import image_generator
@@ -482,17 +482,11 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
         except Exception as e:
             try:
                 # Healing block: attempt to recover plain text output into structured JSON schema format
-                healing_prompt = f"""You are an expert JSON formatter.
-You must convert the draft text below into a valid JSON object matching the requested schema.
-Strictly adhere to the keys, field names, and structures defined in the schema.
-
-Draft Text:
-{full_content}
-
-Schema:
-{json.dumps(schema_json, indent=2)}
-
-Return ONLY the raw JSON object matching the schema. Do not include any other conversational text, reasoning, or explanations. Do not include markdown formatting or blocks."""
+                healing_template = get_healing_prompt(self.ai_service.langfuse_client if self.ai_service else None)
+                healing_prompt = healing_template.messages[0].prompt.format(
+                    full_content=full_content,
+                    schema_json=json.dumps(schema_json, indent=2)
+                )
 
                 healing_model = self.ai_service.get_model(model_override=resolved_model)
                 healing_res = await healing_model.ainvoke([HumanMessage(content=healing_prompt)])

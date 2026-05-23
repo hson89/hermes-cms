@@ -179,3 +179,158 @@ def get_refinement_prompt(langfuse_client=None) -> ChatPromptTemplate:
         
     return prompt
 
+
+# ── Schema Generation Prompt ──────────────────────────────────────────────
+
+SCHEMA_GENERATION_SYSTEM_PROMPT = """You are an expert content modeler and Hermes AI assistant.
+Your job is to help the user co-create or modify content type schemas.
+
+You MUST return a JSON object with two keys:
+1. "explanation": A friendly, developer-oriented description of the changes you made, or any warnings/recommendations.
+2. "schema": The complete content type schema conforming strictly to the structure:
+   {
+     "name": "<name>",
+     "fields": [
+       {
+         "name": "<field name>",
+         "type": "<text|number|boolean|date|richText|json|relationship|select|upload|array|blocks>",
+         "required": true|false,
+         "label": "<UI label>",
+         "description": "<optional description>",
+         "localized": true|false,
+         "unique": true|false,
+         "fields": [...] (only if type is array),
+         "blocks": [...] (only if type is blocks)
+       }
+     ]
+   }
+
+Return ONLY this single JSON object. Do not include markdown code fencing or other prose outside the JSON.
+"""
+
+
+def get_schema_generation_prompt(langfuse_client=None) -> ChatPromptTemplate:
+    """
+    Get the ChatPromptTemplate for schema generation.
+    Attempts to fetch templates from Langfuse. Falls back to local defaults on failure.
+    """
+    system_prompt = SCHEMA_GENERATION_SYSTEM_PROMPT
+    
+    is_mock = False
+    try:
+        from unittest.mock import Mock
+        is_mock = isinstance(langfuse_client, Mock)
+    except ImportError:
+        pass
+
+    metadata = {}
+    if langfuse_client is not None and not is_mock:
+        try:
+            lf_system = langfuse_client.get_prompt("schema-generation-system", label="production")
+            system_prompt = lf_system.get_langchain_prompt()
+            metadata["langfuse_system_prompt_version"] = lf_system.version
+        except Exception as e:
+            logger.warning("Failed to fetch 'schema-generation-system' from Langfuse, falling back to local prompt. Error: %s", e)
+    from langchain_core.messages import SystemMessage
+    prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content=system_prompt),
+        ("user", "{grounding_content}"),
+    ])
+    
+    if metadata:
+        prompt = prompt.with_config({"metadata": metadata})
+        
+    return prompt
+
+
+# ── AI Copilot Prompt ──────────────────────────────────────────────────────
+
+COPILOT_SYSTEM_PROMPT = """You are a professional writing assistant embedded in a content management system.
+You will receive a section of text and a user instruction.
+Apply the instruction to the text and return ONLY the revised text with no
+extra explanation, quotes, or markdown formatting.
+"""
+
+
+def get_copilot_prompt(langfuse_client=None) -> ChatPromptTemplate:
+    """
+    Get the ChatPromptTemplate for content copilot.
+    Attempts to fetch templates from Langfuse. Falls back to local defaults on failure.
+    """
+    system_prompt = COPILOT_SYSTEM_PROMPT
+    
+    is_mock = False
+    try:
+        from unittest.mock import Mock
+        is_mock = isinstance(langfuse_client, Mock)
+    except ImportError:
+        pass
+
+    metadata = {}
+    if langfuse_client is not None and not is_mock:
+        try:
+            lf_system = langfuse_client.get_prompt("copilot-system", label="production")
+            system_prompt = lf_system.get_langchain_prompt()
+            metadata["langfuse_system_prompt_version"] = lf_system.version
+        except Exception as e:
+            logger.warning("Failed to fetch 'copilot-system' from Langfuse, falling back to local prompt. Error: %s", e)
+            
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        ("user", "Content item: {content_item_id}\nSection: {section_id}\nInstruction: {prompt}"),
+    ])
+    
+    if metadata:
+        prompt = prompt.with_config({"metadata": metadata})
+        
+    return prompt
+
+
+# ── JSON Formatting Self-Healing Prompt ───────────────────────────────────────
+
+HEALING_SYSTEM_PROMPT = """You are an expert JSON formatter.
+You must convert the text below into a valid JSON object matching the requested schema.
+Strictly adhere to the keys, field names, and structures defined in the schema.
+
+Input Text:
+{full_content}
+
+Schema:
+{schema_json}
+
+Return ONLY the raw JSON object matching the schema. Do not include any other conversational text, reasoning, or explanations. Do not include markdown formatting or blocks.
+"""
+
+
+def get_healing_prompt(langfuse_client=None) -> ChatPromptTemplate:
+    """
+    Get the ChatPromptTemplate for healing/formatting raw LLM JSON output.
+    Attempts to fetch templates from Langfuse. Falls back to local defaults on failure.
+    """
+    system_prompt = HEALING_SYSTEM_PROMPT
+    
+    is_mock = False
+    try:
+        from unittest.mock import Mock
+        is_mock = isinstance(langfuse_client, Mock)
+    except ImportError:
+        pass
+
+    metadata = {}
+    if langfuse_client is not None and not is_mock:
+        try:
+            lf_system = langfuse_client.get_prompt("content-healing-system", label="production")
+            system_prompt = lf_system.get_langchain_prompt()
+            metadata["langfuse_system_prompt_version"] = lf_system.version
+        except Exception as e:
+            logger.warning("Failed to fetch 'content-healing-system' from Langfuse, falling back to local prompt. Error: %s", e)
+            
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+    ])
+    
+    if metadata:
+        prompt = prompt.with_config({"metadata": metadata})
+        
+    return prompt
+

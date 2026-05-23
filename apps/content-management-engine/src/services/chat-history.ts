@@ -69,3 +69,13 @@ export function shouldLoadHistory(
   return true
 }
 
+/**
+ * Detects if an assistant response denotes schema reuse.
+ */
+export function isSchemaReuseMessage(role: string, textContent: string): boolean {
+  return role === 'assistant' && (
+    textContent.includes("Reusing existing content type:") || 
+    textContent.includes("Reused existing content type:")
+  )
+}
+

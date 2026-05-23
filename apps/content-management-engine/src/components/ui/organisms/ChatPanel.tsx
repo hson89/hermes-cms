@@ -14,7 +14,7 @@ import { Heading } from '../atoms/Heading'
 import { Badge } from '../atoms/Badge'
 import { Card } from '../molecules/Card'
 import { CustomSseAdapter } from '../../../services/CustomSseAdapter'
-import { mapSessionHistoryToMessages, shouldLoadHistory } from '../../../services/chat-history'
+import { mapSessionHistoryToMessages, shouldLoadHistory, isSchemaReuseMessage } from '../../../services/chat-history'
 
 interface PresetAction {
   label: string
@@ -266,7 +266,7 @@ const MessageContentFormatter: React.FC<{
     return <ReactMarkdown components={markdownComponents}>{textContent}</ReactMarkdown>
   }
 
-  const isSchemaMatch = !isUser && (textContent.includes("Reusing existing content type:") || textContent.includes("Reused existing content type:"))
+  const isSchemaMatch = isSchemaReuseMessage(isUser ? 'user' : 'assistant', textContent)
 
   if (isSchemaMatch && bestMatch) {
     return (

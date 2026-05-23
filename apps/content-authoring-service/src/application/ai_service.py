@@ -22,38 +22,10 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from src.domain.ai_agent_session.models import AIAgentSession, SessionStatus
 from src.domain.schema_validator import validate_content_schema, InvalidSchemaError
 from src.infrastructure.config import settings
+from src.domain.content_drafting.prompts import get_schema_generation_prompt
 
 # In-memory session store (replaced by a proper repository in Phase 2 / DB task)
 _sessions: dict[str, AIAgentSession] = {}
-
-# ── Prompts ───────────────────────────────────────────────────────────────────
-
-_SCHEMA_GENERATION_SYSTEM_PROMPT = """\
-You are an expert content modeler and Hermes AI assistant.
-Your job is to help the user co-create or modify content type schemas.
-
-You MUST return a JSON object with two keys:
-1. "explanation": A friendly, developer-oriented description of the changes you made, or any warnings/recommendations.
-2. "schema": The complete content type schema conforming strictly to the structure:
-   {
-     "name": "<name>",
-     "fields": [
-       {
-         "name": "<field name>",
-         "type": "<text|number|boolean|date|richText|json|relationship|select|upload|array|blocks>",
-         "required": true|false,
-         "label": "<UI label>",
-         "description": "<optional description>",
-         "localized": true|false,
-         "unique": true|false,
-         "fields": [...] (only if type is array),
-         "blocks": [...] (only if type is blocks)
-       }
-     ]
-   }
-
-Return ONLY this single JSON object. Do not include markdown code fencing or other prose outside the JSON.
-"""
 
 
 def _extract_partial_explanation(text: str) -> str:
@@ -223,7 +195,10 @@ class AIService:
             }
 
         # Build initial messages context
-        session.add_message("system", _SCHEMA_GENERATION_SYSTEM_PROMPT)
+        schema_generation_prompt = get_schema_generation_prompt(self.langfuse_client)
+        schema_system_prompt_str = schema_generation_prompt.messages[0].content
+
+        session.add_message("system", schema_system_prompt_str)
         session.add_message("user", prompt)
         await save_session()
 
@@ -233,7 +208,7 @@ class AIService:
         grounding_content += f"[User Request]\n{prompt}"
 
         messages = [
-            SystemMessage(content=_SCHEMA_GENERATION_SYSTEM_PROMPT),
+            SystemMessage(content=schema_system_prompt_str),
             HumanMessage(content=grounding_content),
         ]
 
@@ -363,11 +338,13 @@ class AIService:
                 }
             }
 
-        # Build message history for LangChain
+        schema_generation_prompt = get_schema_generation_prompt(self.langfuse_client)
+        schema_system_prompt_str = schema_generation_prompt.messages[0].content
+
         langchain_messages = []
         for msg in session.context:
             if msg.role == "system":
-                langchain_messages.append(SystemMessage(content=msg.content))
+                langchain_messages.append(SystemMessage(content=schema_system_prompt_str))
             elif msg.role == "user":
                 langchain_messages.append(HumanMessage(content=msg.content))
             elif msg.role == "assistant":
