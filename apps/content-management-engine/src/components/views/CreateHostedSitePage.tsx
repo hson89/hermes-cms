@@ -13,6 +13,8 @@ import { FormField } from '@/components/ui/molecules/FormField'
 import { FormSelect } from '@/components/ui/molecules/FormSelect'
 import { Badge } from '@/components/ui/atoms/Badge'
 
+import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+
 interface Tenant {
   id: string
   name: string
@@ -24,7 +26,7 @@ export const CreateHostedSitePage: React.FC = () => {
   const { id } = useDocumentInfo()
   const isEditMode = !!id
 
-  // View States
+  // ... (rest of states)
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -151,31 +153,19 @@ export const CreateHostedSitePage: React.FC = () => {
   }
 
   return (
-    <div className="custom-site-view w-full max-w-6xl mx-auto px-4 py-8 lg:py-12 bg-surface-bright min-h-[80vh] font-body text-on-surface antialiased">
+    <div className="custom-site-view w-full max-w-[1600px] mx-auto px-6 py-8 lg:py-10 bg-background min-h-screen font-body text-on-background antialiased">
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-outline-variant/15 pb-6 mb-8 gap-4">
-        <div>
-          <span className="font-label text-[10px] uppercase tracking-widest text-outline font-bold">Managed Infrastructure</span>
-          <Heading level={2} className="mt-1">
-            {isEditMode ? `Manage Site: ${name}` : 'Provision New Site'}
-          </Heading>
-          <Text variant="small" className="mt-1 max-w-xl">
-            {isEditMode 
-              ? 'Configure deployment settings, custom domains, and associated templates.'
-              : 'Deploy a managed front-end starter template bound to a specific tenant workspace.'}
-          </Text>
-        </div>
-        
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => router.push('/admin/collections/hosted-sites')}
-          className="uppercase tracking-widest text-xs"
-        >
-          <Icon name="arrow_back" size={16} />
-          Return to Registry
-        </Button>
-      </div>
+      <RegistryHeader
+        title={isEditMode ? `Manage Site: ${name}` : 'Provision New Site'}
+        subtitle={isEditMode 
+          ? 'Configure deployment settings, custom domains, and associated templates for this managed infrastructure.'
+          : 'Deploy a managed front-end starter template bound to a specific tenant workspace.'}
+        breadcrumbs={['Hermes AI', 'Infrastructure', isEditMode ? 'Edit Site' : 'Provision']}
+        showAction={true}
+        actionText="Return to Registry"
+        actionIcon="arrow_back"
+        onActionClick={() => router.push('/admin/collections/hosted-sites')}
+      />
 
       {success && (
         <div className="mb-8 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
@@ -191,13 +181,13 @@ export const CreateHostedSitePage: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-4">
         
         <div className="lg:col-span-4 space-y-6">
-          <Card variant="low" className="border border-outline-variant/15 p-6 bg-surface-container-low/30 relative overflow-hidden flex flex-col items-center text-center">
-            <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-primary/30 to-primary-container/30 filter blur-xl -z-10" />
+          <Card variant="low" className="border border-outline-variant/15 p-6 bg-surface-container-low/30 backdrop-blur-md relative overflow-hidden flex flex-col items-center text-center animate-soft-blur-in" style={{ animationDelay: '200ms' }}>
+            <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-primary/20 to-primary-container/20 filter blur-2xl -z-10" />
             
-            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl ring-4 ring-surface-container-low">
+            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl ring-4 ring-surface-container-low shadow-xl">
               <Icon name="web" size={40} />
             </div>
 
@@ -211,105 +201,121 @@ export const CreateHostedSitePage: React.FC = () => {
               </Badge>
             </div>
 
-            <div className="pt-6 mt-6 w-full" />
+            <div className="pt-6 mt-6 w-full border-t border-outline-variant/10" />
 
-            <div className="w-full text-left space-y-3">
-              <span className="font-label text-[10px] uppercase tracking-widest text-outline block font-bold">Deployment Info</span>
-              <div className="space-y-2">
-                <div>
-                  <span className="block text-[9px] text-outline uppercase tracking-wider">Template</span>
-                  <span className="text-xs font-semibold text-on-surface">{template === 'nextjs-blog' ? 'Next.js Blog' : 'Astro Portfolio'}</span>
+            <div className="w-full text-left space-y-4">
+              <span className="font-label text-[10px] uppercase tracking-widest text-outline block font-bold">Deployment Manifest</span>
+              <div className="space-y-3">
+                <div className="bg-surface-container-highest/30 p-3 rounded-xl border border-outline-variant/5">
+                  <span className="block text-[9px] text-outline uppercase tracking-wider mb-1">Template Engine</span>
+                  <span className="text-xs font-semibold text-on-surface flex items-center gap-2">
+                    <Icon name="auto_awesome" size={14} className="text-primary" />
+                    {template === 'nextjs-blog' ? 'Next.js Blog' : 'Astro Portfolio'}
+                  </span>
                 </div>
                 {deployedUrl && (
-                  <div>
-                    <span className="block text-[9px] text-outline uppercase tracking-wider">Internal URL</span>
-                    <a href={deployedUrl} target="_blank" rel="noreferrer" className="text-[10px] font-mono text-primary truncate block hover:underline">
-                      {deployedUrl}
+                  <div className="bg-surface-container-highest/30 p-3 rounded-xl border border-outline-variant/5">
+                    <span className="block text-[9px] text-outline uppercase tracking-wider mb-1">Access Endpoint</span>
+                    <a href={deployedUrl} target="_blank" rel="noreferrer" className="text-[10px] font-mono text-primary truncate block hover:underline flex items-center gap-1.5">
+                      {deployedUrl.replace(/^https?:\/\//, '')}
+                      <Icon name="open_in_new" size={12} />
                     </a>
                   </div>
                 )}
               </div>
             </div>
           </Card>
+
+          <Card variant="low" className="border border-outline-variant/15 p-5 bg-tertiary/5 animate-soft-blur-in" style={{ animationDelay: '300ms' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="info" size={16} className="text-tertiary" />
+              <span className="font-label text-[10px] uppercase tracking-widest text-tertiary font-bold">Editorial Note</span>
+            </div>
+            <Text variant="small" className="text-[11px] leading-relaxed text-on-surface-variant italic">
+              Provisioning a site creates a logically isolated deployment instance. Ensure the target workspace has available domain slots before proceeding.
+            </Text>
+          </Card>
         </div>
 
         <div className="lg:col-span-8">
-          <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-8 bg-surface-container-low/30">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <Card variant="low" className="border border-outline-variant/15 p-6 lg:p-10 bg-surface-container-low/30 backdrop-blur-sm animate-soft-blur-in" style={{ animationDelay: '400ms' }}>
+            <form onSubmit={handleSubmit} className="space-y-8">
               
               <div>
-                <Heading level={4} className="mb-1 text-xl">Site Configuration</Heading>
-                <Text variant="small">Define the target environment and template settings for this deployment.</Text>
+                <Heading level={4} className="mb-1 text-2xl font-bold tracking-tight">Infrastructure Settings</Heading>
+                <Text variant="small" className="text-outline">Define the architectural parameters and tenant associations for this managed deployment.</Text>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField 
-                  label="Site Display Name"
+                  label="Site Display Identity"
                   id="siteName"
                   inputProps={{
                     value: name,
                     onChange: (e) => setName((e.target as HTMLInputElement).value)
                   }}
-                  placeholder="e.g. My Awesome Blog"
+                  placeholder="e.g. Alexandria Gazette"
                   required
                 />
 
                 <FormSelect
-                  label="Starter Template"
+                  label="Starter Template Preset"
                   id="siteTemplate"
                   selectProps={{
                     value: template,
                     onChange: (e) => setTemplate((e.target as HTMLSelectElement).value as any)
                   }}
                 >
-                  <option value="nextjs-blog">Next.js Blog (Modern editorial engine)</option>
-                  <option value="astro-portfolio">Astro Portfolio (Lightweight showcase)</option>
+                  <option value="nextjs-blog">Next.js Blog (Full Editorial Engine)</option>
+                  <option value="astro-portfolio">Astro Portfolio (Lightweight Showcase)</option>
                 </FormSelect>
               </div>
 
-              <FormSelect
-                label="Target Tenant Workspace"
-                id="siteTenant"
-                selectProps={{
-                  value: selectedTenantId,
-                  onChange: (e) => setSelectedTenantId(e.target.value)
-                }}
-                required
-              >
-                <option value="">Select a workspace...</option>
-                {tenants.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.slug})
-                  </option>
-                ))}
-              </FormSelect>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormSelect
+                  label="Target Workspace Partition"
+                  id="siteTenant"
+                  selectProps={{
+                    value: selectedTenantId,
+                    onChange: (e) => setSelectedTenantId(e.target.value)
+                  }}
+                  required
+                >
+                  <option value="">Select a workspace registry...</option>
+                  {tenants.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.slug})
+                    </option>
+                  ))}
+                </FormSelect>
 
-              <FormField 
-                label="Custom Domain (Optional)"
-                id="siteDomain"
-                inputProps={{
-                  value: domain,
-                  onChange: (e) => setDomain((e.target as HTMLInputElement).value)
-                }}
-                placeholder="e.g. blog.my-domain.com"
-              />
+                <FormField 
+                  label="Branded Custom Domain (Optional)"
+                  id="siteDomain"
+                  inputProps={{
+                    value: domain,
+                    onChange: (e) => setDomain((e.target as HTMLInputElement).value)
+                  }}
+                  placeholder="e.g. editorial.my-domain.com"
+                />
+              </div>
 
-              <div className="pt-6 flex justify-end gap-4">
+              <div className="pt-8 border-t border-outline-variant/10 flex justify-end gap-4">
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => router.push('/admin/collections/hosted-sites')}
-                  className="uppercase tracking-widest text-xs"
+                  className="uppercase tracking-widest text-xs px-8"
                 >
-                  Cancel
+                  Discard
                 </Button>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="uppercase tracking-widest text-xs"
+                  className="uppercase tracking-widest text-xs px-10 shadow-lg shadow-primary/10"
                 >
-                  {isSubmitting ? 'Provisioning...' : (isEditMode ? 'Update Site' : 'Provision Site')}
+                  {isSubmitting ? 'Provisioning...' : (isEditMode ? 'Commit Changes' : 'Provision Site')}
                 </Button>
               </div>
 
