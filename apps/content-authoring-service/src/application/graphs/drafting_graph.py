@@ -10,9 +10,14 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 
+from src.application.ai_service import AIService
+from src.application.marketplace_service import MarketplaceService
 from src.domain.content_drafting.prompts import get_drafting_prompt, get_refinement_prompt
 from src.infrastructure.tools.image_generator import image_generator
 from src.infrastructure.tools.schema_resolver import schema_resolver
+
+# Initialize Marketplace Service
+marketplace_service = MarketplaceService()
 
 
 class DraftingState(TypedDict):
@@ -46,11 +51,14 @@ async def call_drafting_llm(state: DraftingState, config: RunnableConfig) -> Dic
     model_override = config["configurable"].get("model_override")
 
     if ai_service is None:
-        from src.application.ai_service import AIService
         ai_service = AIService()
 
     model = ai_service.get_model(model_override=model_override)
+    
+    # Story 4: Dynamic Tool Registration
+    # In production, we'd fetch active marketplace apps for the current tenant.
     tools = [schema_resolver, image_generator]
+    
     model_with_tools = model.bind_tools(tools)
 
     # 1. Resolve prompt template based on task type (refinement vs fresh drafting)
@@ -132,6 +140,13 @@ async def execute_drafting_tools(state: DraftingState, config: RunnableConfig) -
                 res = await schema_resolver.ainvoke(tool_args, config=config)
             elif tool_name == "image_generator":
                 res = await image_generator.ainvoke(tool_args, config=config)
+            elif tool_name.startswith("app_"):
+                # Story 4: Execute dynamic marketplace tool
+                app_id = tool_name.replace("app_", "")
+                # Resolve app URL from context or registry (mocked here)
+                app_url = "https://mock-app-service.hermes.ai" 
+                tool = marketplace_service.get_tool_for_app(app_id, app_url, tenant_id)
+                res = await tool.ainvoke(tool_args["query"] if "query" in tool_args else str(tool_args))
             else:
                 res = f"Error: Tool '{tool_name}' not found."
 

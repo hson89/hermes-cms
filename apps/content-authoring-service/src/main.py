@@ -30,7 +30,10 @@ from src.infrastructure.database import get_db
 
 # ── Security ──────────────────────────────────────────────────────────────────
 
-from src.infrastructure.auth import require_internal_secret as _require_internal_secret
+from src.infrastructure.auth import (
+    require_internal_secret as _require_internal_secret,
+    verify_marketplace_token as _verify_marketplace_token,
+)
 
 
 
@@ -317,6 +320,27 @@ async def refine_draft(
             yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error during refinement: {exc}'})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.get(
+    "/api/marketplace/validate",
+    tags=["Marketplace"],
+    summary="Validate a marketplace connection token",
+    dependencies=[Security(_verify_marketplace_token)],
+)
+async def validate_marketplace_connection(
+    token_claims: dict = Depends(_verify_marketplace_token),
+) -> dict:
+    """
+    Validation endpoint for 3rd-party marketplace apps.
+    Confirms that the provided JWT is valid and returns the scoped claims.
+    """
+    return {
+        "status": "authorized",
+        "tenant_id": token_claims.get("tenant_id"),
+        "app_id": token_claims.get("app_id"),
+        "scopes": token_claims.get("scopes"),
+    }
 
 
 @app.post(

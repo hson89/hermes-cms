@@ -37,6 +37,12 @@ import { HostedSiteListPage as HostedSiteListPage_3e442b45b17811de0e52627585bc87
 import { CreateAPIKeyPage as CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d } from '../../../../src/components/views/CreateAPIKeyPage'
 import { APIKeyListPage as APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f } from '../../../../src/components/views/APIKeyListPage'
 import { TenantField as TenantField_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
+import { MarketplaceAppEditPage as MarketplaceAppEditPage_6372b6e2938899daf705563a6d5887fc } from '../../../../src/components/views/MarketplaceAppEditPage'
+import { MarketplaceAppListPage as MarketplaceAppListPage_472a1f4e70811c7800eb79bf6fb9442c } from '../../../../src/components/views/MarketplaceAppListPage'
+import { GenerateTokenButton as GenerateTokenButton_5b9dcd0a479a01cf42b45b760c2a64a6 } from '../../../../src/components/admin/GenerateTokenButton'
+import { TenantAppEditPage as TenantAppEditPage_ec0a31e158154ede2f9803efd75d835d } from '../../../../src/components/views/TenantAppEditPage'
+import { TenantAppListPage as TenantAppListPage_ba0fc0fee0c242bb4f45c898605d78a7 } from '../../../../src/components/views/TenantAppListPage'
+import { JWTTokenListPage as JWTTokenListPage_d3ac07a937a88cc235dd1a883ac32640 } from '../../../../src/components/views/JWTTokenListPage'
 import { Nav as Nav_725104caa96b88e49c21a618118acd02 } from '../../../../src/components/ui/organisms/Nav'
 import { Header as Header_7cf062c528de236e4ac0d80ace4e9e1d } from '../../../../src/components/ui/organisms/Header'
 import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
@@ -87,6 +93,12 @@ export const importMap = {
   "/src/components/views/CreateAPIKeyPage#CreateAPIKeyPage": CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d,
   "/src/components/views/APIKeyListPage#APIKeyListPage": APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f,
   "@payloadcms/plugin-multi-tenant/client#TenantField": TenantField_1d0591e3cf4f332c83a86da13a0de59a,
+  "/src/components/views/MarketplaceAppEditPage#MarketplaceAppEditPage": MarketplaceAppEditPage_6372b6e2938899daf705563a6d5887fc,
+  "/src/components/views/MarketplaceAppListPage#MarketplaceAppListPage": MarketplaceAppListPage_472a1f4e70811c7800eb79bf6fb9442c,
+  "/src/components/admin/GenerateTokenButton#GenerateTokenButton": GenerateTokenButton_5b9dcd0a479a01cf42b45b760c2a64a6,
+  "/src/components/views/TenantAppEditPage#TenantAppEditPage": TenantAppEditPage_ec0a31e158154ede2f9803efd75d835d,
+  "/src/components/views/TenantAppListPage#TenantAppListPage": TenantAppListPage_ba0fc0fee0c242bb4f45c898605d78a7,
+  "/src/components/views/JWTTokenListPage#JWTTokenListPage": JWTTokenListPage_d3ac07a937a88cc235dd1a883ac32640,
   "/src/components/ui/organisms/Nav#Nav": Nav_725104caa96b88e49c21a618118acd02,
   "/src/components/ui/organisms/Header#Header": Header_7cf062c528de236e4ac0d80ace4e9e1d,
   "@payloadcms/plugin-multi-tenant/rsc#TenantSelector": TenantSelector_d6d5f193a167989e2ee7d14202901e62,
