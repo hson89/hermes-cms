@@ -605,11 +605,11 @@ const ThreadContainer: React.FC<{
                 </div>
               ) : (
                 <div
-                  className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed transition-all duration-300 ${
-                    isUser
-                      ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-sm'
-                      : 'bg-surface-container-lowest text-on-surface border border-outline-variant/15 rounded-tl-sm w-full max-w-[95%]'
-                  }`}
+                   className={`max-w-[85%] rounded-2xl p-3 text-base leading-relaxed transition-all duration-300 ${
+                     isUser
+                       ? 'bg-surface-container-high text-on-surface border border-outline-variant/15 rounded-tr-sm'
+                       : 'bg-surface-container-lowest text-on-surface border border-outline-variant/15 rounded-tl-sm w-full max-w-[95%]'
+                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <span className={`font-label text-[10px] font-bold uppercase tracking-wider ${isUser ? 'text-on-surface-variant' : 'text-primary'}`}>
