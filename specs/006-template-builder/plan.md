@@ -70,10 +70,9 @@ apps/content-management-engine/
 │   ├── services/
 │   │   ├── template_service.ts # Resolution engine & block diffing logic
 │   │   └── deployment_service.ts # (Extended for TemplateDeployment)
-│   └── app/(payload)/api/
-│       ├── blocks/            # Registry endpoint (POST /api/blocks/register)
-│       └── templates/
-│           └── resolve/       # Delivery endpoint for frontend hydration (FR-011)
+└── app/(payload)/api/
+    ├── blocks/            # Registry endpoint (POST /api/blocks/register)
+    └── content/[id]/hydrate/ # Delivery endpoint for frontend hydration (FR-011)
 ```
 
 **Structure Decision**: Integrated Monolith extension. The Builder UI lives in `apps/content-management-engine/src/components/Builder` and is registered as a custom Payload view. Logic is encapsulated in `template_service.ts`.

@@ -7,7 +7,7 @@ Defines reusable UI components registered via the Block Registry API.
 |-------|------|-------------|------------|
 | name | string | Human-readable name | Required |
 | slug | string | Unique identifier for the block | Unique per tenant, kebab-case |
-| schema | json | Definition of block properties (props) | Required, must follow BlockSchema spec |
+| schema | json | Definition of block properties (props) | Required. Must define property names, types (string, number, media), and 'required' flag for mapping validation. |
 | thumbnail | upload | Preview image for the builder | Optional |
 | status | select | active, deprecated | Default: active |
 | tenant | relationship | Owner tenant | Required, index |

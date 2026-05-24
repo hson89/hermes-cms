@@ -110,8 +110,9 @@
 - [ ] T030 [P] Apply Alexandria design system tokens and `:has()` reset rules in `apps/content-management-engine/src/app/(payload)/admin/globals.css`
 - [ ] T031 [P] Implement Optimistic Concurrency Control (OCC) hooks for `PageTemplates` in `apps/content-management-engine/src/collections/PageTemplates.ts`
 - [ ] T032 [P] Create performance benchmark for Resolution Engine (SC-004) in `apps/content-management-engine/src/services/__tests__/performance.test.ts`
-- [ ] T033 [P] Update `docs/architecture.md` with the new Template Builder Engine architecture
-- [ ] T034 Final verification against `quickstart.md` manual scenarios
+- [ ] T033 [P] Perform manual UX validation: Assemble a 5-block landing page template (SC-001 goal: < 10 mins)
+- [ ] T034 [P] Update `docs/architecture.md` with the new Template Builder Engine architecture
+- [ ] T035 Final verification against `quickstart.md` manual scenarios
 
 ---
 

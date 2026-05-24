@@ -63,7 +63,7 @@ As a Content Manager, I want to "Publish" a template so that it becomes availabl
 
 * **FR-001**: System MUST provide a "Template Library" view to manage page templates.
 * **FR-002**: System MUST allow users to select from a registry of "Building Blocks".
-* **FR-003**: System MUST allow defining "Slots" within a template where blocks can be dropped.
+* **FR-003**: System MUST allow defining "Slots" within a template where blocks can be dropped. Slots are defined code-first within a block's manifest schema.
 * **FR-004**: System MUST allow associating a Template with exactly one primary Content Type schema.
 * **FR-005**: System MUST provide a mapping interface to link Block Properties to Schema Fields.
 * **FR-006**: System MUST expose a Block Registry API endpoint (e.g., `POST /api/blocks/register`) to accept block manifest files containing block schemas and thumbnail references from frontend applications during their CI/CD pipeline.
@@ -71,7 +71,7 @@ As a Content Manager, I want to "Publish" a template so that it becomes availabl
 * **FR-008**: System MUST support "Alexandria" design system tokens for all builder UI elements.
 * **FR-009**: System MUST validate that all required block properties are mapped to schema fields before allowing deployment.
 * **FR-010**: System MUST support multi-tenant isolation.
-* **FR-011**: System MUST provide a Content Delivery API endpoint that accepts a Content Item ID, resolves its associated PageTemplate, maps the schema data to the BlockInstances, and returns a fully hydrated block tree for frontend rendering.
+* **FR-011**: System MUST provide a Content Delivery API endpoint (`GET /api/content/:id/hydrate`) that accepts a Content Item ID, resolves its associated PageTemplate, maps the schema data to the BlockInstances, and returns a fully hydrated block tree for frontend rendering.
 * **FR-012**: If a synchronized block manifest omits a previously registered block, the system MUST retain the block definition, mark it as 'Deprecated', prevent new usage, keep existing templates intact, and display a warning in the builder UI.
 
 ### Key Entities
