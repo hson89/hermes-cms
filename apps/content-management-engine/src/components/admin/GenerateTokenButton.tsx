@@ -10,7 +10,7 @@ import { Icon } from '@/components/ui/atoms/Icon'
  * Displayed in the sidebar or edit view of TenantApps.
  */
 export const GenerateTokenButton: React.FC = () => {
-  const { id, doc, collectionSlug } = useDocumentInfo()
+  const { id, doc, collectionSlug } = useDocumentInfo() as any
   const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +24,7 @@ export const GenerateTokenButton: React.FC = () => {
     { label: 'Order Processing', value: 'write_orders' },
   ]
 
-  if (collectionSlug !== 'tenant-apps' || !id) return null
+  if ((collectionSlug as string) !== 'tenant-apps' || !id) return null
 
   const toggleScope = (scope: string) => {
     setSelectedScopes(prev => 

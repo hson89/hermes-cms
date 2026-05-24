@@ -70,7 +70,7 @@ export const TenantApps: CollectionConfig = {
     {
       name: 'app',
       type: 'relationship',
-      relationTo: 'marketplace-apps',
+      relationTo: 'marketplace-apps' as any,
       required: true,
       label: 'Marketplace App',
     },

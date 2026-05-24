@@ -12,7 +12,7 @@ import configPromise from '../../payload.config'
  * Persists the SHA-256 hash in the jwt-tokens collection.
  */
 export const generateMarketplaceTokenEndpoint: Endpoint = {
-  path: '/api/marketplace/generate-token',
+  path: '/marketplace/generate-token',
   method: 'post',
   handler: async (req) => {
     try {
@@ -27,20 +27,25 @@ export const generateMarketplaceTokenEndpoint: Endpoint = {
       }
 
       const body = (req.json ? await req.json() : req.data) || {}
-      const { tenantId, appId, scopes } = body
+      const { tenantId: rawTenantId, appId: rawAppId, scopes } = body
 
-      if (!tenantId || !appId) {
+      if (!rawTenantId || !rawAppId) {
         return Response.json(
           { error: 'Missing required fields: tenantId, appId' },
           { status: 400 },
         )
       }
 
+      // Normalize IDs to numbers if they are numeric, as Postgres uses integer IDs
+      const tenantId = isNaN(Number(rawTenantId)) ? rawTenantId : Number(rawTenantId)
+      const appId = isNaN(Number(rawAppId)) ? rawAppId : Number(rawAppId)
+
       // Verify that the user has access to the requested tenant
       if ((user as any).role !== 'super-admin') {
-        const userTenants = (user as any).tenants?.map((t: any) => 
-          typeof t.tenant === 'object' ? t.tenant.id : t.tenant
-        ) || []
+        const userTenants = (user as any).tenants?.map((t: any) => {
+          const tid = typeof t.tenant === 'object' ? t.tenant.id : t.tenant
+          return isNaN(Number(tid)) ? tid : Number(tid)
+        }) || []
         
         if (!userTenants.includes(tenantId)) {
           return Response.json({ error: 'Forbidden: You do not have access to this tenant' }, { status: 403 })
@@ -71,7 +76,8 @@ export const generateMarketplaceTokenEndpoint: Endpoint = {
       // 3. Persist the hash
       const { payload: payloadAPI } = req
       await payloadAPI.create({
-        collection: 'jwt-tokens',
+        collection: 'jwt-tokens' as any,
+        req, // Required for transaction atomicity
         data: {
           tokenHash,
           tenant: tenantId,

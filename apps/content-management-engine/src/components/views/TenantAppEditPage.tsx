@@ -54,8 +54,8 @@ export const TenantAppEditPage: React.FC = () => {
     const fetchData = async () => {
       try {
         const [appsRes, tenantsRes] = await Promise.all([
-          fetch('/api/marketplace-apps?limit=0'),
-          fetch('/api/tenants?limit=0')
+          fetch('/api/marketplace-apps?limit=1000'),
+          fetch('/api/tenants?limit=1000')
         ])
         const appsData = await appsRes.json()
         const tenantsData = await tenantsRes.json()
@@ -112,9 +112,13 @@ export const TenantAppEditPage: React.FC = () => {
     setIsSubmitting(true)
     setError('')
 
+    // Convert IDs to numbers if they are numeric, as Payload with Postgres expects integer IDs.
+    const finalAppId = isNaN(Number(appId)) ? appId : Number(appId)
+    const finalTenantId = isNaN(Number(tenantId)) ? tenantId : Number(tenantId)
+
     const payloadData = {
-      app: appId,
-      tenant: tenantId,
+      app: finalAppId,
+      tenant: finalTenantId,
       status,
       config: parsedConfig,
     }
@@ -134,6 +138,7 @@ export const TenantAppEditPage: React.FC = () => {
       const result = await res.json()
 
       if (!res.ok) {
+        console.error('API Error details:', result)
         throw new Error(result.errors?.[0]?.message || result.message || 'An error occurred while saving the installation.')
       }
 
