@@ -15,8 +15,22 @@ export const GenerateTokenButton: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [selectedScopes, setSelectedScopes] = useState<string[]>(['read_content'])
+
+  const availableScopes = [
+    { label: 'Read Content', value: 'read_content' },
+    { label: 'Write Content', value: 'write_content' },
+    { label: 'Inventory Read', value: 'read_stock' },
+    { label: 'Order Processing', value: 'write_orders' },
+  ]
 
   if (collectionSlug !== 'tenant-apps' || !id) return null
+
+  const toggleScope = (scope: string) => {
+    setSelectedScopes(prev => 
+      prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope]
+    )
+  }
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -35,7 +49,7 @@ export const GenerateTokenButton: React.FC = () => {
         body: JSON.stringify({
           tenantId,
           appId,
-          scopes: ['read_content', 'write_content'], // Default scopes for now
+          scopes: selectedScopes,
         }),
       })
 
@@ -70,14 +84,40 @@ export const GenerateTokenButton: React.FC = () => {
       </p>
 
       {!token ? (
-        <Button 
-          variant="primary" 
-          onClick={handleGenerate} 
-          isLoading={loading}
-          className="w-full py-3 text-xs uppercase tracking-widest"
-        >
-          Generate Token
-        </Button>
+        <>
+          <div className="mb-5 space-y-2">
+            <p className="text-[10px] uppercase font-label font-bold text-outline tracking-wider mb-2">Permissions</p>
+            <div className="grid grid-cols-2 gap-2">
+              {availableScopes.map((scope) => (
+                <label 
+                  key={scope.value}
+                  className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                    selectedScopes.includes(scope.value) 
+                      ? 'bg-primary/5 border-primary/30 text-primary' 
+                      : 'bg-surface-container border-outline-variant/10 text-on-surface-variant'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedScopes.includes(scope.value)}
+                    onChange={() => toggleScope(scope.value)}
+                    className="hidden"
+                  />
+                  <Icon name={selectedScopes.includes(scope.value) ? 'check_box' : 'check_box_outline_blank'} size={14} />
+                  <span className="text-[10px] font-bold font-label truncate">{scope.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <Button 
+            variant="primary" 
+            onClick={handleGenerate} 
+            isLoading={loading}
+            className="w-full py-3 text-xs uppercase tracking-widest"
+          >
+            Generate Token
+          </Button>
+        </>
       ) : (
         <div className="flex flex-col gap-3">
           <div className="relative group">
