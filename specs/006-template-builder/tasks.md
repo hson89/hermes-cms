@@ -24,11 +24,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Create `BuildingBlocks` collection in `apps/content-management-engine/src/collections/BuildingBlocks.ts`
-- [ ] T005 [P] Create base `PageTemplates` collection in `apps/content-management-engine/src/collections/PageTemplates.ts`
-- [ ] T006 Implement block registration service logic in `apps/content-management-engine/src/services/template_service.ts`
-- [ ] T007 Implement Registry API endpoint (FR-006) in `apps/content-management-engine/src/app/(payload)/api/blocks/register/route.ts`
-- [ ] T008 [P] Add unit tests for block registration in `apps/content-management-engine/src/services/__tests__/registration.test.ts`
+- [ ] T004 [P] Create `BuildingBlocks` collection with tenant isolation in `apps/content-management-engine/src/collections/BuildingBlocks.ts`
+- [ ] T005 [P] Create base `PageTemplates` collection with tenant isolation in `apps/content-management-engine/src/collections/PageTemplates.ts`
+- [ ] T006 [P] Implement multi-tenant access control rules for all new collections in `apps/content-management-engine/src/collections/access/`
+- [ ] T007 Implement block registration service logic in `apps/content-management-engine/src/services/template_service.ts`
+- [ ] T008 Implement Registry API endpoint (FR-006) in `apps/content-management-engine/src/app/(payload)/api/blocks/register/route.ts`
+- [ ] T009 [P] Add unit tests for block registration and tenant isolation in `apps/content-management-engine/src/services/__tests__/registration.test.ts`
 
 **Checkpoint**: Foundation ready - visual assembly and schema mapping can now begin
 
@@ -42,16 +43,16 @@
 
 ### Tests for User Story 1 (TDD)
 
-- [ ] T009 [P] [US1] Create E2E test for template creation and block dragging in `apps/content-management-engine/tests/builder-assembly.spec.ts`
-- [ ] T010 [P] [US1] Create unit test for layout persistence in `apps/content-management-engine/src/services/__tests__/layout.test.ts`
+- [ ] T010 [P] [US1] Create E2E test for template creation and block dragging in `apps/content-management-engine/tests/builder-assembly.spec.ts`
+- [ ] T011 [P] [US1] Create unit test for layout persistence in `apps/content-management-engine/src/services/__tests__/layout.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Register custom Builder view in `apps/content-management-engine/src/payload.config.ts`
-- [ ] T012 [P] [US1] Implement `BuilderCanvas` component with `dnd-kit` in `apps/content-management-engine/src/components/Builder/BuilderCanvas.tsx`
-- [ ] T013 [P] [US1] Implement `BlockLibrary` component in `apps/content-management-engine/src/components/Builder/BlockLibrary.tsx`
-- [ ] T014 [US1] Implement `BuilderWorkspace` entry point using `AdminView` in `apps/content-management-engine/src/components/Builder/BuilderWorkspace.tsx`
-- [ ] T015 [US1] Implement template persistence logic in `apps/content-management-engine/src/components/Builder/hooks/useTemplatePersistence.ts`
+- [ ] T012 [US1] Register custom Builder view in `apps/content-management-engine/src/payload.config.ts`
+- [ ] T013 [P] [US1] Implement `BuilderCanvas` with defined dropping "Slots" (FR-003) using `dnd-kit` in `apps/content-management-engine/src/components/Builder/BuilderCanvas.tsx`
+- [ ] T014 [P] [US1] Implement `BlockLibrary` component in `apps/content-management-engine/src/components/Builder/BlockLibrary.tsx`
+- [ ] T015 [US1] Implement `BuilderWorkspace` entry point using `AdminView` in `apps/content-management-engine/src/components/Builder/BuilderWorkspace.tsx`
+- [ ] T016 [US1] Implement template persistence logic in `apps/content-management-engine/src/components/Builder/hooks/useTemplatePersistence.ts`
 
 **Checkpoint**: User Story 1 is functional - blocks can be assembled visually.
 
@@ -65,15 +66,15 @@
 
 ### Tests for User Story 2 (TDD)
 
-- [ ] T016 [P] [US2] Create unit tests for Hydrated Block Tree Resolution (FR-011) in `apps/content-management-engine/src/services/__tests__/resolution.test.ts`
-- [ ] T017 [P] [US2] Create contract test for Resolution API in `apps/content-management-engine/tests/contracts/resolution.test.ts`
+- [ ] T017 [P] [US2] Create unit tests for Hydrated Block Tree Resolution (FR-011) in `apps/content-management-engine/src/services/__tests__/resolution.test.ts`
+- [ ] T018 [P] [US2] Create contract test for Resolution API in `apps/content-management-engine/tests/contracts/resolution.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T018 [P] [US2] Update `PageTemplates` collection with mapping JSON schema in `apps/content-management-engine/src/collections/PageTemplates.ts`
-- [ ] T019 [US2] Implement `MappingPanel` component for block settings in `apps/content-management-engine/src/components/Builder/MappingPanel.tsx`
-- [ ] T020 [US2] Implement tree resolution engine in `apps/content-management-engine/src/services/template_service.ts`
-- [ ] T021 [US2] Create resolution delivery API endpoint in `apps/content-management-engine/src/app/(payload)/api/templates/resolve/route.ts`
+- [ ] T019 [P] [US2] Update `PageTemplates` collection with mapping JSON schema in `apps/content-management-engine/src/collections/PageTemplates.ts`
+- [ ] T020 [US2] Implement `MappingPanel` component for block settings in `apps/content-management-engine/src/components/Builder/MappingPanel.tsx`
+- [ ] T021 [US2] Implement tree resolution engine in `apps/content-management-engine/src/services/template_service.ts`
+- [ ] T022 [US2] Create resolution delivery API endpoint in `apps/content-management-engine/src/app/(payload)/api/templates/resolve/route.ts`
 
 **Checkpoint**: User Story 2 is functional - data bindings work and frontend can fetch hydrated trees.
 
@@ -87,14 +88,15 @@
 
 ### Tests for User Story 3 (TDD)
 
-- [ ] T022 [P] [US3] Create integration test for deployment webhook trigger in `apps/content-management-engine/tests/deployment-webhooks.spec.ts`
+- [ ] T023 [P] [US3] Create integration test for deployment webhook trigger in `apps/content-management-engine/tests/deployment-webhooks.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T023 [P] [US3] Create `TemplateDeployments` collection in `apps/content-management-engine/src/collections/TemplateDeployments.ts`
-- [ ] T024 [P] [US3] Add `templateWebhookUrl` field to `HostedSites` collection in `apps/content-management-engine/src/collections/HostedSites.ts`
-- [ ] T025 [US3] Extend `deployment_service.ts` to handle template sync events in `apps/content-management-engine/src/services/deployment_service.ts`
-- [ ] T026 [US3] Implement `DeploymentToolbar` with status indicator in `apps/content-management-engine/src/components/Builder/DeploymentToolbar.tsx`
+- [ ] T024 [P] [US3] Create `TemplateDeployments` collection with tenant isolation in `apps/content-management-engine/src/collections/TemplateDeployments.ts`
+- [ ] T025 [P] [US3] Add `templateSyncWebhookUrl` field to `HostedSites` collection in `apps/content-management-engine/src/collections/HostedSites.ts`
+- [ ] T026 [US3] Implement pre-deployment validation logic (FR-009) in `apps/content-management-engine/src/services/template_service.ts`
+- [ ] T027 [US3] Extend `deployment_service.ts` to handle template sync events in `apps/content-management-engine/src/services/deployment_service.ts`
+- [ ] T028 [US3] Implement `DeploymentToolbar` with validation feedback and status indicator in `apps/content-management-engine/src/components/Builder/DeploymentToolbar.tsx`
 
 **Checkpoint**: User Story 3 is functional - templates can be deployed to production environments.
 
@@ -104,11 +106,12 @@
 
 **Purpose**: Reliability, UI polish, and documentation
 
-- [ ] T027 [P] Implement block deprecation logic and UI warnings (FR-012) in `apps/content-management-engine/src/services/template_service.ts`
-- [ ] T028 [P] Apply Alexandria design system tokens and `:has()` reset rules in `apps/content-management-engine/src/app/(payload)/admin/globals.css`
-- [ ] T029 [P] Implement Optimistic Concurrency Control (OCC) hooks for `PageTemplates` in `apps/content-management-engine/src/collections/PageTemplates.ts`
-- [ ] T030 [P] Update `docs/architecture.md` with the new Template Builder Engine architecture
-- [ ] T031 Final verification against `quickstart.md` manual scenarios
+- [ ] T029 [P] Implement block deprecation logic and UI warnings (FR-012) in `apps/content-management-engine/src/services/template_service.ts`
+- [ ] T030 [P] Apply Alexandria design system tokens and `:has()` reset rules in `apps/content-management-engine/src/app/(payload)/admin/globals.css`
+- [ ] T031 [P] Implement Optimistic Concurrency Control (OCC) hooks for `PageTemplates` in `apps/content-management-engine/src/collections/PageTemplates.ts`
+- [ ] T032 [P] Create performance benchmark for Resolution Engine (SC-004) in `apps/content-management-engine/src/services/__tests__/performance.test.ts`
+- [ ] T033 [P] Update `docs/architecture.md` with the new Template Builder Engine architecture
+- [ ] T034 Final verification against `quickstart.md` manual scenarios
 
 ---
 
@@ -129,8 +132,8 @@
 
 ### Parallel Opportunities
 
-- T004 and T005 (Collections) can be created in parallel.
-- US1 UI components (T012, T013) can be built in parallel.
+- T004, T005, and T006 (Collections & Access) can be created in parallel.
+- US1 UI components (T013, T014) can be built in parallel.
 - All tasks marked [P] can run concurrently if managed in separate turns.
 
 ---
