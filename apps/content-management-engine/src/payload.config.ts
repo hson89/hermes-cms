@@ -18,11 +18,16 @@ import { DraftingSessions } from './collections/DraftingSessions'
 import { StyleModifiers } from './collections/StyleModifiers'
 import { AIAuditLogs } from './collections/AIAuditLogs'
 import { AIRateLimits } from './collections/AIRateLimits'
+import { MarketplaceApps } from './collections/MarketplaceApps'
+import { TenantApps } from './collections/TenantApps'
+import { JWTTokens } from './collections/JWTTokens'
+import { generateMarketplaceTokenEndpoint } from './services/marketplace/endpoints'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const configPromise = buildConfig({
+  endpoints: [generateMarketplaceTokenEndpoint],
   admin: {
     user: Users.slug,
     importMap: {
@@ -62,6 +67,9 @@ const configPromise = buildConfig({
     StyleModifiers,
     AIAuditLogs,
     AIRateLimits,
+    MarketplaceApps,
+    TenantApps,
+    JWTTokens,
   ],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || 'YOUR_SECRET_HERE',
@@ -83,6 +91,8 @@ const configPromise = buildConfig({
         'drafting-sessions': { customTenantField: true },
         'style-modifiers': {},
         'ai-audit-logs': {},
+        'tenant-apps': { customTenantField: true },
+        'jwt-tokens': { customTenantField: true },
       } as any,
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => {

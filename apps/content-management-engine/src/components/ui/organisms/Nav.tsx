@@ -12,6 +12,8 @@ export const Nav: React.FC<any> = () => {
 
   const navLinks = [
     { label: 'Dashboard', icon: 'grid_view', path: '/admin' },
+    { label: 'Marketplace', icon: 'shopping_bag', path: '/admin/collections/marketplace-apps' },
+    { label: 'Installed Apps', icon: 'extension', path: '/admin/collections/tenant-apps' },
     { label: 'Tenants', icon: 'corporate_fare', path: '/admin/collections/tenants' },
     { label: 'Users', icon: 'group', path: '/admin/collections/users' },
     { label: 'Content Types', icon: 'layers', path: '/admin/collections/content-types' },

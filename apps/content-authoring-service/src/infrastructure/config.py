@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     # Security
     INTERNAL_SERVICE_SECRET: str = ""
+    MARKETPLACE_JWT_SECRET: str = "test-secret-123"
     CMS_ENGINE_URL: str = "http://localhost:3000"
 
     # LLM Configuration
