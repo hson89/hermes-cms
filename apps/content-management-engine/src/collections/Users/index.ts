@@ -28,11 +28,11 @@ export const Users: CollectionConfig = {
     },
   },
   access: {
-    read: () => true,
+    read: ({ req: { user } }) => Boolean(user),
     admin: ({ req: { user } }) => Boolean(user),
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    create: ({ req: { user } }) => (user as any)?.role === 'super-admin',
+    update: ({ req: { user } }) => (user as any)?.role === 'super-admin',
+    delete: ({ req: { user } }) => (user as any)?.role === 'super-admin',
   },
   hooks: {
     afterRead: [

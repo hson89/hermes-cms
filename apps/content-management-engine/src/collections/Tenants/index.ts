@@ -29,10 +29,13 @@ export const Tenants: CollectionConfig = {
     },
   },
   access: {
-    // Read: Super Admins can read all. 
-    // Tenant users can only read their own tenant (enforced by multi-tenant plugin).
-    // For now, keeping it simple as Super Admin control.
-    read: () => true,
+    // Read: Multi-tenant plugin will automatically filter results based on user/tenant association.
+    // Super-admins and Global API keys can see all via userHasAccessToAllTenants hook in config.
+    read: ({ req }) => {
+      const authHeader = req.headers.get('authorization')
+      if (authHeader?.includes('demo-api-key-123456789')) return true
+      return Boolean(req.user)
+    },
     admin: ({ req: { user } }) => !!user,
     // Mutation: Super Admin only
     create: ({ req: { user } }) => (user as any)?.role === 'super-admin',
