@@ -1,4 +1,5 @@
 import React from 'react'
+import '@fontsource/material-symbols-outlined'
 import './globals.css'
 
 export const metadata = {
@@ -14,9 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif:ital,wght@0,300;0,400;0,600;1,400&family=Public+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+        {/* Google Fonts: Inter, Noto Serif, Public Sans (imported via global CSS) */}
+        {/* Material Symbols Outlined imported via @fontsource/material-symbols-outlined npm package */}
       </head>
       <body>
         <header className="navbar-container">

@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@fontsource/material-symbols-outlined": "^5.1.0",
     "next": "^16.2.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

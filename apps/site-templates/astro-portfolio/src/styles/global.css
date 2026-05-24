@@ -212,3 +212,81 @@ h1, h2, h3 {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Material Symbols Icon Font Styles ===== */
+/* 
+ * Material Symbols Outlined - Self-hosted via @fontsource/material-symbols-outlined
+ * These classes render Material Design icons from Google's Material Symbols library.
+ * All icons support variable size, weight, fill, and grade properties.
+ */
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Size Variants */
+.material-symbols-outlined.size-18 {
+  font-size: 18px;
+}
+
+.material-symbols-outlined.size-20 {
+  font-size: 20px;
+}
+
+.material-symbols-outlined.size-24 {
+  font-size: 24px;
+}
+
+.material-symbols-outlined.size-32 {
+  font-size: 32px;
+}
+
+.material-symbols-outlined.size-48 {
+  font-size: 48px;
+}
+
+/* Common Icon Reference for Future Use */
+/*
+ * NAVIGATION ICONS:
+ *   - arrow_back, arrow_forward, arrow_upward, arrow_downward
+ *   - chevron_left, chevron_right, home, menu, close
+ *   - search, info, settings, help, more_vert, more_horiz
+ *
+ * ACTION ICONS:
+ *   - add, edit, delete, save, refresh, download, upload
+ *   - favorite, star, bookmark, share, print, mail
+ *
+ * STATUS ICONS:
+ *   - check_circle, error_circle, warning_circle, info_circle
+ *   - done, close, radio_button_checked
+ *
+ * CONTENT ICONS:
+ *   - image, video, article, description, note, folder
+ *   - link, language, code, analytics, trending_up
+ *
+ * AI/AUTOMATION ICONS:
+ *   - auto_awesome (sparkle - current use)
+ *   - psychology, smart_toy, data_saver_on
+ *
+ * Usage Example:
+ *   <span class="material-symbols-outlined">arrow_back</span>
+ *   <span class="material-symbols-outlined size-32">favorite</span>
+ *
+ * Full icon library: https://fonts.google.com/metadata/icons
+ */

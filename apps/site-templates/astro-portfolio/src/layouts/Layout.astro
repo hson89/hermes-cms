@@ -1,4 +1,5 @@
 ---
+import '@fontsource/material-symbols-outlined';
 import '../styles/global.css';
 
 interface Props {
@@ -16,9 +17,8 @@ const { title } = Astro.props;
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif:ital,wght@0,300;0,400;0,600;1,400&family=Public+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+		<!-- Google Fonts: Inter, Noto Serif, Public Sans (imported via global.css via Astro CSS bundling) -->
+		<!-- Material Symbols Outlined imported via @fontsource/material-symbols-outlined npm package -->
 	</head>
 	<body>
 		<header class="portfolio-header">
