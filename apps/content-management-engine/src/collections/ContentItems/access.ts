@@ -21,6 +21,11 @@ export const tenantDeliveryAccess: Access = ({ req: { user } }) => {
 
   if ((user as any).role === 'super-admin') return true
 
+  // Allow Global Frontend API Keys to read across all tenants
+  if ((user as any).collection === 'api-keys' && (user as any).globalAccess) {
+    return true
+  }
+
   const tenantIds = getTenantIds(user)
   if (tenantIds.length === 0) return false
 

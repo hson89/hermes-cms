@@ -1,108 +1,68 @@
 ---
 import Layout from '../layouts/Layout.astro';
-
-interface ContentItem {
-	id: string | number;
-	title: string;
-	excerpt: string;
-	category: string;
-	createdAt: string;
-}
-
-// Fetch dynamic content items from Hermes AI CMS during SSR
-async function fetchPortfolioItems(): Promise<ContentItem[]> {
-	const payloadUrl = process.env.PAYLOAD_URL;
-	const apiKey = process.env.PAYLOAD_API_KEY;
-
-	if (!payloadUrl || !apiKey) {
-		console.warn('[Astro Portfolio] PAYLOAD_URL or PAYLOAD_API_KEY is missing. Using mock data.');
-		return getMockData();
-	}
-
-	try {
-		const res = await fetch(`${payloadUrl}/api/content-items?limit=10&sort=-createdAt`, {
-			headers: {
-				'Authorization': `API-Key ${apiKey}`,
-				'Content-Type': 'application/json',
-			}
-		});
-
-		if (!res.ok) {
-			throw new Error(`Astro CMS fetch failed: ${res.statusText}`);
-		}
-
-		const data = await res.json();
-		if (data.docs && data.docs.length > 0) {
-			return data.docs.map((doc: any) => ({
-				id: doc.id,
-				title: doc.title,
-				category: doc.category || doc.type || 'DIGITAL WORK',
-				excerpt: doc.excerpt || doc.summary || 'A dynamic project compiled and authored within the Hermes AI multi-tenant architecture.',
-				createdAt: doc.createdAt,
-			}));
-		}
-	} catch (error) {
-		console.error('[Astro Portfolio] Error querying CMS engine API:', error);
-	}
-
-	return getMockData();
-}
-
-function getMockData(): ContentItem[] {
-	return [
-		{
-			id: 'proj-1',
-			title: 'Alexandria Design Engine',
-			category: 'INFRASTRUCTURE',
-			excerpt: 'An automated token compiler converting Markdown specifications into functional CSS custom properties, variables, and cross-framework UI components dynamically.',
-			createdAt: new Date().toISOString(),
-		},
-		{
-			id: 'proj-2',
-			title: 'Hermes Orchestration Service',
-			category: 'SYSTEM DESIGN',
-			excerpt: 'A Kafka-backed message consumer facilitating low-latency content drafts generation and schema migrations with zero downstream database locks.',
-			createdAt: new Date(Date.now() - 86400000).toISOString(),
-		},
-		{
-			id: 'proj-3',
-			title: 'Logical Isolation Layer for PostgreSQL',
-			category: 'SECURITY',
-			excerpt: 'An access-control plugin verifying tenant credentials at the database query coordinator tier, preventing logical row leaks across boundaries.',
-			createdAt: new Date(Date.now() - 172800000).toISOString(),
-		}
-	];
-}
-
-const works = await fetchPortfolioItems();
 ---
 
-<Layout title="The Curator — Premium Software Showcase">
-	<main>
+<Layout title="Hermes AI Architecture Archive">
+	<main class="root-container">
 		<section class="hero-section">
-			<span class="hero-tag">Aesthete & Engineer</span>
 			<h1 class="hero-title">High-fidelity systems built for the digital age.</h1>
 			<p class="hero-bio">
-				I construct multi-tenant systems, high-end editorial experiences, and intelligent microservices. This index represents curated software assets authored via Hermes AI.
+				Welcome to the multi-tenant architecture archive. Please navigate to a specific workspace to view curated project specifications.
 			</p>
-		</section>
-
-		<section>
-			<div class="works-title-section">
-				<h2>SELECTED SOFTWARE</h2>
-				<span class="nav-status-badge">{works.length} ENTRIES</span>
-			</div>
-
-			<div class="works-grid">
-				{works.map((work) => (
-					<div class="showcase-card">
-						<span class="showcase-category">{work.category}</span>
-						<h3 class="showcase-title">{work.title}</h3>
-						<p class="showcase-description">{work.excerpt}</p>
-						<a href="#" class="showcase-link">VIEW SPECIFICATION</a>
-					</div>
-				))}
+			
+			<div class="discovery-box">
+				<p class="discovery-label">ACTIVE DISCOVERY</p>
+				<p class="discovery-example">
+					Example: <a href="/frontend-demo-5656" class="discovery-link">/frontend-demo-5656</a>
+				</p>
 			</div>
 		</section>
 	</main>
 </Layout>
+
+<style>
+	.root-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 80vh;
+		text-align: center;
+		padding: 2rem;
+	}
+
+	.discovery-box {
+		margin-top: 4rem;
+		padding: 2rem;
+		background: var(--surface-container-low);
+		border: 1px solid var(--outline-variant);
+		border-radius: 1.5rem;
+		max-width: 400px;
+		width: 100%;
+	}
+
+	.discovery-label {
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: var(--outline);
+		letter-spacing: 0.2em;
+		margin-bottom: 1rem;
+	}
+
+	.discovery-example {
+		font-size: 0.875rem;
+		color: var(--on-surface-variant);
+		font-style: italic;
+	}
+
+	.discovery-link {
+		color: var(--primary);
+		text-decoration: none;
+		font-weight: 600;
+		font-style: normal;
+	}
+
+	.discovery-link:hover {
+		text-decoration: underline;
+	}
+</style>

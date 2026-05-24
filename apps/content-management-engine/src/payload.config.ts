@@ -87,7 +87,9 @@ const configPromise = buildConfig({
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => {
         if (!user) return false
-        return (user as any).role === 'super-admin'
+        if ((user as any).role === 'super-admin') return true
+        if ((user as any).collection === 'api-keys' && (user as any).globalAccess) return true
+        return false
       },
     }),
   ],

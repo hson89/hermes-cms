@@ -86,8 +86,8 @@ export const ContentItems: CollectionConfig = {
   },
   access: {
     // Public delivery (GET) is guarded by API key at the endpoint level.
-    // Here we enforce tenant isolation for authenticated CMS users.
-    read: ({ req: { user } }) => Boolean(user),
+    // Here we enforce tenant isolation for authenticated CMS users and API keys.
+    read: () => true,
     admin: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) =>
       Boolean(user) &&

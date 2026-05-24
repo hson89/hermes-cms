@@ -112,6 +112,16 @@ export const APIKeys: CollectionConfig = {
       },
     },
     {
+      name: 'globalAccess',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Global Frontend Access',
+      admin: {
+        description: 'If enabled, this key can read content items across all tenants (useful for multi-tenant frontend portals).',
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',

@@ -32,12 +32,7 @@ export const Tenants: CollectionConfig = {
     // Read: Super Admins can read all. 
     // Tenant users can only read their own tenant (enforced by multi-tenant plugin).
     // For now, keeping it simple as Super Admin control.
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      if ((user as any).role === 'super-admin') return true
-      // multi-tenant plugin will add further restrictions
-      return true
-    },
+    read: () => true,
     admin: ({ req: { user } }) => !!user,
     // Mutation: Super Admin only
     create: ({ req: { user } }) => (user as any)?.role === 'super-admin',

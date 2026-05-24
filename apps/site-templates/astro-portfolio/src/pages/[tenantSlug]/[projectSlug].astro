@@ -1,0 +1,214 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getTenantBySlug, fetchProjectBySlug } from '../../lib/cms';
+
+const { tenantSlug, projectSlug } = Astro.params;
+
+if (!tenantSlug || !projectSlug) {
+	return Astro.redirect('/');
+}
+
+// 1. Resolve Tenant
+const tenant = await getTenantBySlug(tenantSlug);
+if (!tenant) {
+	return new Response(null, {
+		status: 404,
+		statusText: 'Tenant Not Found'
+	});
+}
+
+// 2. Fetch Project
+const project = await fetchProjectBySlug(tenant.id, projectSlug);
+if (!project) {
+	return new Response(null, {
+		status: 404,
+		statusText: 'Project Not Found'
+	});
+}
+---
+
+<Layout title={`${project.title} | ${tenant.name}`}>
+	<main class="project-detail-container">
+		<header class="project-header">
+			<div class="project-nav">
+				<a href={`/${tenantSlug}`} class="back-link">
+					<span class="material-symbols-outlined">arrow_back</span>
+					BACK TO SHOWCASE
+				</a>
+				<span class="project-meta-date">
+					{new Date(project.createdAt).toLocaleDateString('en-US', {
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric',
+					})}
+				</span>
+			</div>
+			
+			<div class="project-title-section">
+				<span class="project-category-badge">{project.category}</span>
+				<h1 class="project-title">{project.title}</h1>
+				{project.excerpt && <p class="project-excerpt">{project.excerpt}</p>}
+			</div>
+		</header>
+
+		<section class="project-body">
+			{project.content ? (
+				typeof project.content === 'string' ? (
+					<div set:html={project.content} />
+				) : (
+					<div class="structured-content-fallback">
+						<p class="fallback-note">Technical Specification (JSON Format):</p>
+						<pre>{JSON.stringify(project.content, null, 2)}</pre>
+					</div>
+				)
+			) : (
+				<p class="empty-state-note">The architectural narrative for this project is currently unavailable.</p>
+			)}
+		</section>
+
+		<footer class="project-footer">
+			<div class="footer-badge">
+				<span class="material-symbols-outlined">auto_awesome</span>
+				<p>ORCHESTRATED VIA HERMES AI</p>
+			</div>
+			<a href={`/${tenantSlug}`} class="footer-cta">EXPLORE MORE FROM {tenant.name.toUpperCase()}</a>
+		</footer>
+	</main>
+</Layout>
+
+<style>
+	.project-detail-container {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 4rem 2rem 8rem;
+		font-family: 'Inter', sans-serif;
+	}
+
+	.project-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 4rem;
+	}
+
+	.back-link {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		text-decoration: none;
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--primary);
+		letter-spacing: 0.1em;
+		transition: opacity 0.2s;
+	}
+
+	.back-link:hover {
+		opacity: 0.7;
+	}
+
+	.project-meta-date {
+		font-size: 0.65rem;
+		font-family: monospace;
+		color: var(--outline);
+		text-transform: uppercase;
+	}
+
+	.project-category-badge {
+		display: inline-block;
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: var(--tertiary);
+		border: 1px solid rgba(109, 94, 0, 0.2);
+		padding: 0.25rem 0.75rem;
+		border-radius: 100px;
+		margin-bottom: 1.5rem;
+		letter-spacing: 0.05em;
+	}
+
+	.project-title {
+		font-family: 'Noto Serif', serif;
+		font-size: 4rem;
+		font-weight: 300;
+		line-height: 1.1;
+		color: var(--on-surface);
+		margin-bottom: 2rem;
+		letter-spacing: -0.02em;
+	}
+
+	.project-excerpt {
+		font-size: 1.25rem;
+		line-height: 1.6;
+		color: var(--on-surface-variant);
+		border-left: 2px solid var(--primary);
+		padding-left: 1.5rem;
+		margin-bottom: 4rem;
+		font-style: italic;
+	}
+
+	.project-body {
+		font-size: 1.125rem;
+		line-height: 1.8;
+		color: var(--on-surface);
+	}
+
+	.structured-content-fallback {
+		background: var(--surface-container-low);
+		padding: 2rem;
+		border-radius: 1.5rem;
+		border: 1px solid var(--outline-variant);
+	}
+
+	.fallback-note {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--outline);
+		margin-bottom: 1rem;
+		text-transform: uppercase;
+	}
+
+	pre {
+		font-size: 0.875rem;
+		overflow-x: auto;
+		white-space: pre-wrap;
+	}
+
+	.project-footer {
+		margin-top: 8rem;
+		padding-top: 4rem;
+		border-top: 1px solid var(--outline-variant);
+		text-align: center;
+	}
+
+	.footer-badge {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 2rem;
+		opacity: 0.5;
+	}
+
+	.footer-badge p {
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+	}
+
+	.footer-cta {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--primary);
+		text-decoration: none;
+	}
+
+	.footer-cta:hover {
+		text-decoration: underline;
+	}
+
+	@media (max-width: 768px) {
+		.project-title {
+			font-size: 2.5rem;
+		}
+	}
+</style>

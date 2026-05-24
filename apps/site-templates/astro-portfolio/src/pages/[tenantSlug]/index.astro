@@ -1,0 +1,58 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getTenantBySlug, fetchPortfolioItems } from '../../lib/cms';
+
+const { tenantSlug } = Astro.params;
+
+if (!tenantSlug) {
+    return Astro.redirect('/');
+}
+
+// 1. Resolve Tenant
+const tenant = await getTenantBySlug(tenantSlug);
+if (!tenant) {
+	return new Response(null, {
+		status: 404,
+		statusText: 'Tenant Not Found'
+	});
+}
+
+// 2. Fetch Works for this Tenant
+const works = await fetchPortfolioItems(tenant.id);
+---
+
+<Layout title={`${tenant.name} — Premium Software Showcase`}>
+	<main>
+		<section class="hero-section">
+			<span class="hero-tag">Aesthete & Engineer</span>
+			<h1 class="hero-title">{tenant.name}</h1>
+			<p class="hero-bio">
+				I construct multi-tenant systems, high-end editorial experiences, and intelligent microservices. This index represents curated software assets authored via Hermes AI.
+			</p>
+		</section>
+
+		<section>
+			<div class="works-title-section">
+				<h2>SELECTED SOFTWARE</h2>
+				<span class="nav-status-badge">{works.length} ENTRIES</span>
+			</div>
+
+			<div class="works-grid">
+				{works.length === 0 ? (
+					<div class="p-12 text-center border-2 border-dashed border-outline-variant/15 rounded-3xl bg-surface-container-low/20">
+						<p class="text-outline italic">No archival entries found for this workspace.</p>
+					</div>
+				) : (
+					works.map((work) => (
+						<div class="showcase-card">
+							<span class="showcase-category">{work.category}</span>
+							<h3 class="showcase-title">{work.title}</h3>
+							<p class="showcase-description">{work.excerpt}</p>
+							<a href={`/${tenantSlug}/${work.slug}`} class="showcase-link">VIEW SPECIFICATION</a>
+						</div>
+					))
+				)}
+			</div>
+		</section>
+	</main>
+</Layout>
