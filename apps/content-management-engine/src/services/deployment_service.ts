@@ -1,5 +1,6 @@
 import type { Payload, PayloadRequest } from 'payload'
 import { HostedSite } from '../payload-types'
+import { TemplateService } from './template_service'
 
 /**
  * Service to orchestrate the deployment of front-end starter templates.
@@ -81,6 +82,105 @@ export class DeploymentService {
       } catch (updateError) {
         // ignore
       }
+    }
+  }
+
+  /**
+   * Deploys a template to a HostedSite.
+   * Sends the template structure to the site's sync webhook.
+   */
+  async deployTemplate({
+    templateId,
+    siteId,
+    userId,
+    tenantId,
+  }: {
+    templateId: string | number
+    siteId: string | number
+    userId: string | number
+    tenantId: string | number
+  }) {
+    // 1. Get site and validate webhook URL
+    const site = (await this.payload.findByID({
+      collection: 'hosted-sites',
+      id: siteId,
+      overrideAccess: true,
+    })) as any
+
+    if (!site || !site.templateSyncWebhookUrl) {
+      throw new Error('Site not found or missing sync webhook URL')
+    }
+
+    // 2. Get and validate template
+    const templateService = new TemplateService(this.payload)
+    const validation = await templateService.validateTemplateForDeployment(templateId)
+    if (!validation.valid) {
+      throw new Error(`Template validation failed: ${validation.errors.join(', ')}`)
+    }
+
+    // 3. Create deployment log (pending)
+    const deployment = await this.payload.create({
+      collection: 'template-deployments',
+      data: {
+        template: templateId,
+        site: siteId,
+        triggeredBy: userId,
+        status: 'pending',
+        payload: {},
+        tenant: tenantId,
+      },
+      overrideAccess: true,
+    })
+
+    try {
+      // 4. Resolve template structure (as a snapshot)
+      const template = (await this.payload.findByID({
+        collection: 'page-templates',
+        id: templateId,
+        depth: 2,
+        overrideAccess: true,
+      })) as any
+
+      const syncPayload = {
+        templateId,
+        templateName: template.name,
+        layout: template.layout,
+      }
+
+      // 5. Trigger Webhook
+      const response = await fetch(site.templateSyncWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(syncPayload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Webhook failed with status ${response.status}: ${response.statusText}`)
+      }
+
+      // 6. Update status to success
+      await this.payload.update({
+        collection: 'template-deployments',
+        id: deployment.id,
+        data: {
+          status: 'success',
+          payload: syncPayload,
+        },
+        overrideAccess: true,
+      })
+
+      return deployment
+    } catch (error) {
+      console.error('[DeploymentService] Template deployment failed', error)
+      await this.payload.update({
+        collection: 'template-deployments',
+        id: deployment.id,
+        data: {
+          status: 'failed',
+        },
+        overrideAccess: true,
+      })
+      throw error
     }
   }
 }

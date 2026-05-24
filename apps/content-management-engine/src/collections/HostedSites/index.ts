@@ -134,6 +134,14 @@ export const HostedSites: CollectionConfig = {
       },
     },
     {
+      name: 'templateSyncWebhookUrl',
+      type: 'text',
+      label: 'Template Sync Webhook URL',
+      admin: {
+        description: 'URL to notify when a template is deployed to this site.',
+      },
+    },
+    {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
