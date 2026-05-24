@@ -287,7 +287,7 @@ export const TenantAppEditPage: React.FC = () => {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          {isEditMode && <GenerateTokenButton />}
+          {isEditMode && <GenerateTokenButton tenantId={tenantId} appId={appId} />}
           
           <Card variant="low" className="p-6 border border-outline-variant/15 bg-surface-container-low/20 backdrop-blur-sm">
             <h4 className="font-headline text-sm font-bold text-on-surface mb-4 flex items-center gap-2">

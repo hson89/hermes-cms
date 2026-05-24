@@ -9,7 +9,15 @@ import { Icon } from '@/components/ui/atoms/Icon'
  * Story 1: Generate Marketplace Token Button
  * Displayed in the sidebar or edit view of TenantApps.
  */
-export const GenerateTokenButton: React.FC = () => {
+interface GenerateTokenButtonProps {
+  tenantId?: string | number
+  appId?: string | number
+}
+
+export const GenerateTokenButton: React.FC<GenerateTokenButtonProps> = ({
+  tenantId: propsTenantId,
+  appId: propsAppId,
+}) => {
   const { id, doc, collectionSlug } = useDocumentInfo() as any
   const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -38,8 +46,12 @@ export const GenerateTokenButton: React.FC = () => {
     setToken(null)
 
     try {
-      const tenantId = typeof doc?.tenant === 'object' ? doc.tenant.id : doc?.tenant
-      const appId = typeof doc?.app === 'object' ? doc.app.id : doc?.app
+      const tenantId = propsTenantId || (typeof doc?.tenant === 'object' ? doc.tenant.id : doc?.tenant)
+      const appId = propsAppId || (typeof doc?.app === 'object' ? doc.app.id : doc?.app)
+
+      if (!tenantId || !appId) {
+        throw new Error('Missing required fields: tenantId or appId. Please ensure the document is saved.')
+      }
 
       const response = await fetch('/api/marketplace/generate-token', {
         method: 'POST',
