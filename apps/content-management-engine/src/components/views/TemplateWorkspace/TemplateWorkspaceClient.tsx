@@ -497,7 +497,7 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
           </section>
 
           {/* Content Mapping Section */}
-          <section className={`bg-surface-container-lowest p-8 rounded-xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] border border-outline-variant/15 animate-reveal hover-lift ${revealedIndex >= 3 ? 'is-revealed' : ''}`}>
+          <section className={`bg-surface-container-lowest p-8 rounded-xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] border border-outline-variant/15 animate-reveal hover-lift relative ${isDropdownOpen ? 'z-20' : 'z-0'} ${revealedIndex >= 3 ? 'is-revealed' : ''}`}>
             <header className="mb-6 flex justify-between items-start">
               <div>
                 <h2 className="font-headline text-2xl text-on-background mb-2 flex items-center gap-3 m-0">
