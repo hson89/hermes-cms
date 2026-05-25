@@ -59,8 +59,14 @@ export const RegistryHeader: React.FC<RegistryHeaderProps> = ({
           {subtitle}
         </p>
       </div>
-
-      {/* CTA Button removed to reduce redundancy */}
+      
+      {/* Restored CTA Button */}
+      {showAction && onActionClick && (
+        <Button variant="primary" onClick={onActionClick}>
+          {actionIcon && <Icon name={actionIcon} size={20} />}
+          {actionText || 'Create New'}
+        </Button>
+      )}
     </div>
   )
 }
