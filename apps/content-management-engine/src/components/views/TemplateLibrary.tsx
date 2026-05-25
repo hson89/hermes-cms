@@ -275,13 +275,6 @@ export const TemplateLibrary: React.FC = () => {
           <p className="font-body text-on-surface-variant max-w-lg mb-10 leading-relaxed">
             Your architectural library is currently empty. Define your first structural blueprint to establish editorial standards and streamline the publication process across your properties.
           </p>
-          <button 
-            onClick={() => window.location.href = '/admin/collections/page-templates/create'}
-            className="flex items-center gap-2 px-8 py-3.5 bg-primary text-on-primary rounded-xl font-label font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/10 border-none cursor-pointer"
-          >
-            <Icon name="add" size={20} />
-            Create First Blueprint
-          </button>
         </div>
       ) : (
         <>

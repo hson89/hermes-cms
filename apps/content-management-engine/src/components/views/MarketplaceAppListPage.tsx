@@ -282,9 +282,7 @@ export const MarketplaceAppListPage: React.FC = () => {
         title="App Marketplace"
         subtitle="Browse and govern the global directory of 3rd-party integrations available for tenant installation. Manage service endpoints and app metadata."
         breadcrumbs={['Hermes AI', 'Marketplace Registry']}
-        showAction={(user as any)?.role === 'super-admin'}
-        actionText="Register App"
-        onActionClick={() => router.push('/admin/collections/marketplace-apps/create')}
+        showAction={false}
       />
 
       {success && (

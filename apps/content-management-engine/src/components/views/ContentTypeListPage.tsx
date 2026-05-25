@@ -375,9 +375,7 @@ export const ContentTypeListPage: React.FC = () => {
         title="Content Types Registry"
         subtitle="Govern dynamic content schema models, control AI-assisted definitions, inspect field signatures, and verify multi-tenant data boundaries."
         breadcrumbs={['Hermes AI', 'Schema Registry']}
-        showAction={true}
-        actionText="Create Schema"
-        onActionClick={() => router.push('/admin/collections/content-types/create')}
+        showAction={false}
       />
 
       {/* Success Notification Banner */}

@@ -7,6 +7,18 @@ export const BuildingBlocks: CollectionConfig = {
     useAsTitle: 'name',
     group: 'Templates',
     defaultColumns: ['name', 'slug', 'status', 'tenant'],
+    components: {
+      views: {
+        list: {
+          Component: '/src/components/views/BuildingBlockLibrary#BuildingBlockLibrary',
+        },
+        edit: {
+          default: {
+            Component: '/src/components/views/BuildingBlockWorkspace#BuildingBlockWorkspace',
+          },
+        },
+      },
+    },
   },
   access: {
     read: tenantAccess,
@@ -44,6 +56,21 @@ export const BuildingBlocks: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       label: 'Thumbnail',
+    },
+    {
+      name: 'category',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Layout', value: 'layout' },
+        { label: 'Media', value: 'media' },
+        { label: 'Text', value: 'text' },
+        { label: 'Interactive', value: 'interactive' },
+      ],
+      defaultValue: 'layout',
+      admin: {
+        position: 'sidebar',
+      },
     },
     {
       name: 'status',

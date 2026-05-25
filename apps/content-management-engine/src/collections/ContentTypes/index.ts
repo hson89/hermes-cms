@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { generateSchemaEndpoint, getSessionStatusEndpoint, postSessionMessageEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint, listCollectionsEndpoint } from './endpoints'
 import { getTenantIds } from '../Users/utils'
-import { beforeChangeHook } from './hooks'
+import { beforeChangeHook, afterChangeHook } from './hooks'
 
 const slugify = (text: string): string => {
   return text
@@ -176,6 +176,7 @@ export const ContentTypes: CollectionConfig = {
       },
     ],
     beforeChange: [beforeChangeHook],
+    afterChange: [afterChangeHook],
   },
   // T017: Custom AI endpoint for schema generation
   endpoints: [

@@ -1,133 +1,104 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+import { useRouter } from 'next/navigation'
+import { Icon } from '../ui/atoms/Icon'
 
 interface DeploymentToolbarProps {
   onSave?: () => void
   isSaving?: boolean
   templateId?: string
   templateName?: string
+  archetype?: string
+  category?: string
 }
 
 /**
- * T028: DeploymentToolbar.
+ * T028: DeploymentToolbar (Refactored to Alexandria Designer Design).
  * 
- * Provides save, deploy and validation status.
+ * Provides navigation, viewport toggles, and action controls for the Designer.
  */
 export const DeploymentToolbar: React.FC<DeploymentToolbarProps> = ({ 
   onSave, 
   isSaving, 
   templateId,
-  templateName 
+  templateName,
+  archetype = 'Landing Page',
+  category = 'Page Templates / Visual Builder'
 }) => {
-  const [sites, setSites] = useState<any[]>([])
-  const [selectedSiteId, setSelectedSiteId] = useState<string>('')
-  const [isDeploying, setIsDeploying] = useState(false)
-  const [deployError, setDeployError] = useState<string | null>(null)
+  const router = useRouter()
+  const [activeViewport, setActiveViewport] = React.useState<'desktop' | 'tablet' | 'mobile'>('desktop')
 
-  useEffect(() => {
-    fetch('/api/hosted-sites?limit=100')
-      .then((res) => res.json())
-      .then((data) => {
-        const docs = data.docs || []
-        setSites(docs)
-        if (docs.length > 0) setSelectedSiteId(docs[0].id)
-      })
-  }, [])
-
-  const handleDeploy = async () => {
-    if (!templateId || !selectedSiteId) return
-
-    setIsDeploying(true)
-    setDeployError(null)
-    try {
-      const res = await fetch('/api/templates/deploy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId, siteId: selectedSiteId }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Deployment failed')
-      alert('Deployment triggered successfully!')
-    } catch (err: any) {
-      setDeployError(err.message)
-      alert(`Deployment failed: ${err.message}`)
-    } finally {
-      setIsDeploying(false)
-    }
-  }
+  const hasActiveTemplate = !!templateId && templateId !== 'new'
 
   return (
-    <header className="h-16 border-b border-surface-container-low bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-between px-6 z-30 shrink-0">
+    <header className="designer-toolbar h-16 border-b border-outline-variant bg-surface flex items-center justify-between px-6 z-30 shrink-0">
       <div className="flex items-center gap-4">
-        <h2 className="font-headline text-xl font-semibold text-on-surface">
-          {templateName || 'Untitled Template'}
-        </h2>
-        <span className="px-2.5 py-1 bg-surface-container-high text-on-surface-variant rounded-md font-label text-xs tracking-wide">
-          Draft
-        </span>
+        <button 
+          onClick={() => router.back()}
+          className="text-outline hover:text-on-surface transition-colors bg-transparent border-none cursor-pointer flex items-center"
+        >
+          <Icon name="arrow_back" size={24} />
+        </button>
+        <div className="flex flex-col">
+          <h2 className="text-lg font-headline font-bold m-0 leading-tight">
+            {templateName || 'Template Builder'}
+          </h2>
+          <p className="text-[10px] text-outline font-label uppercase tracking-widest m-0 mt-0.5">
+            {category}{templateName ? ` / ${templateName}` : ''}
+          </p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* Viewport Switcher */}
-        <div className="flex items-center bg-surface-container-low rounded-lg p-1 mr-2">
-          <button className="px-3 py-1.5 rounded-md bg-surface-container-lowest text-on-surface shadow-sm font-label text-xs font-medium cursor-pointer border-none">
-            Desktop
-          </button>
-          <button className="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-label text-xs font-medium bg-transparent cursor-pointer border-none">
-            Tablet
-          </button>
-          <button className="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-label text-xs font-medium bg-transparent cursor-pointer border-none">
-            Mobile
-          </button>
-        </div>
-
-        {/* History Controls */}
-        <button className="text-on-surface-variant hover:text-on-surface p-2 rounded-lg hover:bg-surface-container-low transition-colors bg-transparent cursor-pointer border-none flex items-center">
-          <span className="material-symbols-outlined">undo</span>
-        </button>
-        <button className="text-on-surface-variant hover:text-on-surface p-2 rounded-lg hover:bg-surface-container-low transition-colors bg-transparent cursor-pointer border-none flex items-center">
-          <span className="material-symbols-outlined">redo</span>
-        </button>
-
-        <div className="w-px h-6 bg-surface-container-low mx-1"></div>
-
-        {/* Site Selector */}
-        <div className="flex items-center gap-2 mr-2">
-          <label className="font-label text-[10px] font-semibold text-outline uppercase tracking-wider">Site</label>
-          <div className="relative">
-            <select 
-              value={selectedSiteId}
-              onChange={(e) => setSelectedSiteId(e.target.value)}
-              className="bg-surface-container-low border border-outline-variant rounded-md py-1.5 pl-2 pr-8 text-xs font-body text-on-surface appearance-none focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+      {hasActiveTemplate && (
+        <div className="flex items-center gap-3">
+          {/* Viewport Switcher */}
+          <div className="flex bg-surface-container rounded-lg p-1 border border-outline-variant mr-4">
+            <button 
+              onClick={() => setActiveViewport('desktop')}
+              className={`px-3 py-1 rounded transition-all flex items-center gap-1 border border-transparent cursor-pointer ${
+                activeViewport === 'desktop' 
+                  ? 'bg-surface-container-lowest shadow-sm text-primary border-outline-variant/30' 
+                  : 'text-outline hover:text-on-surface-variant bg-transparent'
+              }`}
             >
-              {sites.map(site => (
-                <option key={site.id} value={site.id}>{site.name}</option>
-              ))}
-            </select>
-            <span className="material-symbols-outlined absolute right-1.5 top-1.5 text-on-surface-variant text-[16px] pointer-events-none">
-              expand_more
-            </span>
+              <Icon name="desktop_windows" size={18} />
+            </button>
+            <button 
+              onClick={() => setActiveViewport('tablet')}
+              className={`px-3 py-1 rounded transition-all flex items-center gap-1 border border-transparent cursor-pointer ${
+                activeViewport === 'tablet' 
+                  ? 'bg-surface-container-lowest shadow-sm text-primary border-outline-variant/30' 
+                  : 'text-outline hover:text-on-surface-variant bg-transparent'
+              }`}
+            >
+              <Icon name="tablet_mac" size={18} />
+            </button>
+            <button 
+              onClick={() => setActiveViewport('mobile')}
+              className={`px-3 py-1 rounded transition-all flex items-center gap-1 border border-transparent cursor-pointer ${
+                activeViewport === 'mobile' 
+                  ? 'bg-surface-container-lowest shadow-sm text-primary border-outline-variant/30' 
+                  : 'text-outline hover:text-on-surface-variant bg-transparent'
+              }`}
+            >
+              <Icon name="smartphone" size={18} />
+            </button>
           </div>
+
+          <button className="px-4 py-2 text-primary font-label text-sm font-bold uppercase tracking-widest hover:bg-primary/5 rounded transition-all border-none bg-transparent cursor-pointer">
+            Preview
+          </button>
+          
+          <button 
+            onClick={onSave}
+            disabled={isSaving}
+            className="px-6 py-2 bg-primary text-on-primary font-label text-sm font-bold uppercase tracking-widest rounded hover:opacity-90 transition-opacity border-none cursor-pointer disabled:opacity-50 shadow-sm"
+          >
+            {isSaving ? 'Saving...' : 'Save Block'}
+          </button>
         </div>
-
-        <button 
-          onClick={onSave}
-          disabled={isSaving}
-          className="px-4 py-2 rounded-lg font-label text-sm font-medium text-primary hover:bg-primary-fixed/50 transition-colors bg-transparent cursor-pointer border-none disabled:opacity-50"
-        >
-          {isSaving ? 'Saving...' : 'Save Draft'}
-        </button>
-
-        <button 
-          onClick={handleDeploy}
-          disabled={isDeploying || !templateId || !selectedSiteId}
-          className="px-5 py-2 rounded-lg font-label text-sm font-semibold bg-primary text-on-primary shadow-sm hover:bg-primary-container transition-colors flex items-center gap-2 border-none cursor-pointer disabled:opacity-50"
-        >
-          <span className="material-symbols-outlined text-sm">rocket_launch</span>
-          {isDeploying ? 'Deploying...' : 'Deploy'}
-        </button>
-      </div>
+      )}
     </header>
   )
 }

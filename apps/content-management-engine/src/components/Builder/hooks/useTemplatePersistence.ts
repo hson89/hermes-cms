@@ -26,6 +26,7 @@ export const useTemplatePersistence = (templateId?: string) => {
         },
         body: JSON.stringify({
           layout: layout.map((item) => ({
+            instanceId: item.instanceId,
             block: item.block.id,
             mappings: item.mappings || {},
           })),

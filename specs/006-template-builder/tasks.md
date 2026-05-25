@@ -102,17 +102,29 @@
 
 ---
 
-## Phase 6: Polish & Cross-Cutting Concerns
+## Phase 7: Refined Implementation & Design Fidelity (ACTIVE)
 
-**Purpose**: Reliability, UI polish, and documentation
+**Goal**: Implement high-fidelity design, fix dnd-kit interaction bugs, and enforce strict schema alignment.
 
-- [X] T029 [P] Implement block deprecation logic and UI warnings (FR-012) in `apps/content-management-engine/src/services/template_service.ts`
-- [X] T030 [P] Apply Alexandria design system tokens and `:has()` reset rules in `apps/content-management-engine/src/app/(payload)/admin/globals.css`
-- [X] T031 [P] Implement Optimistic Concurrency Control (OCC) hooks for `PageTemplates` in `apps/content-management-engine/src/collections/PageTemplates.ts`
-- [X] T032 [P] Create performance benchmark for Resolution Engine (SC-004) in `apps/content-management-engine/src/services/tests/performance.test.ts`
-- [X] T033 [P] Perform manual UX validation: Assemble a 5-block landing page template (SC-001 goal: < 10 mins)
-- [X] T034 [P] Update `docs/architecture.md` with the new Template Builder Engine architecture
-- [X] T035 Final verification against `quickstart.md` manual scenarios
+### Requirements Checklist
+- [X] **R001**: High-fidelity `BuildingBlockLibrary` view matching user design.
+- [X] **R002**: Fix dnd-kit collision indexing for library-to-canvas insertion.
+- [X] **R003**: Enforce 8px activation distance for PointerSensor.
+- [X] **R004**: Implement `instanceId` for deterministic layout tracking.
+- [X] **R005**: Schema alignment `beforeValidate` hook for ContentType changes.
+- [X] **R006**: Multi-tenant isolation for usage metrics.
+
+### Tasks
+- [X] T036 [P] Update `BuildingBlocks` collection with `category` and `status` fields in `apps/content-management-engine/src/collections/BuildingBlocks/index.ts`.
+- [X] T037 Update `PageTemplates` collection to include `instanceId` and `validationMetadata` in `apps/content-management-engine/src/collections/PageTemplates/index.ts`.
+- [X] T038 Implement high-fidelity `BuildingBlockLibrary.tsx` view matching provided design.
+- [X] T039 Refactor `BuilderWorkspace.tsx` to fix collision indexing and add activation distance constraints.
+- [X] T040 Update `BuilderCanvas.tsx` to use `instanceId` as the Sortable key.
+- [X] T041 Implement `checkMappingHealth()` in `template_service.ts`.
+- [X] T042 Add `beforeValidate` hook to `ContentTypes` to trigger mapping health checks.
+- [X] T043 Add tenant-scoping to usage metrics in `template_service.ts`.
+- [X] T044 Create unit tests for `checkMappingHealth` and tenant-scoped metrics.
+- [X] T045 Update `specs/006-template-builder/data-model.md` and `research.md`.
 
 ---
 

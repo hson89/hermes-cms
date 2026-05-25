@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
-import Link from 'next/link'
+import { Icon } from '../ui/atoms/Icon'
 
 /**
- * T014: BlockLibrary.
+ * T014: BlockLibrary (Refactored to Alexandria Designer Design).
  * 
  * Lists all registered BuildingBlocks available to the tenant.
  */
@@ -25,75 +25,80 @@ export const BlockLibrary: React.FC = () => {
     b.slug.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  // In a real scenario, these categories would come from the block definition
-  // For this UI update, we'll split them logically
-  const layoutBlocks = filteredBlocks.filter(b => b.slug.includes('layout') || b.slug.includes('column'))
-  const contentBlocks = filteredBlocks.filter(b => !layoutBlocks.includes(b))
+  const layoutBlocks = filteredBlocks.filter(b => b.category === 'layout')
+  const atomicBlocks = filteredBlocks.filter(b => b.category === 'text' || b.category === 'media' || (!b.category && !b.slug.includes('interactive')))
+  const interactiveBlocks = filteredBlocks.filter(b => b.category === 'interactive')
 
   return (
-    <aside className="w-64 bg-surface-container-lowest border-r border-surface-container-low flex flex-col shrink-0">
-      <div className="p-4 border-b border-surface-container-low">
-        <h3 className="font-label text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-3">
-          Components
-        </h3>
+    <aside className="border-r border-outline-variant flex flex-col bg-surface-container-low w-72 shrink-0">
+      <div className="p-4 border-b border-outline-variant">
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-sm">
-            search
-          </span>
+          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" size={20} />
           <input 
+            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none text-sm font-body" 
+            placeholder="Search elements..." 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-container-low border-none rounded-lg pl-9 pr-3 py-2 text-sm font-body text-on-surface placeholder:text-on-surface-variant focus:ring-1 focus:ring-primary outline-none" 
-            placeholder="Search blocks..." 
           />
         </div>
       </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Category: Layout */}
-        {layoutBlocks.length > 0 && (
-          <div>
-            <h4 className="font-label text-xs font-medium text-on-surface-variant mb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">grid_view</span> Layout
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              {layoutBlocks.map(block => (
-                <DraggableBlock key={block.id} block={block} variant="grid" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Category: Content */}
-        <div>
-          <h4 className="font-label text-xs font-medium text-on-surface-variant mb-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">article</span> Content
-          </h4>
-          <div className="space-y-2">
-            {contentBlocks.length === 0 && layoutBlocks.length === 0 && (
-              <div className="py-8 text-center px-4">
-                <div className="text-xs opacity-40 italic">No blocks found.</div>
-                <Link 
-                  href="/admin/collections/building-blocks"
-                  className="inline-block mt-4 px-3 py-2 bg-surface-container-low rounded-lg text-[10px] uppercase tracking-widest hover:bg-surface-container-high transition-colors no-underline text-on-surface font-semibold"
-                >
-                  Add Block
-                </Link>
-              </div>
-            )}
-            {contentBlocks.map(block => (
-              <DraggableBlock key={block.id} block={block} variant="list" />
+      
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
+        {/* Layout Elements */}
+        <section>
+          <h3 className="text-xs font-bold text-outline uppercase tracking-widest mb-3 flex items-center justify-between font-label">
+            Layout
+            <Icon name="keyboard_arrow_down" size={16} />
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            {layoutBlocks.map(block => (
+              <DraggableBlock key={block.id} block={block} variant="grid" />
             ))}
+            {layoutBlocks.length === 0 && (
+              <div className="col-span-2 text-[10px] text-outline italic text-center py-2">No layout blocks found</div>
+            )}
           </div>
-        </div>
+        </section>
+
+        {/* Atomic Elements */}
+        <section>
+          <h3 className="text-xs font-bold text-outline uppercase tracking-widest mb-3 flex items-center justify-between font-label">
+            Atomic Elements
+            <Icon name="keyboard_arrow_down" size={16} />
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            {atomicBlocks.map(block => (
+              <DraggableBlock key={block.id} block={block} variant="grid" />
+            ))}
+            {atomicBlocks.length === 0 && (
+              <div className="col-span-2 text-[10px] text-outline italic text-center py-2">No atomic elements found</div>
+            )}
+          </div>
+        </section>
+
+        {/* Interactive Components */}
+        <section>
+          <h3 className="text-xs font-bold text-outline uppercase tracking-widest mb-3 flex items-center justify-between font-label">
+            Interactive
+            <Icon name="new_releases" size={16} className="text-primary" />
+          </h3>
+          <div className="space-y-2">
+            {interactiveBlocks.map(block => (
+              <DraggableBlock key={block.id} block={block} variant="interactive" />
+            ))}
+            {interactiveBlocks.length === 0 && (
+              <div className="text-[10px] text-outline italic text-center py-2">No interactive blocks found</div>
+            )}
+          </div>
+        </section>
       </div>
     </aside>
   )
 }
 
-const DraggableBlock: React.FC<{ block: any, variant: 'grid' | 'list' }> = ({ block, variant }) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+const DraggableBlock: React.FC<{ block: any, variant: 'grid' | 'interactive' }> = ({ block, variant }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `library-${block.slug}`,
     data: {
       type: 'BLOCK_DEFINITION',
@@ -104,9 +109,28 @@ const DraggableBlock: React.FC<{ block: any, variant: 'grid' | 'list' }> = ({ bl
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 50,
+        zIndex: 100,
+        opacity: isDragging ? 0.5 : 1,
       }
     : undefined
+
+  const getIcon = (slug: string) => {
+    const s = slug.toLowerCase()
+    if (s.includes('container')) return 'crop_square'
+    if (s.includes('grid')) return 'grid_view'
+    if (s.includes('column')) return 'view_column'
+    if (s.includes('section')) return 'rectangle'
+    if (s.includes('heading') || s.includes('title')) return 'title'
+    if (s.includes('text') || s.includes('note')) return 'notes'
+    if (s.includes('image') || s.includes('media')) return 'image'
+    if (s.includes('button')) return 'smart_button'
+    if (s.includes('link')) return 'link'
+    if (s.includes('divider') || s.includes('rule')) return 'horizontal_rule'
+    if (s.includes('carousel')) return 'view_carousel'
+    if (s.includes('tabs')) return 'view_agenda'
+    if (s.includes('accordion')) return 'expand'
+    return 'widgets'
+  }
 
   if (variant === 'grid') {
     return (
@@ -115,17 +139,20 @@ const DraggableBlock: React.FC<{ block: any, variant: 'grid' | 'list' }> = ({ bl
         style={style}
         {...listeners}
         {...attributes}
-        className="aspect-square bg-surface-container-low rounded-lg border border-surface-container hover:border-primary/50 hover:bg-primary-fixed/20 cursor-grab flex flex-col items-center justify-center gap-2 transition-colors group"
+        className="border border-outline-variant bg-surface p-3 rounded flex flex-col items-center gap-2 cursor-grab hover:border-primary transition-colors group"
       >
-        <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">
-          {block.slug.includes('2') ? 'view_column_2' : 'view_column'}
-        </span>
-        <span className="font-label text-[10px] text-on-surface-variant group-hover:text-primary transition-colors text-center px-1">
-          {block.name}
-        </span>
+        <Icon 
+          name={getIcon(block.slug)} 
+          className="text-outline group-hover:text-primary transition-colors" 
+          size={24} 
+        />
+        <span className="text-xs font-medium font-label">{block.name}</span>
       </div>
     )
   }
+
+  // Interactive variant
+  const isCarousel = block.slug.toLowerCase().includes('carousel')
 
   return (
     <div
@@ -133,16 +160,31 @@ const DraggableBlock: React.FC<{ block: any, variant: 'grid' | 'list' }> = ({ bl
       style={style}
       {...listeners}
       {...attributes}
-      className="p-3 bg-surface-container-low rounded-lg border border-surface-container hover:border-primary/50 hover:bg-primary-fixed/20 cursor-grab flex items-center gap-3 transition-colors group"
+      className={`p-3 rounded flex items-center gap-3 cursor-grab transition-colors relative overflow-hidden group ${
+        isCarousel 
+          ? 'border-2 border-primary bg-primary/5' 
+          : 'border border-outline-variant bg-surface hover:border-primary'
+      }`}
     >
-      <span className="material-symbols-outlined text-on-surface-variant text-lg group-hover:text-primary transition-colors">
-        {block.slug.includes('title') || block.slug.includes('headline') ? 'title' : 
-         block.slug.includes('text') ? 'notes' : 
-         block.slug.includes('image') || block.slug.includes('media') ? 'image' : 'widgets'}
-      </span>
-      <span className="font-body text-sm text-on-surface group-hover:text-primary transition-colors">
-        {block.name}
-      </span>
+      {isCarousel && (
+        <div className="absolute top-0 right-0 bg-primary text-[10px] text-on-primary px-1.5 py-0.5 rounded-bl font-bold uppercase tracking-tighter">Active</div>
+      )}
+      <div className={`w-10 h-10 rounded flex items-center justify-center ${isCarousel ? 'bg-primary/10' : 'bg-surface-container'}`}>
+        <Icon 
+          name={getIcon(block.slug)} 
+          className={isCarousel ? 'text-primary' : 'text-outline group-hover:text-primary'} 
+          size={24} 
+        />
+      </div>
+      <div>
+        <span className={`text-xs font-bold block font-label ${isCarousel ? 'text-on-surface' : 'font-medium'}`}>
+          {block.name}
+        </span>
+        <span className="text-[10px] text-outline font-body">
+          {isCarousel ? 'Multi-item slider' : `${block.name} component`}
+        </span>
+      </div>
     </div>
   )
 }
+

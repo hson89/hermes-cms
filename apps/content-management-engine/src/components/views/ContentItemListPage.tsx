@@ -331,9 +331,7 @@ export const ContentItemListPage: React.FC = () => {
         title="Content Items Registry"
         subtitle="Govern and explore multi-tenant editorial content entries, manage document draft statuses, and verify API delivery schema compliance."
         breadcrumbs={['Hermes AI', 'Content Registry']}
-        showAction={true}
-        actionText="Create Entry"
-        onActionClick={() => router.push('/admin/collections/content-items/create')}
+        showAction={false}
       />
 
       {/* Success Notification Banner */}

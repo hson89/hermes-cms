@@ -9,7 +9,8 @@ Defines reusable UI components registered via the Block Registry API.
 | slug | string | Unique identifier for the block | Unique per tenant, kebab-case |
 | schema | json | Definition of block properties (props) | Required. Must define property names, types (string, number, media), and 'required' flag for mapping validation. |
 | thumbnail | upload | Preview image for the builder | Optional |
-| status | select | active, deprecated | Default: active |
+| category | select | layout, media, text, interactive | Required, Default: layout |
+| status | select | active, deprecated | Default: active (FR-012) |
 | tenant | relationship | Owner tenant | Required, index |
 
 ## PageTemplates
@@ -21,10 +22,12 @@ Represents the structural definition of a page.
 | slug | string | URL/Reference slug | Unique per tenant |
 | contentType | relationship | Associated Content Type | Required (1-to-1) |
 | layout | array | Ordered list of BlockInstances | Required |
+| validationMetadata | json | Stores mapping health (orphans) | Hidden |
 | status | select | draft, published | Default: draft |
 | tenant | relationship | Owner tenant | Required, index |
 
 ### BlockInstance (Layout Row)
+- **instanceId**: Unique string identifier (client-side generated) for deterministic layout tracking.
 - **block**: Relationship to `BuildingBlocks`.
 - **mappings**: JSON object mapping `BlockProperty` -> `ContentTypeField`.
 

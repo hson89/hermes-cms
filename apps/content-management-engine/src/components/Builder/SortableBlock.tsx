@@ -3,10 +3,11 @@
 import React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Icon } from '../ui/atoms/Icon'
 
 interface SortableBlockProps {
   item: {
-    id: string
+    instanceId: string
     block: any
   }
   isSelected?: boolean
@@ -14,11 +15,13 @@ interface SortableBlockProps {
 }
 
 /**
- * SortableBlock wrapper for items already in the canvas.
+ * T013: SortableBlock (Refactored to Alexandria Designer Design).
+ * 
+ * Wrapper for items already in the canvas with visual proxies and actions.
  */
 export const SortableBlock: React.FC<SortableBlockProps> = ({ item, isSelected, onSelect }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
+    id: item.instanceId,
   })
 
   const style = {
@@ -26,6 +29,12 @@ export const SortableBlock: React.FC<SortableBlockProps> = ({ item, isSelected, 
     transition,
     zIndex: isDragging ? 40 : 1,
     opacity: isDragging ? 0.5 : 1,
+  }
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // Logic for deletion should be handled by the parent
+    alert('Delete block logic - Phase 2')
   }
 
   return (
@@ -36,41 +45,72 @@ export const SortableBlock: React.FC<SortableBlockProps> = ({ item, isSelected, 
         e.stopPropagation()
         onSelect?.()
       }}
-      className={`relative group border-2 transition-all cursor-pointer ${
-        isSelected ? 'border-primary' : 'border-transparent hover:border-outline-variant'
+      className={`relative group border border-primary/20 rounded bg-background p-1 cursor-pointer transition-all ${
+        isSelected ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
       }`}
     >
-      {/* Action Bar */}
-      <div className={`absolute -top-3 right-4 flex items-center rounded-md shadow-md z-10 text-xs font-label transition-opacity ${
-        isSelected ? 'bg-primary text-on-primary opacity-100' : 'bg-surface-container-highest text-on-surface-variant opacity-0 group-hover:opacity-100 shadow-sm'
-      }`}>
-        <span className={`px-2 py-1 border-r ${isSelected ? 'border-primary-container' : 'border-outline-variant'}`}>
-          {item.block.name}
-        </span>
-        <div {...attributes} {...listeners} className={`p-1 hover:bg-black/10 transition-colors flex items-center cursor-grab`}>
-          <span className="material-symbols-outlined text-[14px]">drag_indicator</span>
-        </div>
-        <button className="p-1 hover:bg-black/10 transition-colors bg-transparent border-none text-inherit cursor-pointer flex items-center">
-          <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
+      {/* Floating Action Buttons */}
+      <div className="absolute -top-2 -right-2 flex gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button 
+          {...attributes} 
+          {...listeners}
+          className="w-6 h-6 bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center shadow-sm cursor-grab"
+        >
+          <Icon name="drag_indicator" size={14} />
         </button>
-        <button className="p-1 hover:bg-black/10 transition-colors bg-transparent border-none text-inherit cursor-pointer flex items-center">
-          <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
-        </button>
-        <button className={`p-1 hover:bg-error hover:text-on-error rounded-r-md transition-colors bg-transparent border-none text-inherit cursor-pointer flex items-center`}>
-          <span className="material-symbols-outlined text-[14px]">delete</span>
+        <button 
+          onClick={handleDelete}
+          className="w-6 h-6 bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center shadow-sm text-error hover:bg-error/10 transition-colors border-none"
+        >
+          <Icon name="delete" size={14} />
         </button>
       </div>
 
-      {/* Content Render / Preview */}
-      <div className={`p-12 text-center bg-surface-container-low border-b border-surface-container ${isSelected ? '' : 'bg-opacity-50'}`}>
-        <h1 className="font-headline text-2xl text-on-surface mb-2 font-bold tracking-tight">
-          {item.block.name} Block
-        </h1>
-        <p className="font-body text-sm text-on-surface-variant max-w-lg mx-auto">
-          Preview of the {item.block.slug} component structure. 
-          Data will be populated from mapped fields.
-        </p>
-      </div>
+      <BlockProxy block={item.block} />
     </div>
   )
 }
+
+const BlockProxy: React.FC<{ block: any }> = ({ block }) => {
+  const slug = block.slug?.toLowerCase() || ''
+
+  if (slug.includes('carousel')) {
+    return (
+      <div className="flex flex-col">
+        <div className="flex h-64 bg-surface-container-high items-center justify-between px-4 rounded">
+          <Icon name="chevron_left" size={40} className="text-outline/30" />
+          <div className="text-center">
+            <div className="border border-dashed border-primary/40 p-4 rounded mb-4">
+              <Icon name="image" size={24} className="text-outline mb-1" />
+              <p className="text-[10px] uppercase font-bold text-outline font-label m-0">Slide Image Placeholder</p>
+            </div>
+            <div className="border border-dashed border-primary/40 p-2 rounded">
+              <h3 className="text-lg font-headline font-bold mb-1 m-0">Slide Title</h3>
+              <p className="text-xs text-outline font-body m-0">Supporting slide description goes here...</p>
+            </div>
+          </div>
+          <Icon name="chevron_right" size={40} className="text-outline/30" />
+        </div>
+        <div className="flex justify-center gap-1 mt-4">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-outline/30"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-outline/30"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default Fallback Proxy
+  return (
+    <div className="p-8 text-center bg-surface-container-low rounded border border-surface-container">
+      <Icon 
+        name={slug.includes('image') ? 'image' : slug.includes('text') ? 'notes' : 'widgets'} 
+        size={32} 
+        className="text-outline/30 mb-2" 
+      />
+      <h4 className="font-headline font-bold text-on-surface m-0">{block.name}</h4>
+      <p className="text-xs text-outline font-body mt-1 m-0">Preview of the {slug} structure.</p>
+    </div>
+  )
+}
+

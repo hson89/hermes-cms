@@ -348,9 +348,7 @@ export const APIKeyListPage: React.FC = () => {
         title="API Keys Registry"
         subtitle="Provision and govern secure, long-lived API keys for programmatic delivery endpoints, isolate credentials by tenant, and audit access credentials."
         breadcrumbs={['Hermes AI', 'Developer Credentials']}
-        showAction={true}
-        actionText="Generate Key"
-        onActionClick={() => router.push('/admin/collections/api-keys/create')}
+        showAction={false}
       />
 
       {/* Success Notification Banner */}

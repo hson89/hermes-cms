@@ -34,6 +34,8 @@ import { DraftingWorkspace as DraftingWorkspace_4afbc8fae6f1cef3d3ee192b056b84b4
 import { ContentItemListPage as ContentItemListPage_37d21c0ac527c782eaa01278022738dc } from '../../../../src/components/views/ContentItemListPage'
 import { CreateHostedSitePage as CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a } from '../../../../src/components/views/CreateHostedSitePage'
 import { HostedSiteListPage as HostedSiteListPage_3e442b45b17811de0e52627585bc87ad } from '../../../../src/components/views/HostedSiteListPage'
+import { BuildingBlockWorkspace as BuildingBlockWorkspace_d5aafe07b62b520c0838dbab35842c72 } from '../../../../src/components/views/BuildingBlockWorkspace'
+import { BuildingBlockLibrary as BuildingBlockLibrary_7c1cf8177a7123dcfaa28c48b6982e27 } from '../../../../src/components/views/BuildingBlockLibrary'
 import { TemplateWorkspace as TemplateWorkspace_a30e7768bf2fac6fee5dc838a1243c30 } from '../../../../src/components/views/TemplateWorkspace'
 import { TemplateLibrary as TemplateLibrary_e03cd1b949aca83bd56425420886e48f } from '../../../../src/components/views/TemplateLibrary'
 import { CreateAPIKeyPage as CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d } from '../../../../src/components/views/CreateAPIKeyPage'
@@ -92,6 +94,8 @@ export const importMap = {
   "/src/components/views/ContentItemListPage#ContentItemListPage": ContentItemListPage_37d21c0ac527c782eaa01278022738dc,
   "/src/components/views/CreateHostedSitePage#CreateHostedSitePage": CreateHostedSitePage_fe055b935ddf6e8c7f70072bbcd3ae1a,
   "/src/components/views/HostedSiteListPage#HostedSiteListPage": HostedSiteListPage_3e442b45b17811de0e52627585bc87ad,
+  "/src/components/views/BuildingBlockWorkspace#BuildingBlockWorkspace": BuildingBlockWorkspace_d5aafe07b62b520c0838dbab35842c72,
+  "/src/components/views/BuildingBlockLibrary#BuildingBlockLibrary": BuildingBlockLibrary_7c1cf8177a7123dcfaa28c48b6982e27,
   "/src/components/views/TemplateWorkspace#TemplateWorkspace": TemplateWorkspace_a30e7768bf2fac6fee5dc838a1243c30,
   "/src/components/views/TemplateLibrary#TemplateLibrary": TemplateLibrary_e03cd1b949aca83bd56425420886e48f,
   "/src/components/views/CreateAPIKeyPage#CreateAPIKeyPage": CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d,

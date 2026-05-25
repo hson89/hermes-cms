@@ -1,4 +1,4 @@
-import { BasePayload } from 'payload'
+import type { Payload, PayloadRequest } from 'payload'
 
 export interface BlockRegistrationPayload {
   name: string
@@ -7,10 +7,26 @@ export interface BlockRegistrationPayload {
   thumbnail?: string // Optional media ID
 }
 
-export class TemplateService {
-  private payload: BasePayload
+/**
+ * Utility helper to safely retrieve nested dotted/array properties from an object (e.g. "slides[0].image" or "author.name").
+ */
+function getNestedValue(obj: any, path: string): any {
+  if (!obj || !path) return undefined
+  // Normalize paths: slides[0].image -> slides.0.image
+  const normalizedPath = path.replace(/\[(\w+)\]/g, '.$1')
+  const keys = normalizedPath.split('.')
+  let current = obj
+  for (const key of keys) {
+    if (current === null || current === undefined) return undefined
+    current = current[key]
+  }
+  return current
+}
 
-  constructor(payload: BasePayload) {
+export class TemplateService {
+  private payload: Payload
+
+  constructor(payload: Payload) {
     this.payload = payload
   }
 
@@ -18,14 +34,16 @@ export class TemplateService {
    * Registers a list of building blocks for a tenant.
    * Marking orphaned blocks as deprecated (FR-012).
    */
-  async registerBlocks(tenantId: string | number, blocks: BlockRegistrationPayload[]) {
+  async registerBlocks(tenantId: string | number, blocks: BlockRegistrationPayload[], req?: PayloadRequest) {
     // 1. Get existing blocks for this tenant
     const existingBlocks = await this.payload.find({
-      collection: 'building-blocks',
+      collection: 'building-blocks' as any,
       where: {
         tenant: { equals: tenantId },
       },
       limit: 1000,
+      overrideAccess: (req ? false : true) as any,
+      req,
     })
 
     const existingSlugs = existingBlocks.docs.map((b: any) => b.slug)
@@ -37,24 +55,28 @@ export class TemplateService {
       if (existing) {
         // Update existing block (even if deprecated, reactivation)
         await this.payload.update({
-          collection: 'building-blocks',
+          collection: 'building-blocks' as any,
           id: existing.id,
           data: {
             name: block.name,
             schema: block.schema,
             thumbnail: block.thumbnail,
             status: 'active',
-          },
+          } as any,
+          overrideAccess: (req ? false : true) as any,
+          req,
         })
       } else {
         // Create new block
         await this.payload.create({
-          collection: 'building-blocks',
+          collection: 'building-blocks' as any,
           data: {
             ...block,
             tenant: tenantId,
             status: 'active',
-          },
+          } as any,
+          overrideAccess: (req ? false : true) as any,
+          req,
         })
       }
     }
@@ -65,11 +87,13 @@ export class TemplateService {
       const orphaned = existingBlocks.docs.find((b: any) => b.slug === slug)
       if (orphaned && orphaned.status !== 'deprecated') {
         await this.payload.update({
-          collection: 'building-blocks',
+          collection: 'building-blocks' as any,
           id: orphaned.id,
           data: {
             status: 'deprecated',
-          },
+          } as any,
+          overrideAccess: (req ? false : true) as any,
+          req,
         })
       }
     }
@@ -86,12 +110,14 @@ export class TemplateService {
    *
    * Offloads the "joining" of Content Item data and Template layout to the server.
    */
-  async resolveHydratedTree(templateId: string | number, contentItem: any) {
+  async resolveHydratedTree(templateId: string | number, contentItem: any, req?: PayloadRequest) {
     const template = await this.payload.findByID({
-      collection: 'page-templates',
+      collection: 'page-templates' as any,
       id: templateId,
       depth: 2, // Populate BuildingBlock info
-    })
+      overrideAccess: (req ? false : true) as any,
+      req,
+    }) as any
 
     if (!template) {
       throw new Error(`Template not found: ${templateId}`)
@@ -108,11 +134,13 @@ export class TemplateService {
       
       Object.entries(mappings).forEach(([blockProp, contentField]) => {
         if (typeof contentField === 'string') {
-          // Check in top level or fieldsData
-          if (contentField in contentItem) {
-            props[blockProp] = contentItem[contentField]
-          } else if (contentField in fieldsData) {
-            props[blockProp] = fieldsData[contentField]
+          // Check for nested dotted path or direct key
+          let value = getNestedValue(contentItem, contentField)
+          if (value === undefined) {
+            value = getNestedValue(fieldsData, contentField)
+          }
+          if (value !== undefined) {
+            props[blockProp] = value
           }
         }
       })
@@ -135,12 +163,14 @@ export class TemplateService {
    * FR-009: Pre-deployment Validation.
    * Checks for empty layouts and missing required mappings.
    */
-  async validateTemplateForDeployment(templateId: string | number) {
+  async validateTemplateForDeployment(templateId: string | number, req?: PayloadRequest) {
     const template = await this.payload.findByID({
-      collection: 'page-templates',
+      collection: 'page-templates' as any,
       id: templateId,
       depth: 2,
-    })
+      overrideAccess: (req ? false : true) as any,
+      req,
+    }) as any
 
     if (!template) {
       throw new Error(`Template not found: ${templateId}`)
@@ -170,5 +200,99 @@ export class TemplateService {
       valid: errors.length === 0,
       errors,
     }
+  }
+
+  /**
+   * Checks the health of all field mappings for a template.
+   * R005: Schema Alignment.
+   */
+  async checkMappingHealth(templateId: string | number, req?: PayloadRequest) {
+    const template = await this.payload.findByID({
+      collection: 'page-templates' as any,
+      id: templateId,
+      depth: 2,
+      overrideAccess: (req ? false : true) as any,
+      req,
+    }) as any
+
+    if (!template || !template.contentType) return null
+
+    const contentType = await this.payload.findByID({
+      collection: 'content-types' as any,
+      id: typeof template.contentType === 'object' ? template.contentType.id : template.contentType,
+      overrideAccess: (req ? false : true) as any,
+      req,
+    }) as any
+
+    if (!contentType) return null
+
+    // Extract valid field names from the content type schema
+    // In Hermes, schema is JSON following a specific structure (likely properties object)
+    const validFields = new Set(Object.keys(contentType.schema?.properties || {}))
+    
+    const orphans: Record<string, string[]> = {}
+    let hasOrphans = false
+
+    ;(template.layout || []).forEach((instance: any) => {
+      const mappings = instance.mappings || {}
+      const blockOrphans: string[] = []
+
+      Object.entries(mappings).forEach(([blockProp, contentField]) => {
+        if (typeof contentField === 'string' && !validFields.has(contentField)) {
+          blockOrphans.push(blockProp)
+          hasOrphans = true
+        }
+      })
+
+      if (blockOrphans.length > 0) {
+        orphans[instance.instanceId] = blockOrphans
+      }
+    })
+
+    // Update validation metadata
+    await this.payload.update({
+      collection: 'page-templates' as any,
+      id: templateId,
+      data: {
+        validationMetadata: {
+          hasOrphans,
+          orphans,
+          lastChecked: new Date().toISOString(),
+        },
+      } as any,
+      overrideAccess: (req ? false : true) as any,
+      req,
+    })
+
+    return { hasOrphans, orphans }
+  }
+
+  /**
+   * Gets usage statistics for building blocks within a specific tenant.
+   * R006: Multi-tenant Metric Security.
+   */
+  async getUsageStats(tenantId: string | number, req?: PayloadRequest) {
+    const templates = await this.payload.find({
+      collection: 'page-templates' as any,
+      where: {
+        tenant: { equals: tenantId },
+      },
+      limit: 1000,
+      overrideAccess: (req ? false : true) as any,
+      req,
+    }) as any
+
+    const stats: Record<string, number> = {}
+
+    templates.docs.forEach((template: any) => {
+      ;(template.layout || []).forEach((instance: any) => {
+        const blockId = typeof instance.block === 'object' ? instance.block.id : instance.block
+        if (blockId) {
+          stats[blockId] = (stats[blockId] || 0) + 1
+        }
+      })
+    })
+
+    return stats
   }
 }

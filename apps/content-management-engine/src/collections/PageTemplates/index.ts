@@ -115,6 +115,14 @@ export const PageTemplates: CollectionConfig = {
       label: 'Layout Blocks',
       fields: [
         {
+          name: 'instanceId',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Unique identifier for this block instance in the layout',
+          },
+        },
+        {
           name: 'block',
           type: 'relationship',
           relationTo: 'building-blocks',
@@ -129,6 +137,13 @@ export const PageTemplates: CollectionConfig = {
           },
         },
       ],
+    },
+    {
+      name: 'validationMetadata',
+      type: 'json',
+      admin: {
+        hidden: true,
+      },
     },
     {
       name: 'status',

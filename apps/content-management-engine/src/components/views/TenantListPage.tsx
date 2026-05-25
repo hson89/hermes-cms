@@ -418,9 +418,7 @@ export const TenantListPage: React.FC = () => {
         title="Tenant Registry"
         subtitle="Monitor and govern isolated workspace environments, map primary access domains, adjust SLA resource tiers, and secure logical tenant partitions."
         breadcrumbs={['Hermes AI', 'Identity Registry']}
-        showAction={user?.role === 'super-admin'}
-        actionText="Initialize Tenant"
-        onActionClick={() => router.push('/admin/collections/tenants/create')}
+        showAction={false}
       />
 
       {/* Success Notification Banner */}

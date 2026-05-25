@@ -318,9 +318,7 @@ export const TenantAppListPage: React.FC = () => {
         title="App Installations"
         subtitle="Manage 3rd-party integrations active within your tenant environments. Configure app parameters, generate secure connection tokens, and monitor installation health."
         breadcrumbs={['Hermes AI', 'Marketplace Registry']}
-        showAction={(user as any)?.role === 'super-admin' || (user as any)?.role === 'admin'}
-        actionText="Install App"
-        onActionClick={() => router.push('/admin/collections/tenant-apps/create')}
+        showAction={false}
       />
 
       {success && (

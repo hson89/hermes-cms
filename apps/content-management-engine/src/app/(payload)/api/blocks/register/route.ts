@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     const templateService = new TemplateService(payload)
-    const result = await templateService.registerBlocks(tenantId, blocks)
+    const result = await templateService.registerBlocks(tenantId, blocks, req as any)
 
     return NextResponse.json({
       success: true,

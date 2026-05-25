@@ -695,6 +695,16 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
 
           {/* Actions */}
           <div className={`pt-8 flex justify-end gap-4 border-t border-surface-variant mt-12 pb-20 animate-reveal ${revealedIndex >= 6 ? 'is-revealed' : ''}`}>
+            {isEditing && (
+              <button 
+                className="px-6 py-3 rounded-lg font-label uppercase tracking-wide text-sm font-bold border-2 border-primary text-primary hover:bg-primary/5 transition-all flex items-center gap-2 cursor-pointer bg-transparent" 
+                type="button"
+                onClick={() => router.push(`/admin/templates/builder/${effectiveId}`)}
+              >
+                <Icon name="widgets" size={18} />
+                Open Visual Designer
+              </button>
+            )}
             <button 
               className="px-6 py-3 rounded-lg font-label uppercase tracking-wide text-sm font-medium text-on-surface hover:bg-surface-container-high transition-colors border-none bg-transparent cursor-pointer" 
               type="button"
@@ -711,6 +721,7 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
               <Icon name={isEditing ? 'save' : 'arrow_forward'} className={`text-sm transition-transform duration-300 ${isSubmitting ? 'scale-0' : 'scale-100'}`} />
             </button>
           </div>
+
         </form>
       </div>
 

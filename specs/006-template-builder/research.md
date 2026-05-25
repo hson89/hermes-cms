@@ -25,6 +25,12 @@
 **Alternatives considered**:
 - **External Builder App**: Introduces auth overhead and context-switching. Keeping it within the Payload Admin UI provides a unified experience for Content Architects.
 
+## Decision: Dnd-Kit Interaction & Collision Logic
+**Findings**:
+- **Index Collision**: Dropping a new item from the palette directly over an existing block instance was yielding the child ID as the target.
+- **Solution**: The `handleDragEnd` logic was refactored to check for `library-` prefixes and calculate the insertion index by matching the `over.id` against the existing `instanceId` array. If no match is found (e.g., dropped on empty space), the item is appended.
+- **Pointer Activation Distance**: To prevent micro-movements from triggering drag states during simple clicks (for mapping/settings), a `PointerSensor` with an 8px activation distance constraint was implemented.
+
 ## Technical Context Resolution
 - **Project Structure**: Integrated into `apps/content-management-engine`.
 - **Primary Dependencies**: `payload` (Core), `react` (Builder UI), `dnd-kit` (Drag & Drop functionality - recommended for React).

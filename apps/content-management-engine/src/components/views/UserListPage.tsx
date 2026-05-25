@@ -363,9 +363,7 @@ export const UserListPage: React.FC = () => {
         title="Users Registry"
         subtitle="Manage and govern user credentials, assign granular role access policies, verify logical workspace isolation, and secure team workflows."
         breadcrumbs={['Hermes AI', 'Identity Registry']}
-        showAction={currentUser?.role === 'super-admin'}
-        actionText="Create User"
-        onActionClick={() => router.push('/admin/collections/users/create')}
+        showAction={false}
       />
 
       {/* Success Notification Banner */}

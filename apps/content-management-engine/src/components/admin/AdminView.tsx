@@ -3,7 +3,7 @@ import type { AdminViewServerProps } from 'payload'
 import { Nav } from './Nav'
 import { TopNavBar, TopNavBarProps } from '../ui/organisms/TopNavBar'
 
-interface AdminViewProps extends AdminViewServerProps {
+interface AdminViewProps extends Partial<AdminViewServerProps> {
   children: React.ReactNode
   className?: string
   hideHeader?: boolean

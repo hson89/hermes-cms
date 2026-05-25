@@ -60,18 +60,7 @@ export const RegistryHeader: React.FC<RegistryHeaderProps> = ({
         </p>
       </div>
 
-      {/* CTA Button */}
-      {showAction && actionText && onActionClick && (
-        <Button
-          type="button"
-          variant="primary"
-          onClick={onActionClick}
-          className="flex items-center gap-2 font-label font-bold text-xs uppercase tracking-widest px-6 py-3.5 flex-shrink-0"
-        >
-          <Icon name={actionIcon} size={16} />
-          {actionText}
-        </Button>
-      )}
+      {/* CTA Button removed to reduce redundancy */}
     </div>
   )
 }

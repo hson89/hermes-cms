@@ -367,9 +367,7 @@ export const HostedSiteListPage: React.FC = () => {
         title="Hosted Sites"
         subtitle="Manage and monitor template deployments across your tenant workspaces. View live endpoints, deployment statuses, and provision new starter sites."
         breadcrumbs={['Hermes AI', 'Managed Infrastructure']}
-        showAction={true}
-        actionText="Provision Site"
-        onActionClick={() => router.push('/admin/collections/hosted-sites/create')}
+        showAction={false}
       />
 
       {success && (

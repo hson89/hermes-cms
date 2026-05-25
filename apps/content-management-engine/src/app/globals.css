@@ -200,12 +200,13 @@
 /* 1. Sidebar Control */
 .alexandria-nav {
   display: flex !important;
-  width: 18rem !important;
+  width: var(--sidebar-width, 18rem) !important;
   z-index: 1000 !important;
+  transition: width 0.3s ease-in-out !important;
 }
 
 aside.nav {
-  width: 18rem !important;
+  width: var(--sidebar-width, 18rem) !important;
   display: block !important;
   position: fixed !important;
   left: 0 !important;
@@ -213,6 +214,7 @@ aside.nav {
   height: 100vh !important;
   z-index: 1000 !important;
   background: var(--color-surface-container) !important;
+  transition: width 0.3s ease-in-out !important;
 }
 
 /* Hide Payload's built-in sidebar/nav elements we don't want */
@@ -222,12 +224,13 @@ aside.nav {
 
 /* 2. Content Wrap Control */
 .template-default__wrap {
-  margin-left: 18rem !important;
-  width: calc(100% - 18rem) !important;
+  margin-left: var(--sidebar-width, 18rem) !important;
+  width: calc(100% - var(--sidebar-width, 18rem)) !important;
   min-height: 100vh;
   position: relative;
   display: flex !important;
   flex-direction: column !important;
+  transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out !important;
 }
 
 /* 3. Header Control */
@@ -580,6 +583,24 @@ html:has(.custom-editor-view) {
   visibility: hidden !important;
   height: 0 !important;
   pointer-events: none !important;
+}
+
+/* Hide default dashboard header / doc headers when our visual designer is open */
+body:has(.custom-editor-view) .app-header,
+body:has(.custom-editor-view) .app-header__wrapper,
+body:has(.custom-editor-view) .doc-header,
+body:has(.custom-editor-view) .collection-edit__header,
+body:has(.custom-editor-view) .collection-list__header,
+body:has(.custom-editor-view) .payload-admin-header,
+body:has(.custom-editor-view) .step-nav,
+body:has(.custom-editor-view) .app-header__step-nav,
+body:has(.custom-editor-view) h1:not(.custom-editor-view h1),
+body:has(.custom-editor-view) header:not(.designer-toolbar) {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* Reset parent paddings/margins/max-width to ensure no empty gaps for drafting workspace */

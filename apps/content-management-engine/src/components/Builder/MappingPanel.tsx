@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Icon } from '../ui/atoms/Icon'
 
 interface MappingPanelProps {
   block?: any
@@ -11,10 +12,10 @@ interface MappingPanelProps {
 }
 
 /**
- * T020: MappingPanel.
+ * T020: MappingPanel (Refactored to Alexandria Designer Design).
  * 
  * Allows Content Architects to bind BuildingBlock properties 
- * to Content Type schema fields.
+ * to Content Type schema fields and configure styles.
  */
 export const MappingPanel: React.FC<MappingPanelProps> = ({
   block,
@@ -23,12 +24,9 @@ export const MappingPanel: React.FC<MappingPanelProps> = ({
   onClose,
   isOpen,
 }) => {
-  const [activeTab, setActiveTab] = React.useState<'properties' | 'settings'>('properties')
+  const [activeTab, setActiveTab] = React.useState<'properties' | 'mapping'>('properties')
   
   if (!isOpen || !block) return null
-
-  const blockSchema = block.schema?.properties || {}
-  const properties = Object.keys(blockSchema)
 
   const handleFieldChange = (prop: string, field: string) => {
     onMappingChange({
@@ -37,133 +35,138 @@ export const MappingPanel: React.FC<MappingPanelProps> = ({
     })
   }
 
+  const blockSlug = block.slug?.toLowerCase() || ''
+  const isCarousel = blockSlug.includes('carousel')
+
   return (
-    <aside className="w-80 bg-surface-container-lowest border-l border-surface-container-low flex flex-col shrink-0 animate-in slide-in-from-right duration-300">
-      {/* Panel Header Tabs */}
-      <div className="flex border-b border-surface-container-low font-label text-sm font-medium">
+    <aside className="w-80 border-l border-outline-variant flex flex-col bg-surface transition-[width,opacity] duration-300 ease-in-out overflow-hidden z-30 shrink-0">
+      <div className="flex border-b border-outline-variant font-label">
         <button 
           onClick={() => setActiveTab('properties')}
-          className={`flex-1 py-3 transition-colors border-none bg-transparent cursor-pointer ${
-            activeTab === 'properties' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low/50'
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest border-none cursor-pointer transition-colors ${
+            activeTab === 'properties' ? 'text-primary border-b-2 border-primary' : 'text-outline hover:text-on-surface-variant bg-transparent'
           }`}
         >
           Properties
         </button>
         <button 
-          onClick={() => setActiveTab('settings')}
-          className={`flex-1 py-3 transition-colors border-none bg-transparent cursor-pointer ${
-            activeTab === 'settings' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low/50'
+          onClick={() => setActiveTab('mapping')}
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest border-none cursor-pointer transition-colors ${
+            activeTab === 'mapping' ? 'text-primary border-b-2 border-primary' : 'text-outline hover:text-on-surface-variant bg-transparent'
           }`}
         >
-          Settings
+          Mapping
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5">
-        <div className="mb-6 flex justify-between items-start">
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+        {/* Selected Element Identification */}
+        <div className="p-4 bg-primary/5 border-b border-outline-variant/30 flex justify-between items-center">
           <div>
-            <h3 className="font-headline text-lg font-semibold text-on-surface mb-1">{block.name}</h3>
-            <p className="font-body text-xs text-on-surface-variant">Configure layout and data binding.</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Icon name={isCarousel ? 'view_carousel' : 'widgets'} size={14} className="text-primary" />
+              <span className="text-xs font-bold uppercase tracking-widest font-label">Selected: {block.name}</span>
+            </div>
+            <p className="text-[10px] text-outline m-0 font-body">Block ID: <code className="bg-surface px-1">{block.slug}</code></p>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-surface-container rounded-md transition-colors border-none bg-transparent cursor-pointer">
-            <span className="material-symbols-outlined text-sm">close</span>
+          <button onClick={onClose} className="p-1 hover:bg-primary/10 rounded transition-colors border-none bg-transparent cursor-pointer">
+            <Icon name="close" size={16} className="text-outline" />
           </button>
         </div>
 
-        {activeTab === 'properties' ? (
-          <>
-            {/* Data Binding Section */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-label text-sm font-semibold text-on-surface flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-tertiary">schema</span>
-                  Schema Mapping
-                </h4>
-                <span className="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
-                  Bound
-                </span>
-              </div>
-              <div className="space-y-4">
-                {properties.length === 0 && (
-                  <p className="text-xs opacity-30 italic">No properties defined for this block.</p>
-                )}
-                {properties.map((prop) => (
-                  <div key={prop} className="p-3 bg-surface rounded-lg border border-surface-container-high">
-                    <label className="block font-label text-xs font-medium text-on-surface-variant mb-2">
-                      {blockSchema[prop]?.label || prop}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 relative">
-                        <select 
-                          value={mappings[prop] || ''}
-                          onChange={(e) => handleFieldChange(prop, e.target.value)}
-                          className="w-full bg-surface-container-lowest border border-outline-variant rounded-md py-1.5 pl-2 pr-8 text-sm font-body text-on-surface appearance-none focus:ring-1 focus:ring-primary focus:border-primary outline-none"
-                        >
-                          <option value="">(Select Field)</option>
-                          <option value="article.title">article.title</option>
-                          <option value="article.subtitle">article.subtitle</option>
-                          <option value="article.excerpt">article.excerpt</option>
-                          <option value="article.hero_image">article.hero_image</option>
+        <div className="p-6 space-y-8">
+          {activeTab === 'properties' ? (
+            <>
+              {/* Styling/Configuration Section */}
+              <section>
+                <h4 className="text-xs font-bold text-outline uppercase tracking-widest mb-4 font-label">Configuration</h4>
+                <div className="space-y-4">
+                  {isCarousel && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-medium mb-1.5 text-on-surface-variant font-body">Transition Effect</label>
+                        <select className="w-full bg-surface-container-lowest border border-outline-variant rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary font-body cursor-pointer">
+                          <option>Slide (Horizontal)</option>
+                          <option>Fade</option>
+                          <option>Slide (Vertical)</option>
                         </select>
-                        <span className="material-symbols-outlined absolute right-2 top-2 text-on-surface-variant text-[16px] pointer-events-none">
-                          expand_more
-                        </span>
                       </div>
-                      <button className="p-1.5 text-primary hover:bg-primary-fixed/50 rounded-md transition-colors bg-transparent border-none cursor-pointer flex items-center" title="Edit Transform">
-                        <span className="material-symbols-outlined text-[16px]">code</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="w-full h-px bg-surface-container-low my-6"></div>
-
-            {/* Visual Properties */}
-            <div>
-              <h4 className="font-label text-sm font-semibold text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">palette</span>
-                Appearance
-              </h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="block font-label text-xs text-on-surface-variant mb-1.5">Alignment</label>
-                  <div className="flex bg-surface-container-low rounded-lg p-1">
-                    <button className="flex-1 py-1 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex justify-center border-none bg-transparent cursor-pointer">
-                      <span className="material-symbols-outlined text-[18px]">format_align_left</span>
-                    </button>
-                    <button className="flex-1 py-1 rounded-md bg-surface-container-lowest text-primary shadow-sm flex justify-center border-none cursor-pointer">
-                      <span className="material-symbols-outlined text-[18px]">format_align_center</span>
-                    </button>
-                    <button className="flex-1 py-1 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex justify-center border-none bg-transparent cursor-pointer">
-                      <span className="material-symbols-outlined text-[18px]">format_align_right</span>
-                    </button>
-                  </div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-on-surface-variant font-body">Autoplay</label>
+                        <div className="w-10 h-5 bg-primary rounded-full relative cursor-pointer">
+                          <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1.5 text-on-surface-variant font-body">Interval (ms)</label>
+                        <input className="w-full bg-surface-container-lowest border border-outline-variant rounded px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary font-body" type="number" defaultValue="5000" />
+                      </div>
+                    </>
+                  )}
+                  {!isCarousel && (
+                    <p className="text-xs text-outline italic">Configure block-specific styles here.</p>
+                  )}
                 </div>
-                <div>
-                  <label className="block font-label text-xs text-on-surface-variant mb-1.5">Padding</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="relative">
-                      <span className="absolute left-2 top-1.5 text-[10px] text-on-surface-variant font-label">Top</span>
-                      <input className="w-full bg-surface border border-outline-variant rounded-md py-1.5 pl-8 pr-2 text-sm font-body text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none" type="text" defaultValue="48px" />
-                    </div>
-                    <div className="relative">
-                      <span className="absolute left-2 top-1.5 text-[10px] text-on-surface-variant font-label">Btm</span>
-                      <input className="w-full bg-surface border border-outline-variant rounded-md py-1.5 pl-8 pr-2 text-sm font-body text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none" type="text" defaultValue="48px" />
-                    </div>
-                  </div>
+              </section>
+            </>
+          ) : (
+            <>
+              {/* Mapping Section */}
+              <section>
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-xs font-bold text-outline uppercase tracking-widest font-label">CMS Data Mapping</h4>
+                  <Icon name="info" size={14} className="text-primary cursor-pointer" />
                 </div>
-              </div>
+                <div className="space-y-4">
+                  {/* Dynamic properties from block schema */}
+                  {Object.keys(block.schema?.properties || {}).map((prop) => (
+                    <div key={prop} className="p-3 border border-outline-variant rounded bg-surface-container-low transition-all hover:border-primary/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded uppercase font-label">
+                          {block.schema.properties[prop].label || prop}
+                        </span>
+                        <Icon name="link" size={12} className="text-outline cursor-pointer" />
+                      </div>
+                      <select 
+                        value={mappings[prop] || ''}
+                        onChange={(e) => handleFieldChange(prop, e.target.value)}
+                        className="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-xs outline-none font-body cursor-pointer"
+                      >
+                        <option value="">(Unmapped)</option>
+                        <option value="entry_title">entry_title</option>
+                        <option value="hero_image">hero_image</option>
+                        {isCarousel && <option value="slide_items[].image_url">slide_items[].image_url</option>}
+                        <option value="custom">+ Create New Key</option>
+                      </select>
+                    </div>
+                  ))}
+                  {Object.keys(block.schema?.properties || {}).length === 0 && (
+                    <p className="text-xs text-outline italic">No mappable properties for this block.</p>
+                  )}
+                </div>
+              </section>
+            </>
+          )}
+
+          {/* Advanced / Schema Export Section */}
+          <section>
+            <h4 className="text-xs font-bold text-outline uppercase tracking-widest mb-4 font-label">Schema Export</h4>
+            <div className="bg-inverse-surface text-inverse-on-surface p-3 rounded font-mono text-[10px] overflow-hidden">
+              <pre className="opacity-80 m-0"><code>{JSON.stringify({
+                type: 'object',
+                properties: block.schema?.properties || {}
+              }, null, 2)}</code></pre>
             </div>
-          </>
-        ) : (
-          <div className="py-12 text-center">
-            <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">settings</span>
-            <p className="text-sm text-on-surface-variant">Advanced block settings</p>
-          </div>
-        )}
+          </section>
+        </div>
+      </div>
+
+      <div className="p-4 border-t border-outline-variant bg-surface-container-low shrink-0">
+        <button className="w-full py-2 border border-primary text-primary text-xs font-bold uppercase tracking-widest rounded hover:bg-primary hover:text-on-primary transition-all font-label bg-transparent cursor-pointer">
+          Validate Schema
+        </button>
       </div>
     </aside>
   )
 }
+
