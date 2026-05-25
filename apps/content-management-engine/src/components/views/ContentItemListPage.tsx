@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
@@ -330,7 +331,7 @@ export const ContentItemListPage: React.FC = () => {
       <RegistryHeader
         title="Content Items Registry"
         subtitle="Govern and explore multi-tenant editorial content entries, manage document draft statuses, and verify API delivery schema compliance."
-        breadcrumbs={['Hermes AI', 'Content Registry']}
+        breadcrumbs={[BRANDING.appName, 'Content Registry']}
         showAction={false}
       />
 

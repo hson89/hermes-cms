@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
 import { RegistryPagination } from '@/components/ui/molecules/RegistryPagination'
@@ -281,7 +282,7 @@ export const MarketplaceAppListPage: React.FC = () => {
       <RegistryHeader
         title="App Marketplace"
         subtitle="Browse and govern the global directory of 3rd-party integrations available for tenant installation. Manage service endpoints and app metadata."
-        breadcrumbs={['Hermes AI', 'Marketplace Registry']}
+        breadcrumbs={[BRANDING.appName, 'Marketplace Registry']}
         showAction={false}
       />
 

@@ -14,6 +14,7 @@ import { FormSelect } from '@/components/ui/molecules/FormSelect'
 import { Badge } from '@/components/ui/atoms/Badge'
 
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 
 interface Tenant {
   id: string
@@ -160,7 +161,7 @@ export const CreateHostedSitePage: React.FC = () => {
         subtitle={isEditMode 
           ? 'Configure deployment settings, custom domains, and associated templates for this managed infrastructure.'
           : 'Deploy a managed front-end starter template bound to a specific tenant workspace.'}
-        breadcrumbs={['Hermes AI', 'Infrastructure', isEditMode ? 'Edit Site' : 'Provision']}
+        breadcrumbs={[BRANDING.appName, 'Infrastructure', isEditMode ? 'Edit Site' : 'Provision']}
         showAction={true}
         actionText="Return to Registry"
         actionIcon="arrow_back"

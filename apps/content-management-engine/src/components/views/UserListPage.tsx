@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
@@ -362,7 +363,7 @@ export const UserListPage: React.FC = () => {
       <RegistryHeader
         title="Users Registry"
         subtitle="Manage and govern user credentials, assign granular role access policies, verify logical workspace isolation, and secure team workflows."
-        breadcrumbs={['Hermes AI', 'Identity Registry']}
+        breadcrumbs={[BRANDING.appName, 'Identity Registry']}
         showAction={false}
       />
 

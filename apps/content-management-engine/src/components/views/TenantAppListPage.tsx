@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
@@ -317,7 +318,7 @@ export const TenantAppListPage: React.FC = () => {
       <RegistryHeader
         title="App Installations"
         subtitle="Manage 3rd-party integrations active within your tenant environments. Configure app parameters, generate secure connection tokens, and monitor installation health."
-        breadcrumbs={['Hermes AI', 'Marketplace Registry']}
+        breadcrumbs={[BRANDING.appName, 'Marketplace Registry']}
         showAction={false}
       />
 

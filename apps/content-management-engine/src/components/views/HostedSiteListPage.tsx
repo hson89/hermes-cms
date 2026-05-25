@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
@@ -366,7 +367,7 @@ export const HostedSiteListPage: React.FC = () => {
       <RegistryHeader
         title="Hosted Sites"
         subtitle="Manage and monitor template deployments across your tenant workspaces. View live endpoints, deployment statuses, and provision new starter sites."
-        breadcrumbs={['Hermes AI', 'Managed Infrastructure']}
+        breadcrumbs={[BRANDING.appName, 'Managed Infrastructure']}
         showAction={false}
       />
 

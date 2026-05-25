@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/atoms/Button'
 import { Card } from '@/components/ui/molecules/Card'
 import { FormSelect } from '@/components/ui/molecules/FormSelect'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { GenerateTokenButton } from '@/components/admin/GenerateTokenButton'
 
 interface MarketplaceApp {
@@ -172,7 +173,7 @@ export const TenantAppEditPage: React.FC = () => {
         subtitle={isEditMode 
           ? 'Configure app-specific secrets, monitor status, and generate secure connection tokens for this integration.'
           : 'Provision a new 3rd-party integration for a specific tenant workspace organizational unit.'}
-        breadcrumbs={['Hermes AI', 'Marketplace', 'App Console']}
+        breadcrumbs={[BRANDING.appName, 'Marketplace', 'App Console']}
         showAction={true}
         actionText="Return to List"
         actionIcon="arrow_back"

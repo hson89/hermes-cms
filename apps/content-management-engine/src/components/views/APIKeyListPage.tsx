@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
@@ -347,7 +348,7 @@ export const APIKeyListPage: React.FC = () => {
       <RegistryHeader
         title="API Keys Registry"
         subtitle="Provision and govern secure, long-lived API keys for programmatic delivery endpoints, isolate credentials by tenant, and audit access credentials."
-        breadcrumbs={['Hermes AI', 'Developer Credentials']}
+        breadcrumbs={[BRANDING.appName, 'Developer Credentials']}
         showAction={false}
       />
 

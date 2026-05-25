@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
@@ -151,7 +152,7 @@ export const JWTTokenListPage: React.FC = () => {
       <RegistryHeader
         title="Token Registry"
         subtitle="Audit and manage cryptographic marketplace connection tokens. Monitor expiration dates and enforce immediate revocations."
-        breadcrumbs={['Hermes AI', 'Security Audit']}
+        breadcrumbs={[BRANDING.appName, 'Security Audit']}
       />
 
       <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center mt-8 gap-4">

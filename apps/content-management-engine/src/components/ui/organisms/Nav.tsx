@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '../atoms/Icon'
+import { BRANDING } from '@/constants/branding'
 
 export const Nav: React.FC<any> = () => {
   const pathname = usePathname()
@@ -59,15 +60,15 @@ export const Nav: React.FC<any> = () => {
   return (
     <nav className="alexandria-nav bg-surface-container-lowest fixed left-0 top-0 h-full flex flex-col py-8 px-4 gap-y-6 z-[1000] border-r border-surface-dim/10 transition-all duration-300 ease-in-out" style={{ width: isCollapsed ? '5rem' : '18rem' }}>
       {/* Branding */}
-      <div className={`flex items-center justify-between mb-8 px-2 w-full transition-all duration-300 ${isCollapsed ? 'flex-col gap-y-4' : ''}`}>
+      <div className={`flex items-center justify-between mb-2 px-2 w-full transition-all duration-300 ${isCollapsed ? 'flex-col gap-y-4' : ''}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary shrink-0">
             <Icon name="auto_awesome_mosaic" filled={true} />
           </div>
           {!isCollapsed && (
             <div className="animate-reveal is-revealed">
-              <h1 className="font-headline text-lg font-bold text-on-surface tracking-tight m-0 whitespace-nowrap">Hermes CMS</h1>
-              <p className="font-label text-xs text-secondary tracking-wide uppercase m-0 whitespace-nowrap">Editorial Engine</p>
+              <h1 className="font-headline text-lg font-bold text-on-surface tracking-tight m-0 whitespace-nowrap">{BRANDING.appName}</h1>
+              <p className="font-label text-xs text-secondary tracking-wide uppercase m-0 whitespace-nowrap">{BRANDING.appSubtitle}</p>
             </div>
           )}
         </div>
@@ -77,6 +78,22 @@ export const Nav: React.FC<any> = () => {
         >
           <Icon name={isCollapsed ? 'menu' : 'menu_open'} size={20} />
         </button>
+      </div>
+
+      {/* Create New Content CTA */}
+      <div className={`px-2 mb-4 w-full transition-all duration-300 ${isCollapsed ? 'flex justify-center' : ''}`}>
+        <Link
+          href="/admin/collections/content-items/create"
+          className={`btn-primary-gradient no-underline flex items-center justify-center gap-2 rounded-xl text-on-primary font-label font-bold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all ${
+            isCollapsed 
+              ? 'size-10 p-0 rounded-lg shrink-0' 
+              : 'w-full py-3.5 px-4 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40'
+          }`}
+          title="Create a New Content"
+        >
+          <Icon name="post_add" size={20} />
+          {!isCollapsed && <span className="whitespace-nowrap">Create a New Content</span>}
+        </Link>
       </div>
 
       {/* Main Navigation */}

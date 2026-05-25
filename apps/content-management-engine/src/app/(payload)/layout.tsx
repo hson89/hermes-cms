@@ -6,9 +6,10 @@ import { RootLayout } from '@payloadcms/next/layouts'
 import configPromise from '@/payload.config'
 import { importMap as realImportMap } from './admin/importMap.js'
 import { handleServerFunctions } from './server-functions'
+import { BRANDING } from '@/constants/branding'
 
 export const metadata = {
-  title: 'Hermes AI Admin',
+  title: BRANDING.adminTitle,
 }
 
 type Args = {
