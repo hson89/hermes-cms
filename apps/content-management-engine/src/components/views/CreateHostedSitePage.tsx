@@ -187,7 +187,7 @@ export const CreateHostedSitePage: React.FC = () => {
           <Card variant="low" className="border border-outline-variant/15 p-6 bg-surface-container-low/30 backdrop-blur-md relative overflow-hidden flex flex-col items-center text-center animate-soft-blur-in" style={{ animationDelay: '200ms' }}>
             <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-primary/20 to-primary-container/20 filter blur-2xl -z-10" />
             
-            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl ring-4 ring-surface-container-low shadow-xl">
+            <div className="size-20 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center justify-center font-headline font-bold text-3xl ring-4 ring-surface-container-low">
               <Icon name="web" size={40} />
             </div>
 
@@ -313,7 +313,7 @@ export const CreateHostedSitePage: React.FC = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="uppercase tracking-widest text-xs px-10 shadow-lg shadow-primary/10"
+                  className="uppercase tracking-widest text-xs px-10"
                 >
                   {isSubmitting ? 'Provisioning...' : (isEditMode ? 'Commit Changes' : 'Provision Site')}
                 </Button>

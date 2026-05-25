@@ -32,35 +32,45 @@ export const SortableBlock: React.FC<SortableBlockProps> = ({ item, isSelected, 
     <div
       ref={setNodeRef}
       style={style}
-      onClick={onSelect}
-      className={`w-full bg-white/5 border rounded-sm p-4 flex items-center justify-between group hover:border-white/20 transition-all cursor-pointer ${
-        isSelected ? 'border-[#3366cc] bg-[#3366cc]/5' : 'border-white/10'
+      onClick={(e) => {
+        e.stopPropagation()
+        onSelect?.()
+      }}
+      className={`relative group border-2 transition-all cursor-pointer ${
+        isSelected ? 'border-primary' : 'border-transparent hover:border-outline-variant'
       }`}
     >
-      <div className="flex items-center gap-4">
-        <div {...attributes} {...listeners} className="cursor-grab opacity-20 group-hover:opacity-100 transition-opacity p-2 -m-2">
-          <DragHandleIcon />
+      {/* Action Bar */}
+      <div className={`absolute -top-3 right-4 flex items-center rounded-md shadow-md z-10 text-xs font-label transition-opacity ${
+        isSelected ? 'bg-primary text-on-primary opacity-100' : 'bg-surface-container-highest text-on-surface-variant opacity-0 group-hover:opacity-100 shadow-sm'
+      }`}>
+        <span className={`px-2 py-1 border-r ${isSelected ? 'border-primary-container' : 'border-outline-variant'}`}>
+          {item.block.name}
+        </span>
+        <div {...attributes} {...listeners} className={`p-1 hover:bg-black/10 transition-colors flex items-center cursor-grab`}>
+          <span className="material-symbols-outlined text-[14px]">drag_indicator</span>
         </div>
-        <div>
-          <div className="text-sm font-medium">{item.block.name}</div>
-          <div className="text-[10px] opacity-40 font-mono">{item.block.slug}</div>
-        </div>
+        <button className="p-1 hover:bg-black/10 transition-colors bg-transparent border-none text-inherit cursor-pointer flex items-center">
+          <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
+        </button>
+        <button className="p-1 hover:bg-black/10 transition-colors bg-transparent border-none text-inherit cursor-pointer flex items-center">
+          <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
+        </button>
+        <button className={`p-1 hover:bg-error hover:text-on-error rounded-r-md transition-colors bg-transparent border-none text-inherit cursor-pointer flex items-center`}>
+          <span className="material-symbols-outlined text-[14px]">delete</span>
+        </button>
       </div>
-      
-      <button className="text-[10px] uppercase tracking-widest opacity-30 hover:opacity-100 hover:text-red-400 transition-all">
-        Remove
-      </button>
+
+      {/* Content Render / Preview */}
+      <div className={`p-12 text-center bg-surface-container-low border-b border-surface-container ${isSelected ? '' : 'bg-opacity-50'}`}>
+        <h1 className="font-headline text-2xl text-on-surface mb-2 font-bold tracking-tight">
+          {item.block.name} Block
+        </h1>
+        <p className="font-body text-sm text-on-surface-variant max-w-lg mx-auto">
+          Preview of the {item.block.slug} component structure. 
+          Data will be populated from mapped fields.
+        </p>
+      </div>
     </div>
   )
 }
-
-const DragHandleIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="4" cy="2" r="1" fill="currentColor" />
-    <circle cx="8" cy="2" r="1" fill="currentColor" />
-    <circle cx="4" cy="6" r="1" fill="currentColor" />
-    <circle cx="8" cy="6" r="1" fill="currentColor" />
-    <circle cx="4" cy="10" r="1" fill="currentColor" />
-    <circle cx="8" cy="10" r="1" fill="currentColor" />
-  </svg>
-)

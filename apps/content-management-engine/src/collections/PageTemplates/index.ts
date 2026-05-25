@@ -1,7 +1,10 @@
 import type { CollectionConfig, CollectionBeforeChangeHook } from 'payload'
 import { tenantAccess } from '../access/tenantAccess'
 
-const beforeChangeHook: CollectionBeforeChangeHook = async ({ data, req, originalDoc }) => {
+export const beforeChangeHook: CollectionBeforeChangeHook = async ({ data, req, operation, originalDoc }) => {
+  if (operation === 'create' && req.user) {
+    data.createdBy = req.user.id
+  }
   // If we are updating an existing doc, check for version conflicts
   if (originalDoc && data.version !== undefined && originalDoc.version !== undefined) {
     if (data.version !== originalDoc.version) {
@@ -18,7 +21,19 @@ export const PageTemplates: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     group: 'Templates',
-    defaultColumns: ['name', 'slug', 'contentType', 'status', 'tenant'],
+    defaultColumns: ['name', 'slug', 'contentType', 'status', 'createdBy', 'tenant'],
+    components: {
+      views: {
+        list: {
+          Component: '/src/components/views/TemplateLibrary#TemplateLibrary',
+        },
+        edit: {
+          default: {
+            Component: '/src/components/views/TemplateWorkspace#TemplateWorkspace',
+          },
+        },
+      },
+    },
   },
   access: {
     read: tenantAccess,
@@ -37,6 +52,20 @@ export const PageTemplates: CollectionConfig = {
       label: 'Template Name',
     },
     {
+      name: 'description',
+      type: 'textarea',
+      label: 'Description',
+      admin: {
+        description: 'Brief overview of the template purpose and architecture',
+      },
+    },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Preview Image',
+    },
+    {
       name: 'slug',
       type: 'text',
       required: true,
@@ -53,9 +82,21 @@ export const PageTemplates: CollectionConfig = {
       },
     },
     {
+      name: 'archetype',
+      type: 'select',
+      required: true,
+      label: 'Layout Archetype',
+      options: [
+        { label: 'Longform Narrative', value: 'longform' },
+        { label: 'Landing Page', value: 'landing' },
+        { label: 'Archival Minimal', value: 'minimal' },
+      ],
+      defaultValue: 'landing',
+    },
+    {
       name: 'layout',
       type: 'array',
-      required: true,
+      required: false,
       label: 'Layout Blocks',
       fields: [
         {
@@ -78,12 +119,33 @@ export const PageTemplates: CollectionConfig = {
       name: 'status',
       type: 'select',
       options: [
+        { label: 'Active', value: 'active' },
         { label: 'Draft', value: 'draft' },
-        { label: 'Published', value: 'published' },
+        { label: 'Archived', value: 'archived' },
       ],
       defaultValue: 'draft',
       required: true,
       admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'restrictedAccess',
+      type: 'checkbox',
+      label: 'Restricted Access',
+      defaultValue: false,
+      admin: {
+        description: 'Limit to Editor-in-Chief & Admin roles',
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'locked',
+      type: 'checkbox',
+      label: 'Lock Template',
+      defaultValue: false,
+      admin: {
+        description: 'Prevent accidental schema mapping changes',
         position: 'sidebar',
       },
     },
@@ -93,6 +155,15 @@ export const PageTemplates: CollectionConfig = {
       defaultValue: 1,
       admin: {
         hidden: true,
+      },
+    },
+    {
+      name: 'createdBy',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
       },
     },
     {

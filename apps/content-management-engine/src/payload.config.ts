@@ -52,7 +52,7 @@ const configPromise = buildConfig({
           path: '/draft/:contentTypeId?',
         },
         builder: {
-          Component: '/src/components/Builder/BuilderWorkspace#BuilderWorkspace',
+          Component: '/src/components/views/TemplateWorkspace#TemplateWorkspace',
           path: '/templates/builder/:templateId?',
         },
       },

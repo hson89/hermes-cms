@@ -140,7 +140,7 @@ export const GenerateTokenButton: React.FC<GenerateTokenButtonProps> = ({
             />
             <button
               onClick={copyToClipboard}
-              className="absolute top-2 right-2 p-2 bg-primary text-on-primary rounded-lg shadow-lg hover:scale-105 active:scale-95 transition-transform"
+              className="absolute top-2 right-2 p-2 bg-primary text-on-primary rounded-lg hover:scale-105 active:scale-95 transition-transform"
               title="Copy to Clipboard"
             >
               <Icon name={copied ? 'check' : 'content_copy'} size={16} />

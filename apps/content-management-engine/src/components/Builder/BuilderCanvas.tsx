@@ -23,22 +23,13 @@ export const BuilderCanvas: React.FC<BuilderCanvasProps> = ({ layout, onSelect, 
   })
 
   return (
-    <div
+    <section
       ref={setNodeRef}
-      className={`builder-canvas flex-1 p-8 overflow-y-auto transition-colors ${
-        isOver ? 'bg-[#3366cc]/5' : 'bg-transparent'
+      className={`flex-1 bg-surface-container flex justify-center overflow-y-auto p-8 relative transition-colors ${
+        isOver ? 'bg-primary/5' : ''
       }`}
     >
-      <div className="max-w-4xl mx-auto min-h-[600px] border-2 border-dashed border-white/5 rounded-lg flex flex-col items-center justify-start p-6 space-y-4 bg-white/[0.02]">
-        {layout.length === 0 && !isOver && (
-          <div className="mt-48 text-center">
-            <div className="text-sm font-medium opacity-50">Canvas is empty</div>
-            <div className="text-xs opacity-30 mt-2">
-              Drag and drop building blocks from the library to start building.
-            </div>
-          </div>
-        )}
-
+      <div className="w-full max-w-[800px] bg-surface-container-lowest min-h-[1000px] shadow-sm rounded-xl overflow-hidden relative flex flex-col">
         <SortableContext items={layout.map(i => i.id)} strategy={verticalListSortingStrategy}>
           {layout.map((item) => (
             <SortableBlock 
@@ -50,12 +41,20 @@ export const BuilderCanvas: React.FC<BuilderCanvasProps> = ({ layout, onSelect, 
           ))}
         </SortableContext>
 
-        {isOver && (
-          <div className="w-full h-24 border-2 border-dashed border-[#3366cc]/30 rounded-sm bg-[#3366cc]/10 flex items-center justify-center">
-            <span className="text-xs font-medium text-[#3366cc]">Drop here</span>
-          </div>
-        )}
+        {/* Add Block Area / Placeholder */}
+        <div className="p-8 flex justify-center mt-auto">
+          <button className={`w-full max-w-md py-6 border-2 border-dashed rounded-xl font-label text-sm font-medium transition-all flex items-center justify-center gap-2 bg-transparent cursor-pointer ${
+            isOver 
+              ? 'border-primary text-primary bg-primary-fixed/10' 
+              : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary-fixed/10'
+          }`}>
+            <span className="material-symbols-outlined text-lg">
+              {isOver ? 'download' : 'add_circle'}
+            </span>
+            {isOver ? 'Drop block here' : 'Drag block here or click to add'}
+          </button>
+        </div>
       </div>
-    </div>
+    </section>
   )
 }

@@ -8,6 +8,9 @@ export const Header: React.FC = () => {
   const { stepNav } = useStepNav()
   const pathname = usePathname()
 
+  // Hide header on Page Template Library to avoid overlap with its custom header
+  if (pathname === '/admin/collections/page-templates') return null
+
   // Safely get the current title from stepNav or fallback to Dashboard
   let currentTitle: React.ReactNode = 'Dashboard'
   if (stepNav && stepNav.length > 0) {
