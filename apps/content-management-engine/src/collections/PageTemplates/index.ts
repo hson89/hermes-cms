@@ -72,6 +72,21 @@ export const PageTemplates: CollectionConfig = {
       label: 'Slug',
     },
     {
+      name: 'tags',
+      type: 'array',
+      label: 'Tags',
+      fields: [
+        {
+          name: 'tag',
+          type: 'text',
+          required: true,
+        },
+      ],
+      admin: {
+        description: 'Categorization tags for the template library',
+      },
+    },
+    {
       name: 'contentType',
       type: 'relationship',
       relationTo: 'content-types',
