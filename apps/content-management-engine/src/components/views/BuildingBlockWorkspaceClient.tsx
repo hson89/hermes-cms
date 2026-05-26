@@ -14,6 +14,7 @@ interface BlockElement {
   category: 'layout' | 'atomic' | 'interactive'
   properties: Record<string, any>
   mappings: Record<string, string>
+  children?: BlockElement[]
 }
 
 export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ serverId }) => {
@@ -208,7 +209,7 @@ export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ 
     }
   }
 
-  const addElementToCanvas = (element: any) => {
+  const addElementToCanvas = (element: any, parentId: string | null = null) => {
     const newId = `${element.type.toLowerCase()}_${Date.now().toString().slice(-4)}`
     const defaultProperties: Record<string, any> = {}
     const defaultMappings: Record<string, string> = {}
@@ -228,17 +229,55 @@ export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ 
       icon: element.icon,
       category: element.category,
       properties: defaultProperties,
-      mappings: defaultMappings
+      mappings: defaultMappings,
+      children: element.category === 'layout' ? [] : undefined
     }
 
-    setCanvasElements(prev => [...prev, newElement])
+    if (!parentId) {
+      setCanvasElements(prev => [...prev, newElement])
+    } else {
+      const insertRecursive = (list: BlockElement[]): BlockElement[] => {
+        return list.map(item => {
+          if (item.id === parentId) {
+            return {
+              ...item,
+              children: [...(item.children || []), newElement]
+            }
+          } else if (item.children && item.children.length > 0) {
+            return {
+              ...item,
+              children: insertRecursive(item.children)
+            }
+          }
+          return item
+        })
+      }
+      setCanvasElements(prev => insertRecursive(prev))
+    }
+
     setSelectedElementId(newId)
     setIsPropertiesOpen(true)
   }
 
   const removeElementFromCanvas = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    setCanvasElements(prev => prev.filter(el => el.id !== id))
+    
+    const removeRecursive = (list: BlockElement[]): BlockElement[] => {
+      return list
+        .filter(item => item.id !== id)
+        .map(item => {
+          if (item.children && item.children.length > 0) {
+            return {
+              ...item,
+              children: removeRecursive(item.children)
+            }
+          }
+          return item
+        })
+    }
+
+    setCanvasElements(prev => removeRecursive(prev))
+    
     if (selectedElementId === id) {
       setSelectedElementId(null)
       setIsPropertiesOpen(false)
@@ -246,29 +285,54 @@ export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ 
   }
 
   const selectedElement = useMemo(() => {
-    return canvasElements.find(el => el.id === selectedElementId) || null
+    if (!selectedElementId) return null
+    
+    const findRecursive = (list: BlockElement[]): BlockElement | null => {
+      for (const item of list) {
+        if (item.id === selectedElementId) return item
+        if (item.children && item.children.length > 0) {
+          const found = findRecursive(item.children)
+          if (found) return found
+        }
+      }
+      return null
+    }
+    
+    return findRecursive(canvasElements)
   }, [canvasElements, selectedElementId])
 
   const updateSelectedProperty = (key: string, value: any) => {
     if (!selectedElementId) return
-    setCanvasElements(prev =>
-      prev.map(el =>
-        el.id === selectedElementId
-          ? { ...el, properties: { ...el.properties, [key]: value } }
-          : el
-      )
-    )
+    
+    const updateRecursive = (list: BlockElement[]): BlockElement[] => {
+      return list.map(item => {
+        if (item.id === selectedElementId) {
+          return { ...item, properties: { ...item.properties, [key]: value } }
+        } else if (item.children && item.children.length > 0) {
+          return { ...item, children: updateRecursive(item.children) }
+        }
+        return item
+      })
+    }
+    
+    setCanvasElements(prev => updateRecursive(prev))
   }
 
   const updateSelectedMapping = (key: string, value: string) => {
     if (!selectedElementId) return
-    setCanvasElements(prev =>
-      prev.map(el =>
-        el.id === selectedElementId
-          ? { ...el, mappings: { ...el.mappings, [key]: value } }
-          : el
-      )
-    )
+    
+    const updateRecursive = (list: BlockElement[]): BlockElement[] => {
+      return list.map(item => {
+        if (item.id === selectedElementId) {
+          return { ...item, mappings: { ...item.mappings, [key]: value } }
+        } else if (item.children && item.children.length > 0) {
+          return { ...item, children: updateRecursive(item.children) }
+        }
+        return item
+      })
+    }
+    
+    setCanvasElements(prev => updateRecursive(prev))
   }
 
   // Database persistence
@@ -334,6 +398,163 @@ export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ 
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Recursive visual builder element renderer
+  const renderElement = (el: BlockElement) => {
+    const isSelected = el.id === selectedElementId
+    const isLayout = el.category === 'layout'
+    
+    let childrenContent = null
+    if (isLayout) {
+      const childrenList = el.children || []
+      
+      let layoutClasses = "flex flex-col gap-4 w-full min-h-[100px] p-4 bg-surface-container-lowest/40 rounded border border-dashed border-outline-variant/30 mt-3"
+      if (el.type === 'Columns') {
+        layoutClasses = "flex flex-row gap-4 w-full min-h-[120px] p-4 bg-surface-container-lowest/40 rounded border border-dashed border-outline-variant/30 mt-3 overflow-x-auto"
+      } else if (el.type === 'Grid') {
+        layoutClasses = "grid grid-cols-2 gap-4 w-full min-h-[120px] p-4 bg-surface-container-lowest/40 rounded border border-dashed border-outline-variant/30 mt-3"
+      } else if (el.type === 'Section') {
+        layoutClasses = "flex flex-col gap-6 w-full min-h-[140px] p-6 bg-surface-container-lowest/40 rounded border border-dashed border-outline-variant/30 mt-3"
+      }
+      
+      childrenContent = (
+        <div 
+          className={layoutClasses}
+          onDragOver={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          onDrop={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            try {
+              const dataStr = e.dataTransfer.getData('text/plain')
+              if (!dataStr) return
+              const dragged = JSON.parse(dataStr)
+              addElementToCanvas(dragged, el.id)
+            } catch (err) {
+              console.error(err)
+            }
+          }}
+        >
+          {childrenList.length === 0 ? (
+            <div className="flex-grow flex flex-col items-center justify-center py-6 text-outline/40 pointer-events-none text-center min-h-[60px] w-full">
+              <span className="material-symbols-outlined text-lg mb-1">add_circle</span>
+              <p className="text-[10px] uppercase font-bold tracking-wider font-label m-0">Drop elements inside {el.type}</p>
+            </div>
+          ) : (
+            childrenList.map(child => renderElement(child))
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <div 
+        key={el.id}
+        onClick={(e) => {
+          e.stopPropagation()
+          setSelectedElementId(el.id)
+          setIsPropertiesOpen(true)
+        }}
+        className={`border rounded bg-background p-3 relative cursor-pointer transition-all duration-300 ${
+          isSelected 
+            ? 'ring-2 ring-primary border-primary hover:ring-2' 
+            : 'border-outline-variant/40 hover:ring-2 hover:ring-primary/40'
+        } ${el.type === 'Columns' || el.type === 'Section' || el.type === 'Grid' || el.type === 'Container' ? 'w-full' : ''}`}
+      >
+        {/* Selected overlay controls */}
+        <div className="absolute -top-3.5 -right-1 flex gap-1 z-20" onClick={(e) => e.stopPropagation()}>
+          <button className="w-6 h-6 bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center shadow-sm text-outline hover:text-on-surface border-none cursor-pointer">
+            <span className="material-symbols-outlined text-[14px]">drag_indicator</span>
+          </button>
+          <button 
+            onClick={(e) => removeElementFromCanvas(el.id, e)}
+            className="w-6 h-6 bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center shadow-sm text-error hover:bg-error-container/20 border-none cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[14px]">delete</span>
+          </button>
+        </div>
+
+        {/* Label for layout containers */}
+        {isLayout && (
+          <div className="text-[9px] uppercase font-bold text-outline font-label mb-1 flex items-center gap-1 select-none">
+            <span className="material-symbols-outlined text-xs">{el.icon}</span>
+            {el.type}: {el.id}
+          </div>
+        )}
+
+        {/* Specific visual content representation */}
+        {el.type === 'Carousel' ? (
+          <div className="flex h-48 bg-surface-container-high items-center justify-between px-4 rounded-lg relative overflow-hidden">
+            <span className="material-symbols-outlined text-2xl text-outline/30 select-none">chevron_left</span>
+            <div className="text-center flex flex-col items-center">
+              <div className="border border-dashed border-primary/40 p-2 rounded bg-surface/50 mb-2 flex flex-col items-center">
+                <span className="material-symbols-outlined text-outline text-sm mb-0.5">image</span>
+                <p className="text-[8px] uppercase font-bold text-outline tracking-wider font-label m-0">Slide Image Placeholder</p>
+              </div>
+              <div className="border border-dashed border-primary/40 p-2 rounded bg-surface/50 min-w-[160px]">
+                <h3 className="text-xs font-headline font-bold mb-0.5 mt-0 leading-tight">Slide Title</h3>
+                <p className="text-[9px] text-outline m-0 leading-relaxed font-body">Supporting slide caption...</p>
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-2xl text-outline/30 select-none">chevron_right</span>
+          </div>
+        ) : el.type === 'Heading' ? (
+          <div className="p-2 bg-surface-container-high rounded text-center">
+            <h2 className="text-base font-headline font-bold text-on-surface m-0 select-none">Heading Title</h2>
+          </div>
+        ) : el.type === 'Text' ? (
+          <div className="p-2 bg-surface-container-high rounded">
+            <p className="text-xs font-body text-on-surface-variant m-0 select-none">Editorial summary text block.</p>
+          </div>
+        ) : el.type === 'Image' ? (
+          <div className="h-24 bg-surface-container rounded-lg flex flex-col items-center justify-center border border-outline-variant/10">
+            <span className="material-symbols-outlined text-outline text-2xl mb-0.5 select-none">image</span>
+            <p className="text-[9px] text-outline font-label uppercase m-0 select-none">Media Image Placeholder</p>
+          </div>
+        ) : el.type === 'Button' ? (
+          <div className="flex justify-center p-1">
+            <button className="px-4 py-1.5 bg-primary text-on-primary rounded text-[10px] border-none font-bold uppercase tracking-wider cursor-pointer">Button Action</button>
+          </div>
+        ) : el.type === 'Link' ? (
+          <div className="flex justify-center p-1">
+            <span className="text-xs text-primary font-bold hover:underline cursor-pointer flex items-center gap-1"><span className="material-symbols-outlined text-xs">link</span>Link Anchor</span>
+          </div>
+        ) : el.type === 'Divider' ? (
+          <div className="py-2">
+            <hr className="border-t border-outline-variant/40 w-full" />
+          </div>
+        ) : el.type === 'Tabs' ? (
+          <div className="border border-outline-variant/30 rounded p-2 bg-surface-container-low">
+            <div className="flex border-b border-outline-variant/30 mb-2">
+              <span className="px-3 py-1 text-[10px] font-bold text-primary border-b-2 border-primary">Tab 1</span>
+              <span className="px-3 py-1 text-[10px] text-outline">Tab 2</span>
+            </div>
+            <div className="p-2 bg-surface-container-high text-xs text-outline rounded">Tab Content View</div>
+          </div>
+        ) : el.type === 'Accordion' ? (
+          <div className="border border-outline-variant/30 rounded p-2 bg-surface-container-low space-y-1">
+            <div className="flex justify-between items-center p-1.5 bg-surface-container-high rounded text-xs font-semibold">
+              <span>Accordion Section 1</span>
+              <span className="material-symbols-outlined text-xs">expand_more</span>
+            </div>
+          </div>
+        ) : (
+          !isLayout && (
+            <div className="p-3 bg-surface-container-high flex items-center justify-between rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-outline">{el.icon}</span>
+                <span className="text-xs font-medium">{el.name} Element</span>
+              </div>
+            </div>
+          )
+        )}
+
+        {childrenContent}
+      </div>
+    )
   }
 
   if (isLoading) {
@@ -659,79 +880,7 @@ export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ 
                 <div className="border-2 border-dashed border-outline-variant/50 rounded-lg p-6 relative flex flex-col gap-6">
                   <div className="absolute -top-3 left-4 bg-primary text-[8px] text-on-primary px-2 py-0.5 rounded font-bold uppercase tracking-wider font-label">Container: Block Wrapper</div>
 
-                  {canvasElements.map((el) => {
-                    const isSelected = el.id === selectedElementId;
-                    
-                    return (
-                      <div 
-                        key={el.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedElementId(el.id);
-                          setIsPropertiesOpen(true);
-                        }}
-                        className={`border rounded bg-background p-1 relative cursor-pointer transition-all duration-300 ${isSelected ? 'ring-2 ring-primary border-primary hover:ring-2' : 'border-outline-variant/40 hover:ring-2 hover:ring-primary/40'}`}
-                      >
-                        {/* Selected overlay controls */}
-                        <div className="absolute -top-3.5 -right-1 flex gap-1 z-20">
-                          <button className="w-6 h-6 bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center shadow-sm text-outline hover:text-on-surface border-none cursor-pointer"><span className="material-symbols-outlined text-[14px]">drag_indicator</span></button>
-                          <button 
-                            onClick={(e) => removeElementFromCanvas(el.id, e)}
-                            className="w-6 h-6 bg-surface-container-highest border border-outline-variant rounded flex items-center justify-center shadow-sm text-error hover:bg-error-container/20 border-none cursor-pointer"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">delete</span>
-                          </button>
-                        </div>
-
-                        {/* Rendering different mockups based on elements type */}
-                        {el.type === 'Carousel' ? (
-                          <div className="flex h-64 bg-surface-container-high items-center justify-between px-4 rounded-lg relative overflow-hidden">
-                            <span className="material-symbols-outlined text-4xl text-outline/30 select-none">chevron_left</span>
-                            <div className="text-center flex flex-col items-center">
-                              <div className="border border-dashed border-primary/40 p-4 rounded bg-surface/50 mb-3 flex flex-col items-center">
-                                <span className="material-symbols-outlined text-outline mb-1">image</span>
-                                <p className="text-[9px] uppercase font-bold text-outline tracking-wider font-label m-0">Slide Image Placeholder</p>
-                              </div>
-                              <div className="border border-dashed border-primary/40 p-3 rounded bg-surface/50 min-w-[220px]">
-                                <h3 className="text-base font-headline font-bold mb-1 mt-0 leading-tight">Slide Title</h3>
-                                <p className="text-[10px] text-outline m-0 leading-relaxed font-body">Supporting slide description goes here...</p>
-                              </div>
-                            </div>
-                            <span className="material-symbols-outlined text-4xl text-outline/30 select-none">chevron_right</span>
-
-                            {/* Dots indicators */}
-                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                              <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                              <div className="w-1.5 h-1.5 rounded-full bg-outline/30"></div>
-                              <div className="w-1.5 h-1.5 rounded-full bg-outline/30"></div>
-                            </div>
-                          </div>
-                        ) : el.type === 'Heading' ? (
-                          <div className="p-3 bg-surface-container-high rounded text-center">
-                            <h2 className="text-2xl font-headline font-bold text-on-surface m-0 select-none">Heading Title</h2>
-                          </div>
-                        ) : el.type === 'Text' ? (
-                          <div className="p-3 bg-surface-container-high rounded">
-                            <p className="text-sm font-body text-on-surface-variant m-0 select-none">Editorial summary text block. Alexandria curators read and write here...</p>
-                          </div>
-                        ) : el.type === 'Image' ? (
-                          <div className="h-36 bg-surface-container rounded-lg flex flex-col items-center justify-center border border-outline-variant/10">
-                            <span className="material-symbols-outlined text-outline text-3xl mb-1 select-none">image</span>
-                            <p className="text-[10px] text-outline font-label uppercase m-0 select-none">Media Image Placeholder</p>
-                          </div>
-                        ) : (
-                          // Fallback layout block render
-                          <div className="p-4 bg-surface-container-high flex items-center justify-between rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <span className="material-symbols-outlined text-outline">{el.icon}</span>
-                              <span className="text-sm font-medium">{el.name} Block</span>
-                            </div>
-                            <span className="text-[9px] uppercase font-bold text-outline font-label bg-surface px-2 py-0.5 rounded">{el.category}</span>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                  {canvasElements.map(el => renderElement(el))}
 
                   {/* Drop zone placeholder inside paper container */}
                   <div className="border-2 border-dashed border-outline-variant/30 rounded py-8 flex flex-col items-center justify-center text-outline/50 hover:bg-primary/5 hover:border-primary/50 transition-all cursor-pointer">

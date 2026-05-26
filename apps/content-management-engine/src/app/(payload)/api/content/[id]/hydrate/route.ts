@@ -1,4 +1,4 @@
-import { getPayload } from 'payload'
+import { getPayload, type PayloadRequest } from 'payload'
 import config from '@/payload.config'
 import { TemplateService } from '@/services/template_service'
 import { NextRequest, NextResponse } from 'next/server'
@@ -23,6 +23,7 @@ export async function GET(
     const contentItem = await payload.findByID({
       collection: 'content-items',
       id: contentId,
+      req: req as unknown as PayloadRequest,
     })
 
     if (!contentItem) {
@@ -40,12 +41,13 @@ export async function GET(
         : contentItem.contentType
 
     const templates = await payload.find({
-      collection: 'page-templates',
+      collection: 'page-templates' as never,
       where: {
         contentType: { equals: contentTypeId },
         status: { equals: 'published' },
       },
       limit: 1,
+      req: req as unknown as PayloadRequest,
     })
 
     if (templates.docs.length === 0) {
@@ -58,13 +60,14 @@ export async function GET(
       )
     }
 
-    const template = templates.docs[0]
+    const template = templates.docs[0] as unknown as Record<string, any>
 
     // 3. Resolve Hydrated Tree
     const templateService = new TemplateService(payload)
     const hydratedBlocks = await templateService.resolveHydratedTree(
       template.id,
       contentItem,
+      req as unknown as PayloadRequest,
     )
 
     return NextResponse.json({

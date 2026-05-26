@@ -6,19 +6,32 @@ export interface BlockElement {
   category: 'layout' | 'atomic' | 'interactive'
   properties: Record<string, any>
   mappings: Record<string, string>
+  children?: BlockElement[]
+}
+
+const flattenElements = (list: BlockElement[]): BlockElement[] => {
+  let flat: BlockElement[] = []
+  for (const item of list) {
+    flat.push(item)
+    if (item.children && item.children.length > 0) {
+      flat = flat.concat(flattenElements(item.children))
+    }
+  }
+  return flat
 }
 
 export const compileBlockSchema = (canvasElements: BlockElement[]) => {
+  const flatElements = flattenElements(canvasElements)
   const properties: Record<string, any> = {}
   
   // Check elements on canvas
-  const hasCarousel = canvasElements.some(el => el.type === 'Carousel')
-  const hasHeading = canvasElements.some(el => el.type === 'Heading')
-  const hasImage = canvasElements.some(el => el.type === 'Image')
-  const hasText = canvasElements.some(el => el.type === 'Text')
+  const hasCarousel = flatElements.some(el => el.type === 'Carousel')
+  const hasHeading = flatElements.some(el => el.type === 'Heading')
+  const hasImage = flatElements.some(el => el.type === 'Image')
+  const hasText = flatElements.some(el => el.type === 'Text')
 
   if (hasCarousel) {
-    const carouselEl = canvasElements.find(el => el.type === 'Carousel')
+    const carouselEl = flatElements.find(el => el.type === 'Carousel')
     properties.slides = {
       type: 'array',
       items: {
@@ -57,3 +70,4 @@ export const compileBlockSchema = (canvasElements: BlockElement[]) => {
     visualLayout: canvasElements
   }
 }
+

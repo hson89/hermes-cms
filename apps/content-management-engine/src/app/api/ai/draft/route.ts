@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
         signal: abortController.signal,
         body: JSON.stringify({
           ...body,
+          session_id: body.session_id !== undefined && body.session_id !== null ? String(body.session_id) : undefined,
           tenant_id: tenantId,
           user_id: user.id,
           style_modifier_prompt: styleModifierPrompt,
@@ -197,13 +198,44 @@ export async function POST(req: NextRequest) {
         controller.enqueue(chunk)
       },
       async flush() {
+        let resolvedSessionId: string | number | undefined = body.drafting_session_id || body.sessionId || body.session_id
+        if (resolvedSessionId) {
+          if (typeof resolvedSessionId === 'string' && resolvedSessionId.includes('-')) {
+            try {
+              const sessions = await payload.find({
+                collection: 'drafting-sessions',
+                where: {
+                  aiSessionId: { equals: resolvedSessionId }
+                },
+                limit: 1,
+                overrideAccess: true,
+              })
+              resolvedSessionId = sessions.docs[0]?.id || undefined
+            } catch (e) {
+              console.error('[AI Proxy] Failed to lookup drafting session by UUID:', e)
+              resolvedSessionId = undefined
+            }
+          } else {
+            try {
+              const doc = await payload.findByID({
+                collection: 'drafting-sessions',
+                id: resolvedSessionId,
+                overrideAccess: true,
+              })
+              if (!doc) resolvedSessionId = undefined
+            } catch (_) {
+              resolvedSessionId = undefined
+            }
+          }
+        }
+
         // Log stream completion status
         await payload.create({
           collection: 'ai-audit-logs',
           data: {
             user: user.id,
             tenant: tenantId,
-            session: body.sessionId,
+            session: resolvedSessionId || undefined,
             requestType: 'draft',
             prompt: body.prompt,
             model: modelName || modelProvider,

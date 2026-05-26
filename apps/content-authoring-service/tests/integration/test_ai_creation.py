@@ -356,3 +356,65 @@ class TestSessionStreamingEndpoint:
             json={"prompt": ""},
         )
         assert response.status_code == 422
+
+
+class TestRefineEndpoint:
+    """Integration tests for POST /api/ai/refine."""
+
+    def test_refine_draft_returns_stream(
+        self,
+        client: TestClient,
+    ) -> None:
+        """Verify that refining a draft streams events."""
+        async def mock_generator(*args, **kwargs):
+            yield {"event": "TEXT_DELTA", "data": "Refined paragraph"}
+            yield {"event": "REFINE_COMPLETE", "data": {"draft": {"body": "Refined body"}}}
+
+        with patch(
+            "src.application.refine_service.RefineService.refine_draft_stream",
+            return_value=mock_generator(),
+        ):
+            response = client.post(
+                "/api/ai/refine",
+                json={
+                    "prompt": "make it formal",
+                    "current_draft_json": {"body": "original body"},
+                    "content_schema": {},
+                    "tenant_id": TENANT_ID,
+                    "user_id": USER_ID,
+                    "session_id": "test-session-id",
+                },
+            )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
+
+    def test_refine_draft_coerces_numeric_session_id(
+        self,
+        client: TestClient,
+    ) -> None:
+        """Verify that numeric session_id (like 10) is coerced to a string."""
+        async def mock_generator(*args, **kwargs):
+            yield {"event": "REFINE_COMPLETE", "data": {"draft": {}}}
+
+        with patch(
+            "src.application.refine_service.RefineService.refine_draft_stream",
+            return_value=mock_generator(),
+        ) as mock_refine:
+            response = client.post(
+                "/api/ai/refine",
+                json={
+                    "prompt": "make it formal",
+                    "current_draft_json": {},
+                    "content_schema": {},
+                    "tenant_id": TENANT_ID,
+                    "user_id": USER_ID,
+                    "session_id": 10,
+                },
+            )
+
+        assert response.status_code == 200
+        # Verify the coerced session_id was passed to the service layer as a string
+        kwargs = mock_refine.call_args[1]
+        assert kwargs["session_id"] == "10"
+

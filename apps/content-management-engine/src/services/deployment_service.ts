@@ -111,7 +111,28 @@ export class DeploymentService {
       throw new Error('Site not found or missing sync webhook URL')
     }
 
+    const siteTenantId = typeof site.tenant === 'object' ? site.tenant.id : site.tenant
+    if (String(siteTenantId) !== String(tenantId)) {
+      throw new Error('Unauthorized: Site does not belong to your tenant')
+    }
+
     // 2. Get and validate template
+    const template = (await this.payload.findByID({
+      collection: 'page-templates' as never,
+      id: templateId,
+      depth: 2,
+      overrideAccess: true,
+    })) as unknown as Record<string, any>
+
+    if (!template) {
+      throw new Error('Template not found')
+    }
+
+    const templateTenantId = typeof template.tenant === 'object' ? template.tenant.id : template.tenant
+    if (String(templateTenantId) !== String(tenantId)) {
+      throw new Error('Unauthorized: Template does not belong to your tenant')
+    }
+
     const templateService = new TemplateService(this.payload)
     const validation = await templateService.validateTemplateForDeployment(templateId)
     if (!validation.valid) {
@@ -119,8 +140,8 @@ export class DeploymentService {
     }
 
     // 3. Create deployment log (pending)
-    const deployment = await this.payload.create({
-      collection: 'template-deployments',
+    const deployment = (await this.payload.create({
+      collection: 'template-deployments' as never,
       data: {
         template: templateId,
         site: siteId,
@@ -128,19 +149,12 @@ export class DeploymentService {
         status: 'pending',
         payload: {},
         tenant: tenantId,
-      },
+      } as never,
       overrideAccess: true,
-    })
+    })) as unknown as Record<string, any>
 
     try {
       // 4. Resolve template structure (as a snapshot)
-      const template = (await this.payload.findByID({
-        collection: 'page-templates',
-        id: templateId,
-        depth: 2,
-        overrideAccess: true,
-      })) as any
-
       const syncPayload = {
         templateId,
         templateName: template.name,
@@ -160,12 +174,12 @@ export class DeploymentService {
 
       // 6. Update status to success
       await this.payload.update({
-        collection: 'template-deployments',
+        collection: 'template-deployments' as never,
         id: deployment.id,
         data: {
           status: 'success',
           payload: syncPayload,
-        },
+        } as never,
         overrideAccess: true,
       })
 
@@ -173,11 +187,11 @@ export class DeploymentService {
     } catch (error) {
       console.error('[DeploymentService] Template deployment failed', error)
       await this.payload.update({
-        collection: 'template-deployments',
+        collection: 'template-deployments' as never,
         id: deployment.id,
         data: {
           status: 'failed',
-        },
+        } as never,
         overrideAccess: true,
       })
       throw error

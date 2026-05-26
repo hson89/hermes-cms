@@ -782,7 +782,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
                 content_type_slug: contentType?.slug,
                 locale: session?.activeLocale || 'en',
                 tenantId: effectiveTenantId,
-                style_modifier_id: selectedStyle
+                style_modifier_id: selectedStyle,
+                drafting_session_id: session?.id
               }}
               isAiPaused={isAiPaused}
             />
