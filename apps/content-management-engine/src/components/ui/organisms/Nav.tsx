@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '../atoms/Icon'
 import { BRANDING } from '@/constants/branding'
+import { MAIN_NAV_LINKS, TEMPLATE_SUB_LINKS, BOTTOM_NAV_LINKS } from '@/constants/navigation'
 
 export const Nav: React.FC<any> = () => {
   const pathname = usePathname()
@@ -35,27 +36,24 @@ export const Nav: React.FC<any> = () => {
     })
   }
 
-  const navLinks = [
-    { label: 'Dashboard', icon: 'grid_view', path: '/admin' },
-    { label: 'Marketplace', icon: 'shopping_bag', path: '/admin/collections/marketplace-apps' },
-    { label: 'Installed Apps', icon: 'extension', path: '/admin/collections/tenant-apps' },
-    { label: 'Tenants', icon: 'domain', path: '/admin/collections/tenants' },
-    { label: 'Users', icon: 'group', path: '/admin/collections/users' },
-    { label: 'Content Types', icon: 'layers', path: '/admin/collections/content-types' },
-    { label: 'Building Blocks', icon: 'widgets', path: '/admin/collections/building-blocks' },
-  ]
+  // Dynamic role-based filtering logic
+  const checkRoleAccess = (item: any) => {
+    if (!item.roleRequirement) return true
+    if (!user) return false
+    
+    const userRole = user.role || 'editor'
+    if (userRole === 'super-admin') return true
+    if (item.roleRequirement === 'super-admin') return false
+    
+    if (userRole === 'admin') return true
+    if (item.roleRequirement === 'admin') return false
+    
+    return userRole === item.roleRequirement
+  }
 
-  const templateSubLinks = [
-    { label: 'Library', path: '/admin/collections/page-templates' },
-    { label: 'Visual Builder', path: '/admin/templates/builder' },
-    { label: 'Schema Mapping', path: '/admin/templates/mapping' },
-    { label: 'Deployment History', path: '/admin/templates/history' },
-  ]
-
-  const bottomLinks = [
-    { label: 'API Keys', icon: 'vpn_key', path: '/admin/collections/api-keys' },
-    { label: 'Hosted Sites', icon: 'web', path: '/admin/collections/hosted-sites' },
-  ]
+  const visibleNavLinks = MAIN_NAV_LINKS.filter(checkRoleAccess)
+  const visibleTemplateSubLinks = TEMPLATE_SUB_LINKS.filter(checkRoleAccess)
+  const visibleBottomLinks = BOTTOM_NAV_LINKS.filter(checkRoleAccess)
 
   return (
     <nav className="alexandria-nav bg-surface-container-lowest fixed left-0 top-0 h-full flex flex-col py-8 px-4 gap-y-6 z-[1000] border-r border-surface-dim/10 transition-all duration-300 ease-in-out" style={{ width: isCollapsed ? '5rem' : '18rem' }}>
@@ -102,7 +100,7 @@ export const Nav: React.FC<any> = () => {
           <p className="px-2 mb-3 font-label text-xs font-semibold text-outline tracking-widest uppercase m-0">Navigation</p>
         )}
         
-        {navLinks.map((link) => {
+        {visibleNavLinks.map((link) => {
           const isActive = pathname === link.path
           return (
             <Link
@@ -117,7 +115,7 @@ export const Nav: React.FC<any> = () => {
               }`}
               title={isCollapsed ? link.label : undefined}
             >
-              <Icon name={link.icon} size={20} filled={isActive} />
+              <Icon name={link.icon || 'link'} size={20} filled={isActive} />
               {!isCollapsed && <span className="font-body text-sm font-medium whitespace-nowrap">{link.label}</span>}
             </Link>
           )
@@ -147,9 +145,9 @@ export const Nav: React.FC<any> = () => {
             )}
           </button>
           
-          {!isCollapsed && isTemplatesOpen && (
+          {!isCollapsed && isTemplatesOpen && visibleTemplateSubLinks.length > 0 && (
             <div className="ml-9 space-y-1 mt-1">
-              {templateSubLinks.map((sub) => {
+              {visibleTemplateSubLinks.map((sub) => {
                 const isActive = pathname === sub.path
                 return (
                   <Link
@@ -169,7 +167,7 @@ export const Nav: React.FC<any> = () => {
           )}
         </div>
 
-        {bottomLinks.map((link) => {
+        {visibleBottomLinks.map((link) => {
           const isActive = pathname === link.path
           return (
             <Link
@@ -184,7 +182,7 @@ export const Nav: React.FC<any> = () => {
               }`}
               title={isCollapsed ? link.label : undefined}
             >
-              <Icon name={link.icon} size={20} filled={isActive} />
+              <Icon name={link.icon || 'link'} size={20} filled={isActive} />
               {!isCollapsed && <span className="font-body text-sm font-medium whitespace-nowrap">{link.label}</span>}
             </Link>
           )

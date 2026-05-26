@@ -32,7 +32,7 @@ export const AdminView: React.FC<AdminViewProps> = (props) => {
         {!hideHeader && <TopNavBar {...topNavProps} />}
 
         {/* 4. Child Content Container */}
-        <div className={`${className} ${hideHeader ? 'no-header' : ''}`}>
+        <div className={`custom-view-isolated ${className} ${hideHeader ? 'no-header' : ''}`}>
           {children}
         </div>
       </div>

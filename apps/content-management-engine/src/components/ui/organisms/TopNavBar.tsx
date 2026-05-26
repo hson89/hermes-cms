@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import { Icon } from '../atoms/Icon'
+import { useClickOutside } from '@/hooks/useClickOutside'
 
 export interface Breadcrumb {
   label: string
@@ -37,6 +38,19 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   userProfile,
 }) => {
   const [isStatusOpen, setIsStatusOpen] = useState(false)
+  const statusRef = useRef<HTMLDivElement | null>(null)
+
+  // Accessible click outside listener
+  useClickOutside(statusRef, () => {
+    setIsStatusOpen(false)
+  })
+
+  // Keyboard navigation support for closing menu
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsStatusOpen(false)
+    }
+  }
 
   const activeStatus = status?.options.find(opt => opt.value === status.value)
 
@@ -59,11 +73,17 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             ))}
             
             {status && (
-              <div className="relative ml-2">
+              <div 
+                ref={statusRef}
+                onKeyDown={handleKeyDown}
+                className="relative ml-2"
+              >
                 <button 
                   onClick={() => setIsStatusOpen(!isStatusOpen)}
                   className="flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all cursor-pointer" 
                   type="button"
+                  aria-expanded={isStatusOpen}
+                  aria-haspopup="listbox"
                 >
                   <span>{activeStatus?.label || 'Status'}</span>
                   <Icon name="expand_more" size={12} className={`transition-transform duration-200 ${isStatusOpen ? 'rotate-180' : ''}`} />
@@ -71,9 +91,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 
                 {isStatusOpen && (
                   <div className="absolute left-0 mt-2 w-32 bg-surface-container-lowest border border-outline-variant/15 rounded-lg shadow-xl z-50 animate-reveal is-revealed">
-                    <ul className="py-1 text-[10px] font-bold uppercase tracking-wider list-none p-0 m-0">
+                    <ul className="py-1 text-[10px] font-bold uppercase tracking-wider list-none p-0 m-0" role="listbox">
                       {status.options.map((opt) => (
-                        <li key={opt.value}>
+                        <li key={opt.value} role="option" aria-selected={opt.value === status.value}>
                           <button
                             onClick={() => {
                               status.onChange(opt.value)
@@ -81,8 +101,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                             }}
                             className={`w-full text-left block px-4 py-2 border-none bg-transparent cursor-pointer transition-colors ${
                               opt.value === status.value 
-                                ? 'text-primary bg-primary-container/10' 
-                                : 'text-on-surface-variant hover:bg-surface-container-high'
+                               ? 'text-primary bg-primary-container/10' 
+                               : 'text-on-surface-variant hover:bg-surface-container-high'
                             }`}
                           >
                             {opt.label}
