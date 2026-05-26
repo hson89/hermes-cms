@@ -58,7 +58,7 @@ hermes-cms/
 ├── scripts/start-dev.ps1             # Full Docker stack startup (Windows)
 ├── scripts/start-local.sh            # Infra in Docker + Apps locally (Unix)
 ├── scripts/start-local.ps1           # Infra in Docker + Apps locally (Windows)
-├── specs/001-ai-headless-cms/        # Active feature spec + plan + tasks
+├── specs/006-template-builder/        # Active feature spec + plan + tasks
 ├── DESIGN.md                         # Alexandria design system tokens
 └── docs/architecture.md              # Architecture overview
 ```
@@ -119,7 +119,7 @@ Super-admin bypass: users with `role === 'super-admin'`.
 
 ## Design System ("Alexandria")
 
-- **Primary**: `#3366cc` · **Tertiary/gold**: `#6d5e00`
+- **Primary**: `#094cb2` · **Tertiary/gold**: `#6d5e00`
 - **Fonts**: Noto Serif (headlines), Inter (body & labels)
 - **Style**: Glassmorphism, gradient CTAs, tonal elevation (no box-shadows),
   no hard borders (ghost borders at 15% opacity max)

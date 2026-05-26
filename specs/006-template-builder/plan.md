@@ -1,9 +1,10 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Template Builder Engine
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `006-template-builder` | **Date**: 2026-05-24 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/006-template-builder/spec.md`
 
-**Note**: This template is filled in by the `/speckit-plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Note**: This plan is based on `.specify/templates/plan-template.md` and feature requirements.
+
 
 ## Summary
 
@@ -82,7 +83,5 @@ apps/content-management-engine/
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+No constitution violations detected. The hybrid monolith + microservice boundaries and multi-tenant constraints are strictly respected.
+

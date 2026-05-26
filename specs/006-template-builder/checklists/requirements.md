@@ -31,4 +31,5 @@
 
 ## Notes
 
-- [NEEDS CLARIFICATION] markers are present for FR-006 and FR-007. These must be resolved before planning.
+- [x] [NEEDS CLARIFICATION] markers have been fully resolved in the 2026-05-24 clarifications session.
+

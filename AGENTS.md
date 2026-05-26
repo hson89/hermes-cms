@@ -1,8 +1,9 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/plan.md
+/home/itlight/dev/hermes-cms/specs/006-template-builder/plan.md
 <!-- SPECKIT END -->
+
 
 # Hermes AI — Agent Guidelines
 
@@ -79,7 +80,7 @@ hermes-cms/
 ├── k8s/                      # Kubernetes manifests
 ├── scripts/start-dev.sh      # One-command local dev startup (Unix)
 ├── scripts/start-dev.ps1     # One-command local dev startup (Windows)
-├── specs/001-ai-headless-cms/ # Feature spec, plan, tasks, data model, contracts
+├── specs/006-template-builder/ # Feature spec, plan, tasks, data model, contracts
 ├── DESIGN.md                 # "Alexandria" design system tokens
 └── README.md
 ```
@@ -120,7 +121,7 @@ hermes-cms/
 
 The visual language is codename **"Alexandria — High-End Editorial"**.
 Refer to `DESIGN.md` at the project root for full token definitions:
-- Primary: `#3366cc`, Tertiary/gold: `#6d5e00`
+- Primary: `#094cb2`, Tertiary/gold: `#6d5e00`
 - Fonts: Noto Serif (headlines), Inter (body & labels)
 - Glassmorphism floating menus, gradient CTAs, no hard borders
 - Tonal elevation via surface tokens, not box-shadows
