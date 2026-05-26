@@ -373,13 +373,27 @@ body {
 .template-default__wrap:has(.custom-view-isolated) [class*="doc-header"],
 .template-default__wrap:has(.custom-view-isolated) [class*="collection-edit"],
 .template-default__wrap:has(.custom-view-isolated) [class*="collection-list"],
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .doc-header,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .collection-edit__header,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .collection-list__header,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .gutter,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="doc-header"],
+.template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="collection-edit"],
+.template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="collection-list"],
 div:has(> .custom-view-isolated) > .doc-header,
 div:has(> .custom-view-isolated) > .collection-edit__header,
 div:has(> .custom-view-isolated) > .collection-list__header,
 div:has(> .custom-view-isolated) > .gutter,
 div:has(> .custom-view-isolated) > [class*="doc-header"],
 div:has(> .custom-view-isolated) > [class*="collection-edit"],
-div:has(> .custom-view-isolated) > [class*="collection-list"] {
+div:has(> .custom-view-isolated) > [class*="collection-list"],
+div:has(> [class*="custom-"][class*="-view"]) > .doc-header,
+div:has(> [class*="custom-"][class*="-view"]) > .collection-edit__header,
+div:has(> [class*="custom-"][class*="-view"]) > .collection-list__header,
+div:has(> [class*="custom-"][class*="-view"]) > .gutter,
+div:has(> [class*="custom-"][class*="-view"]) > [class*="doc-header"],
+div:has(> [class*="custom-"][class*="-view"]) > [class*="collection-edit"],
+div:has(> [class*="custom-"][class*="-view"]) > [class*="collection-list"] {
   display: none !important;
   visibility: hidden !important;
   height: 0 !important;

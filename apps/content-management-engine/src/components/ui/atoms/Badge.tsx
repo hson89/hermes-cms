@@ -37,27 +37,32 @@ export const Badge: React.FC<BadgeProps> = ({
     lg: 'text-[12px] px-3 py-1.5'
   }
 
+  // Map static colors to Alexandria semantic design tokens for tenant-aware theming
+  const colorMap: Record<string, string> = {
+    blue: 'primary',
+    green: 'success',
+    emerald: 'success',
+    red: 'danger',
+    amber: 'gold',
+    orange: 'gold',
+    purple: 'primary',
+    pink: 'primary',
+    indigo: 'primary',
+    slate: 'neutral',
+    gray: 'neutral',
+  }
+
+  const resolvedColor = colorMap[color] || color
+
   const colorClasses: Record<string, string> = {
     primary: 'bg-primary/10 text-primary border-primary/20',
     success: 'bg-success-container/20 text-success border-success/20',
     danger: 'bg-error-container/20 text-error border-error/20',
     neutral: 'bg-surface-variant text-on-surface-variant border-outline-variant/15',
     gold: 'bg-tertiary-container/20 text-tertiary border-tertiary/20',
-    // Standard Tailwind system color fallbacks compiled statically:
-    blue: 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400',
-    green: 'bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400',
-    emerald: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400',
-    red: 'bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400',
-    amber: 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400',
-    orange: 'bg-orange-500/10 text-orange-600 border-orange-500/20 dark:text-orange-400',
-    purple: 'bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400',
-    pink: 'bg-pink-500/10 text-pink-600 border-pink-500/20 dark:text-pink-400',
-    indigo: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20 dark:text-indigo-400',
-    slate: 'bg-slate-500/10 text-slate-600 border-slate-500/20 dark:text-slate-400',
-    gray: 'bg-gray-500/10 text-gray-600 border-gray-500/20 dark:text-gray-400',
   }
 
-  const colorClass = colorClasses[color] || colorClasses.primary
+  const colorClass = colorClasses[resolvedColor] || colorClasses.primary
 
   return (
     <span className={`inline-flex items-center gap-1 rounded-full font-label font-bold border ${sizeClasses[size]} ${colorClass} ${className}`}>
