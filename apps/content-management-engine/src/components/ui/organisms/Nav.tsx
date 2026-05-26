@@ -7,9 +7,11 @@ import { useAuth } from '@payloadcms/ui'
 import { Icon } from '../atoms/Icon'
 import { BRANDING } from '@/constants/branding'
 import { MAIN_NAV_LINKS, TEMPLATE_SUB_LINKS, BOTTOM_NAV_LINKS } from '@/constants/navigation'
+import { getSidebarCta } from '@/utils/navigation'
 
 export const Nav: React.FC<any> = () => {
   const pathname = usePathname()
+  const cta = getSidebarCta(pathname)
   const { user, logOut } = useAuth()
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(true)
 
@@ -81,16 +83,16 @@ export const Nav: React.FC<any> = () => {
       {/* Create New Content CTA */}
       <div className={`px-2 mb-4 w-full transition-all duration-300 ${isCollapsed ? 'flex justify-center' : ''}`}>
         <Link
-          href="/admin/collections/content-items/create"
+          href={cta.path}
           className={`btn-primary-gradient no-underline flex items-center justify-center gap-2 rounded-xl text-on-primary font-label font-bold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all ${
             isCollapsed 
               ? 'size-10 p-0 rounded-lg shrink-0' 
               : 'w-full py-3.5 px-4 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40'
           }`}
-          title="Create a New Content"
+          title={cta.label}
         >
-          <Icon name="post_add" size={20} />
-          {!isCollapsed && <span className="whitespace-nowrap">Create a New Content</span>}
+          <Icon name={cta.icon} size={20} />
+          {!isCollapsed && <span className="whitespace-nowrap">{cta.label}</span>}
         </Link>
       </div>
 
