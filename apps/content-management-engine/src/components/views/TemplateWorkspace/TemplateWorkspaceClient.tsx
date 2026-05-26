@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useAuth, useDocumentInfo } from '@payloadcms/ui'
 import { Icon } from '../../ui/atoms/Icon'
 import { TopNavBar } from '../../ui/organisms/TopNavBar'
+import { ConfirmationModal } from '../../ui/organisms/ConfirmationModal'
 
 type Archetype = 'longform' | 'landing' | 'minimal'
 
@@ -53,6 +54,7 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
   const [isLoading, setIsLoading] = useState(isEditing) // Start loading if in edit mode
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [savePulse, setSavePulse] = useState(false)
@@ -177,11 +179,14 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
     )
   }, [contentTypes, contentTypeSearch])
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this template? This action cannot be undone.')) return
-    
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
     setIsDeleting(true)
     setError(null)
+    setIsDeleteModalOpen(false)
     
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('payload-token') : null
@@ -729,8 +734,8 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
       {success && (
         <div className="fixed bottom-8 right-8 z-[100] animate-fade-slide-up">
           <div className="bg-surface/80 backdrop-blur-[20px] border border-outline-variant/15 modal-shadow rounded-2xl p-4 pr-6 flex items-center gap-4 min-w-[320px]">
-            <div className="size-10 rounded-full bg-green-500/10 flex items-center justify-center">
-              <Icon name="check_circle" className="text-green-600" />
+            <div className="size-10 rounded-full bg-success-container/20 flex items-center justify-center border border-success/20">
+              <Icon name="check_circle" className="text-success" />
             </div>
             <div className="flex-1">
               <p className="font-headline font-bold text-sm text-on-surface m-0">Success</p>
@@ -745,6 +750,18 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
           </div>
         </div>
       )}
+
+      {/* Premium Glassmorphic Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Template"
+        content={<p className="m-0 leading-relaxed font-body">Are you sure you want to delete this structural template? This action is permanent and cannot be undone.</p>}
+        confirmText="Delete"
+        cancelText="Keep"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        type="danger"
+      />
     </div>
   )
 }

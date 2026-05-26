@@ -64,6 +64,11 @@
   --inverse-surface: #303031;
   --inverse-on-surface: #f2f0f1;
   --inverse-primary: #b1c5ff;
+  
+  --success: #0d8a57;
+  --on-success: #ffffff;
+  --success-container: #e8f5e9;
+  --on-success-container: #0d8a57;
 }
 
 .dark {
@@ -115,6 +120,11 @@
   --inverse-surface: #e1e3e6;
   --inverse-on-surface: #1b1c1d;
   --inverse-primary: #3366cc;
+  
+  --success: #12b76a;
+  --on-success: #003822;
+  --success-container: #005234;
+  --on-success-container: #d1fadf;
 }
 
 @theme {
@@ -173,6 +183,11 @@
   --color-inverse-surface: var(--inverse-surface);
   --color-inverse-on-surface: var(--inverse-on-surface);
   --color-inverse-primary: var(--inverse-primary);
+  
+  --color-success: var(--success);
+  --color-on-success: var(--on-success);
+  --color-success-container: var(--success-container);
+  --color-on-success-container: var(--on-success-container);
 
   --font-display: "Noto Serif", serif;
   --font-headline: "Noto Serif", serif;
@@ -594,7 +609,7 @@ body:has(.custom-editor-view) .collection-list__header,
 body:has(.custom-editor-view) .payload-admin-header,
 body:has(.custom-editor-view) .step-nav,
 body:has(.custom-editor-view) .app-header__step-nav,
-body:has(.custom-editor-view) h1:not(.custom-editor-view h1),
+body:has(.custom-editor-view) h1:not(.custom-editor-view h1):not(.alexandria-nav h1),
 body:has(.custom-editor-view) header:not(.designer-toolbar) {
   display: none !important;
   visibility: hidden !important;

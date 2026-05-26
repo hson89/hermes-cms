@@ -452,7 +452,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
       const targetUrl = `/admin/draft/${selectedCT.id}${queryParam}`
       window.history.replaceState(null, '', targetUrl)
       
-      window.location.href = targetUrl
+      router.push(targetUrl)
     } catch (err) {
       console.error('Failed to select alternative content type:', err)
     } finally {

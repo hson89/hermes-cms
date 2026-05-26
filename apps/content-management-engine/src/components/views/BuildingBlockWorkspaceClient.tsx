@@ -391,7 +391,7 @@ export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ 
 
       if (!isEditing) {
         const resData = await res.json()
-        window.location.href = `/admin/collections/building-blocks/${resData.doc.id}`
+        router.push(`/admin/collections/building-blocks/${resData.doc.id}`)
       }
     } catch (err: any) {
       setErrorMessage(err.message)
@@ -623,7 +623,7 @@ export const BuildingBlockWorkspaceClient: React.FC<{ serverId?: string }> = ({ 
           <div className="flex items-center gap-4">
             <button 
               className="text-outline hover:text-on-surface transition-colors border-none bg-transparent cursor-pointer flex items-center" 
-              onClick={() => window.location.href = '/admin/collections/building-blocks'}
+              onClick={() => router.push('/admin/collections/building-blocks')}
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>

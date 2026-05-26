@@ -37,6 +37,7 @@
     "@payloadcms/plugin-multi-tenant": "^3.84.1",
     "@payloadcms/richtext-lexical": "^3.84.1",
     "@payloadcms/ui": "^3.84.1",
+    "@tiptap/extension-character-count": "^3.23.6",
     "@tiptap/extension-placeholder": "^3.23.5",
     "@tiptap/markdown": "^3.23.5",
     "@tiptap/react": "^3.23.5",

@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { Markdown } from '@tiptap/markdown'
 import Placeholder from '@tiptap/extension-placeholder'
+import CharacterCount from '@tiptap/extension-character-count'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -76,6 +77,9 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
+      CharacterCount.configure({
+        mode: 'nodeSize',
+      }),
     ],
     content: '',
     editable: !disabled,
@@ -99,13 +103,20 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
     if (!editor) return
     if (!value) return
 
-    const currentHtml = editor.getHTML()
-    if (currentHtml === value) return
+    const isMarkdown = looksLikeMarkdown(value)
+    if (isMarkdown) {
+      const currentMarkdown = (editor.storage as any)?.markdown?.getMarkdown()
+      if (currentMarkdown === value) return
+    } else {
+      const currentHtml = editor.getHTML()
+      if (currentHtml === value) return
+    }
 
-    // If the content looks like markdown, load it as markdown so TipTap
-    // parses it into proper ProseMirror nodes (headings, lists, bold, etc.)
-    // Otherwise load as HTML directly.
-    if (looksLikeMarkdown(value)) {
+    // Only sync when not focused to prevent cursor jumps and focus resets during user input
+    const isFocused = editor.isFocused
+    if (isFocused) return
+
+    if (isMarkdown) {
       editor.commands.setContent(value, { contentType: 'markdown' } as any)
     } else {
       editor.commands.setContent(value)

@@ -1,7 +1,7 @@
 export const BRANDING = {
-  appName: 'Hermes CMS',
+  appName: 'Hermes AI',
   appSubtitle: 'Editorial Engine',
   aiName: 'Hermes AI',
   companyName: 'Hermes AI',
-  adminTitle: 'Hermes CMS Admin',
+  adminTitle: 'Hermes AI Admin',
 }

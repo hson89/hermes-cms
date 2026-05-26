@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Icon } from '../ui/atoms/Icon'
 import { useAuth } from '@payloadcms/ui'
 
@@ -26,6 +27,7 @@ const CATEGORIES = [
 ]
 
 export const BuildingBlockLibrary: React.FC = () => {
+  const router = useRouter()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
@@ -156,8 +158,8 @@ export const BuildingBlockLibrary: React.FC = () => {
               </p>
             </div>
             <button 
-              onClick={() => window.location.href = '/admin/collections/building-blocks/create'}
-              className="px-5 py-3 bg-gradient-to-r from-[#094cb2] to-[#3b82f6] text-white hover:scale-105 active:scale-95 rounded-lg font-label font-bold text-sm transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 border-none cursor-pointer tracking-wide shrink-0"
+              onClick={() => router.push('/admin/collections/building-blocks/create')}
+              className="px-5 py-3 btn-primary-gradient text-white hover:scale-105 active:scale-95 rounded-lg font-label font-bold text-sm transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 border-none cursor-pointer tracking-wide shrink-0"
             >
               <span className="material-symbols-outlined text-lg">add</span>
               Create Block
@@ -218,7 +220,7 @@ export const BuildingBlockLibrary: React.FC = () => {
                 <article 
                   key={block.id}
                   className={`bg-surface-container-lowest rounded-xl p-6 ghost-border hover-lift flex flex-col group cursor-pointer transition-all duration-300 animate-reveal ${revealedIndex >= (index + 2) ? 'is-revealed' : ''}`}
-                  onClick={() => window.location.href = `/admin/collections/building-blocks/${block.id}`}
+                  onClick={() => router.push(`/admin/collections/building-blocks/${block.id}`)}
                 >
                   <div className="h-32 bg-surface-container rounded-lg mb-6 flex items-center justify-center border border-outline-variant/10 overflow-hidden relative">
                     {block.thumbnail ? (

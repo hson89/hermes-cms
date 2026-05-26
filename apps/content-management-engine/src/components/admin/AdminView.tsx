@@ -1,6 +1,6 @@
 import React from 'react'
 import type { AdminViewServerProps } from 'payload'
-import { Nav } from './Nav'
+import { Nav } from '../ui/organisms/Nav'
 import { TopNavBar, TopNavBarProps } from '../ui/organisms/TopNavBar'
 
 interface AdminViewProps extends Partial<AdminViewServerProps> {

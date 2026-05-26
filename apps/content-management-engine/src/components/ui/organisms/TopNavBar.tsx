@@ -41,7 +41,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   const activeStatus = status?.options.find(opt => opt.value === status.value)
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-[18rem] h-20 z-40 bg-surface-container-lowest/80 backdrop-blur-xl flex justify-between items-center px-8 transition-colors border-b border-outline-variant/15">
+    <header className="fixed top-0 right-0 left-0 lg:left-[var(--sidebar-width,18rem)] h-20 z-40 bg-surface-container-lowest/80 backdrop-blur-xl flex justify-between items-center px-8 transition-all duration-300 border-b border-outline-variant/15">
       <div className="flex items-center gap-4">
         {breadcrumbs.length > 0 && (
           <nav aria-label="Breadcrumb" className="font-label text-sm text-on-surface-variant flex items-center gap-2">

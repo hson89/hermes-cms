@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Icon } from '../ui/atoms/Icon'
+import { ConfirmationModal } from '../ui/organisms/ConfirmationModal'
 
 interface Template {
   id: string
@@ -17,6 +19,7 @@ interface Template {
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop'
 
 export const TemplateLibrary: React.FC = () => {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -29,6 +32,8 @@ export const TemplateLibrary: React.FC = () => {
   const [page, setPage] = useState(1)
   const [hasNextPage, setHasNextPage] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null)
 
   // Debounce search query
   useEffect(() => {
@@ -139,11 +144,24 @@ export const TemplateLibrary: React.FC = () => {
     e.stopPropagation()
     setActiveMenu(null)
     console.log(`Action: ${action} for template: ${templateId}`)
-    // In a real implementation, these would call API endpoints
     if (action === 'delete') {
-      if (confirm('Are you sure you want to delete this blueprint?')) {
-        // fetch(`/api/page-templates/${templateId}`, { method: 'DELETE' })
+      setTemplateToDelete(templateId)
+      setIsDeleteModalOpen(true)
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!templateToDelete) return
+    setIsDeleteModalOpen(false)
+    try {
+      const response = await fetch(`/api/page-templates/${templateToDelete}`, { method: 'DELETE' })
+      if (response.ok) {
+        setTemplates(prev => prev.filter(t => t.id !== templateToDelete))
       }
+    } catch (err) {
+      console.error('Failed to delete template:', err)
+    } finally {
+      setTemplateToDelete(null)
     }
   }
 
@@ -283,7 +301,7 @@ export const TemplateLibrary: React.FC = () => {
               <article 
                 key={template.id}
                 className="group bg-surface-container-lowest rounded-[1rem] overflow-hidden flex flex-col transition-all duration-300 hover:bg-surface-container-low cursor-pointer border border-surface-dim/10 hover:border-surface-dim/30 shadow-sm hover:shadow-xl hover:shadow-primary/5"
-                onClick={() => window.location.href = `/admin/templates/builder/${template.id}`}
+                onClick={() => router.push(`/admin/templates/builder/${template.id}`)}
               >
                 <div className="relative h-56 w-full overflow-hidden bg-surface-container-highest">
                   <img 
@@ -410,6 +428,17 @@ export const TemplateLibrary: React.FC = () => {
           </button>
         </div>
       )}
+      {/* Premium Glassmorphic Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Blueprint"
+        content={<p className="m-0 leading-relaxed font-body">Are you sure you want to delete this structural blueprint? This action is permanent and cannot be undone.</p>}
+        confirmText="Delete"
+        cancelText="Keep"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => { setIsDeleteModalOpen(false); setTemplateToDelete(null) }}
+        type="danger"
+      />
     </div>
   )
 }
