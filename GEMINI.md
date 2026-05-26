@@ -125,6 +125,23 @@ Super-admin bypass: users with `role === 'super-admin'`.
   no hard borders (ghost borders at 15% opacity max)
 - **Corners**: Minimum `sm` roundness — never sharp
 
+### Theme Color Mapping & Accessibility Contract
+1. **Ban Static Colors:** Do NOT use static/standard colors (such as `red`, `blue`, `green`, `emerald`, `amber`) inside reusable UI atoms (e.g. `Badge`, `Button`, `Card`). Always use theme-aware variables (`primary`, `success`, `error`, `neutral`, `gold`).
+2. **Color Map Fallbacks:** When accepting user-defined colors as inputs in atom components, always use a mapper to resolve static color strings to Alexandria tokens:
+   ```ts
+   const colorMap: Record<string, string> = {
+     blue: 'primary',
+     green: 'success',
+     red: 'danger',
+     amber: 'gold',
+     slate: 'neutral',
+   }
+   ```
+3. **Interactive Element Accessibility:** All custom interactive elements (dropdowns, popovers, drawers) MUST follow these three rules:
+   - **Click Outside:** Close automatically when the user clicks outside (use the `useClickOutside` hook).
+   - **Escape Closing:** Close immediately when the `Escape` key is pressed.
+   - **ARIA Attributes:** Implement complete ARIA structure including `role="listbox"`, `role="option"`, `aria-expanded`, and keyboard focus rings (`focus-visible:ring-2`).
+
 ## Agent Rules
 
 1. Read `.specify/memory/constitution.md` before architectural work.

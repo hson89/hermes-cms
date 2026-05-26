@@ -451,26 +451,33 @@ Payload 3.x renders different layouts automatically depending on the integration
 ### 3. The "Deep-Ancestor" Layout Reset Pattern
 To render full-screen or splitscreen co-creation workspaces flush against the sidebar, standard default margins and gutters on Payload's parent wrapping containers must be completely zeroed out:
 1. Wrap your custom workspace client component in a container with a designated viewport-isolation class (e.g. `className="custom-editor-view"`).
-2. Write a deep ancestor override in `globals.css` using the CSS `:has()` selector to dynamically strip outer padding, margins, and max-widths from the parent container tree:
+2. Write a generic, scalable deep-ancestor override in `globals.css` using wildcard attribute matchers instead of duplicating declarations for each individual view:
    ```css
-   .template-default__wrap:has(.custom-editor-view) {
-     padding: 0 !important;
-   }
-
-   .template-default__wrap:has(.custom-editor-view) div:has(.custom-editor-view),
-   .template-default__wrap:has(.custom-editor-view) form:has(.custom-editor-view),
-   .template-default__wrap:has(.custom-editor-view) main:has(.custom-editor-view),
-   .template-default__wrap:has(.custom-editor-view) section:has(.custom-editor-view),
-   .template-default__wrap:has(.custom-editor-view) .collection-edit,
-   .template-default__wrap:has(.custom-editor-view) .gutter {
+   .template-default__wrap:has([class*="custom-"][class*="-view"]) .doc-header,
+   .template-default__wrap:has([class*="custom-"][class*="-view"]) .collection-edit__header,
+   .template-default__wrap:has([class*="custom-"][class*="-view"]) .collection-list__header,
+   .template-default__wrap:has([class*="custom-"][class*="-view"]) .gutter,
+   .template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="doc-header"],
+   .template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="collection-edit"],
+   .template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="collection-list"],
+   div:has(> [class*="custom-"][class*="-view"]) > .doc-header,
+   div:has(> [class*="custom-"][class*="-view"]) > .gutter {
+     display: none !important;
+     visibility: hidden !important;
+     height: 0 !important;
      padding: 0 !important;
      margin: 0 !important;
-     max-width: 100% !important;
-     width: 100% !important;
    }
    ```
 
-### 4. Custom View Verification Checklist
+### 4. Interactive UX & Accessibility Guidelines
+When building custom components for custom views or editor interfaces:
+- **Click-Outside:** Attach the `useClickOutside` hook to the wrapper reference of dropdowns/menus to auto-close them.
+- **Escape Listener:** Handle `onKeyDown` with keyboard listeners for the `'Escape'` key to instantly collapse open overlays.
+- **Interactive Focus States:** Ensure buttons and interactive triggers implement noticeable focus styles (`focus-visible:ring-2 focus-visible:ring-primary`).
+- **Semantic Mappings:** Map static colors dynamically to theme colors (primary, success, danger, neutral, gold) instead of hardcoding Tailwind color classes like `text-green-600` or `bg-blue-500`.
+
+### 5. Custom View Verification Checklist
 Before completing any Payload UI modification task:
 - [ ] Verify that no duplicate `DefaultTemplate` is rendered in the component tree.
 - [ ] Verify that parent wrapper overrides exist in `globals.css` matching your isolation class.
@@ -479,7 +486,7 @@ Before completing any Payload UI modification task:
 - [ ] Verify that standalone custom views registered under `admin.components.views` do not import layout templates (such as `DefaultTemplate` or from `@payloadcms/next/...`) to prevent circular compiler dependencies.
 - [ ] Under WSL 2 environments, verify that Next.js dev execution is configured with the `--webpack` compiler flag to bypass Turbopack dynamic watcher deadlocks.
 
-### 5. Compiler Stability & Acyclic Build Prevention (CRITICAL WSL 2)
+### 6. Compiler Stability & Acyclic Build Prevention (CRITICAL WSL 2)
 - **WSL 2 Webpack Opt-in**: The Next.js dev server defaults to Turbopack in v16, which exhibits compilation deadlocks when compiling catch-all views on WSL 2. Ensure `package.json` dev execution includes the `--webpack` flag in WSL contexts.
 - **Acyclic Import Graph**: Standalone custom views registered in `payload.config.ts` must NEVER import layout templates from `@payloadcms/next/templates` or `@payloadcms/next/views`. These templates import the core configuration recursively, creating an infinite bundler loop that hangs local resources. Use minimal wrapper layouts (such as `AdminView`) to render layout offsets.
 
