@@ -255,3 +255,35 @@ async def test_generate_draft_stream_self_healing(drafting_service, mock_ai_serv
     draft_event = next(e for e in events if e["event"] == "DRAFT_COMPLETE")
     assert draft_event["data"]["draft"]["title"] == "Saving Fuel Healed"
     assert draft_event["data"]["draft"]["body"] == "healed content"
+
+@pytest.mark.asyncio
+async def test_generate_draft_stream_conversational_no_healing(drafting_service, mock_ai_service):
+    mock_db = AsyncMock()
+    mock_model = MagicMock()
+    mock_ai_service.get_model.return_value = mock_model
+
+    mock_chunk = MagicMock(content="Hello! This is purely conversational text. No JSON here.", usage_metadata=None)
+    
+    events_list = [
+        {
+            "event": "on_chat_model_stream",
+            "metadata": {"langgraph_node": "call_drafting_llm"},
+            "data": {"chunk": mock_chunk}
+        }
+    ]
+    mock_graph = MockDraftingGraph(events_list)
+
+    events = []
+    async for event in drafting_service.generate_draft_stream(
+        prompt="hello there",
+        content_type_slug="articles",
+        schema_json={"fields": [{"name": "title", "type": "text"}]},
+        tenant_id="tenant-123",
+        user_id="user-123",
+        db=mock_db,
+        drafting_graph=mock_graph
+    ):
+        events.append(event)
+
+    mock_model.ainvoke.assert_not_called()
+    assert not any(e["event"] == "DRAFT_COMPLETE" for e in events)

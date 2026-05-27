@@ -88,19 +88,24 @@ async def handle_graph_stream(
     draft_data = extract_json_from_text(full_content)
     
     if draft_data is None:
-        # Try self-healing
-        try:
-            healing_template = get_healing_prompt(ai_service.langfuse_client if ai_service else None)
-            healing_prompt = healing_template.messages[0].prompt.format(
-                full_content=full_content,
-                schema_json=json.dumps(schema_json, indent=2)
-            )
+        # Try self-healing ONLY if the model output indicates it was attempting JSON generation
+        if "{" in full_content or "```json" in full_content:
+            try:
+                healing_template = get_healing_prompt(ai_service.langfuse_client if ai_service else None)
+                healing_prompt = healing_template.messages[0].prompt.format(
+                    full_content=full_content,
+                    schema_json=json.dumps(schema_json, indent=2)
+                )
 
-            healing_model = ai_service.get_model(model_override=resolved_model)
-            healing_res = await healing_model.ainvoke([HumanMessage(content=healing_prompt)])
-            draft_data = extract_json_from_text(healing_res.content)
-        except Exception as e:
-            yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON and healing failed: {e}. Raw content: {full_content[:1000]}"}}
+                healing_model = ai_service.get_model(model_override=resolved_model)
+                healing_res = await healing_model.ainvoke([HumanMessage(content=healing_prompt)])
+                draft_data = extract_json_from_text(healing_res.content)
+            except Exception as e:
+                yield {"event": "ERROR", "data": {"detail": f"Failed to parse AI output as JSON and healing failed: {e}. Raw content: {full_content[:1000]}"}}
+                return
+        else:
+            # Plain conversational phase (e.g. Phase 1 schema & plan confirmation)
+            # Finish successfully without updating graph state or emitting DRAFT_COMPLETE
             return
 
     if draft_data:

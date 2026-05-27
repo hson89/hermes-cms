@@ -164,9 +164,29 @@ export const DraftingWorkspaceClient: React.FC = () => {
               setRecoveredSession(sessionData.activeSession)
               setShowRecovery(true)
             } else {
-              setSession(sessionData.activeSession)
-              if (isBootstrap && sessionData.activeSession.contentType) {
-                 router.replace(`/admin/draft/${sessionData.activeSession.contentType}`)
+              const hasDraftData = sessionData.activeSession.draftData && Object.keys(sessionData.activeSession.draftData).length > 0
+              if (initialPrompt && hasDraftData) {
+                // Stale active session with existing content. De-activate it and boot a clean one.
+                await fetch(`/api/ai-drafting/sessions/${sessionData.activeSession.id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ status: 'expired' }),
+                })
+                const createRes = await fetch(`/api/ai-drafting/sessions`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                    contentType: isBootstrap ? null : contentTypeId, 
+                    tenantId: resolvedTenantId 
+                  }),
+                })
+                const newSession = await createRes.json()
+                setSession(newSession)
+              } else {
+                setSession(sessionData.activeSession)
+                if (isBootstrap && sessionData.activeSession.contentType) {
+                   router.replace(`/admin/draft/${sessionData.activeSession.contentType}`)
+                }
               }
             }
           } else {
@@ -605,7 +625,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
       {showRecovery && <RecoveryDialog onResume={handleResume} onDiscard={handleDiscard} />}
       
       {/* Top Header — Drafts/Published/Archived tabs + Save/Publish actions */}
-      <header className="flex justify-between items-center px-6 w-full bg-surface-container-lowest border-b border-outline-variant/15 h-16 shrink-0 z-40">
+      <header className="designer-toolbar flex justify-between items-center px-6 w-full bg-surface-container-lowest border-b border-outline-variant/15 h-16 shrink-0 z-40">
         {/* Left: tab navigation */}
         <nav className="flex gap-1 h-full items-end">
           <a
