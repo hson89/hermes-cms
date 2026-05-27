@@ -63,6 +63,11 @@ class RefineService:
             trace_id=langfuse_trace_id,
             session_id=resolved_session_id
         )
+        # Safe check in case settings is mocked in unit tests
+        recursion_limit = getattr(settings, "LANGGRAPH_RECURSION_LIMIT", 25)
+        if not isinstance(recursion_limit, int):
+            recursion_limit = 25
+
         config = {
             "configurable": {
                 "thread_id": resolved_session_id,
@@ -70,6 +75,7 @@ class RefineService:
                 "langfuse_client": self.ai_service.langfuse_client,
                 "model_override": model_override,
             },
+            "recursion_limit": recursion_limit,
             "callbacks": [langfuse_handler] if langfuse_handler else [],
             "metadata": {
                 "langfuse_user_id": user_id,
