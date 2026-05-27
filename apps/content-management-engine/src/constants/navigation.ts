@@ -11,8 +11,13 @@ export const MAIN_NAV_LINKS: NavigationItem[] = [
   { label: 'Installed Apps', icon: 'extension', path: '/admin/collections/tenant-apps' },
   { label: 'Tenants', icon: 'domain', path: '/admin/collections/tenants', roleRequirement: 'super-admin' },
   { label: 'Users', icon: 'group', path: '/admin/collections/users', roleRequirement: 'admin' },
-  { label: 'Content Types', icon: 'layers', path: '/admin/collections/content-types' },
   { label: 'Building Blocks', icon: 'widgets', path: '/admin/collections/building-blocks' },
+]
+
+export const CONTENT_SUB_LINKS: NavigationItem[] = [
+  { label: 'Content List', path: '/admin/collections/content-items' },
+  { label: 'Create Content', path: '/admin/draft' },
+  { label: 'Content Types', path: '/admin/collections/content-types' },
 ]
 
 export const TEMPLATE_SUB_LINKS: NavigationItem[] = [

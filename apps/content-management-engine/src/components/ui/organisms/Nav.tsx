@@ -6,13 +6,14 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '../atoms/Icon'
 import { BRANDING } from '@/constants/branding'
-import { MAIN_NAV_LINKS, TEMPLATE_SUB_LINKS, BOTTOM_NAV_LINKS } from '@/constants/navigation'
+import { MAIN_NAV_LINKS, TEMPLATE_SUB_LINKS, CONTENT_SUB_LINKS, BOTTOM_NAV_LINKS } from '@/constants/navigation'
 import { getSidebarCta } from '@/utils/navigation'
 
 export const Nav: React.FC<any> = () => {
   const pathname = usePathname()
   const cta = getSidebarCta(pathname)
   const { user, logOut } = useAuth()
+  const [isContentOpen, setIsContentOpen] = useState(true)
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(true)
 
   // Persistent collapse state
@@ -54,6 +55,7 @@ export const Nav: React.FC<any> = () => {
   }
 
   const visibleNavLinks = MAIN_NAV_LINKS.filter(checkRoleAccess)
+  const visibleContentSubLinks = CONTENT_SUB_LINKS.filter(checkRoleAccess)
   const visibleTemplateSubLinks = TEMPLATE_SUB_LINKS.filter(checkRoleAccess)
   const visibleBottomLinks = BOTTOM_NAV_LINKS.filter(checkRoleAccess)
 
@@ -122,6 +124,52 @@ export const Nav: React.FC<any> = () => {
             </Link>
           )
         })}
+
+        {/* Content Management Group */}
+        <div className="space-y-1">
+          <button 
+            onClick={() => !isCollapsed && setIsContentOpen(!isContentOpen)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all border-none bg-transparent cursor-pointer text-left ${
+              isCollapsed ? 'justify-center px-1' : ''
+            } ${
+              pathname.includes('collections/content-items') || pathname.includes('draft') || pathname.includes('collections/content-types')
+                ? 'text-primary font-bold bg-surface-container-high' 
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container/50'
+            }`}
+            title={isCollapsed ? 'Content Management' : undefined}
+          >
+            <Icon name="description" filled={pathname.includes('collections/content-items') || pathname.includes('draft') || pathname.includes('collections/content-types')} />
+            {!isCollapsed && <span className="font-body text-sm font-medium flex-1 whitespace-nowrap">Content Management</span>}
+            {!isCollapsed && (
+              <Icon 
+                name={isContentOpen ? 'expand_more' : 'chevron_right'} 
+                size={18} 
+                className="text-outline/50" 
+              />
+            )}
+          </button>
+          
+          {!isCollapsed && isContentOpen && visibleContentSubLinks.length > 0 && (
+            <div className="ml-9 space-y-1 mt-1">
+              {visibleContentSubLinks.map((sub) => {
+                const isActive = pathname === sub.path
+                return (
+                  <Link
+                    key={sub.path}
+                    href={sub.path}
+                    className={`block px-3 py-1.5 text-sm no-underline transition-colors ${
+                      isActive 
+                        ? 'font-semibold text-primary' 
+                        : 'text-on-surface-variant hover:text-on-surface'
+                    }`}
+                  >
+                    {sub.label}
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Page Templates Group */}
         <div className="space-y-1">
