@@ -67,6 +67,13 @@ export async function POST(req: NextRequest) {
       abortController.abort()
     })
 
+    let timedOut = false
+    const timeoutId = setTimeout(() => {
+      console.warn('[AI Proxy Warning] Upstream request timed out after 90 seconds. Aborting.')
+      timedOut = true
+      abortController.abort()
+    }, 90000)
+
     let response: Response
     try {
       response = await fetch(`${authoringServiceUrl}/api/ai/draft`, {
@@ -85,8 +92,32 @@ export async function POST(req: NextRequest) {
         }),
       })
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        return new Response('Aborted', { status: 499 })
+      if (err.name === 'AbortError' || abortController.signal.aborted) {
+        const isTimeout = timedOut || (Date.now() - startTime >= 89000)
+        const errorMessage = isTimeout 
+          ? 'Gateway Timeout: The Content Authoring Service took too long to respond (timeout 90s).' 
+          : 'Request aborted'
+        
+        await payload.create({
+          collection: 'ai-audit-logs',
+          data: {
+            user: user.id,
+            tenant: tenantId,
+            requestType: 'draft',
+            prompt: body.prompt,
+            model: body.modelOverride || 'unknown',
+            provider: body.modelOverride?.split('/')[0] || 'unknown',
+            status: 'error',
+            errorMessage: errorMessage,
+            durationMs: Date.now() - startTime,
+            styleModifier: body.style_modifier_id,
+          } as any,
+          overrideAccess: true,
+        })
+        return new Response(JSON.stringify({ error: errorMessage }), { 
+          status: isTimeout ? 504 : 499,
+          headers: { 'Content-Type': 'application/json' }
+        })
       }
       console.error('[AI Proxy Error] Failed to connect to Content Authoring Service:', err)
       // Log error to Audit Logs
@@ -112,6 +143,8 @@ export async function POST(req: NextRequest) {
         status: 502,
         headers: { 'Content-Type': 'application/json' }
       })
+    } finally {
+      clearTimeout(timeoutId)
     }
 
     if (!response.ok) {

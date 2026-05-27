@@ -216,15 +216,21 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
             }
             event_inputs = inputs
         else:
-            # Subsequent turn: Append user prompt to messages
+            # Subsequent turn: Append user prompt to messages and update schema context
             await drafting_graph.aupdate_state(
                 config,
-                {"messages": [HumanMessage(content=prompt)]},
+                {
+                    "messages": [HumanMessage(content=prompt)],
+                    "schema_json": schema_json,
+                    "content_type_slug": content_type_slug,
+                },
                 as_node="execute_tools"
             )
             event_inputs = {
                 "user_input": prompt,
                 "is_refinement": False,
+                "schema_json": schema_json,
+                "content_type_slug": content_type_slug,
             }
 
         resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"

@@ -98,16 +98,21 @@ class RefineService:
             }
             event_inputs = inputs
         else:
-            # Subsequent turn: Append user turn
+            # Subsequent turn: Append user turn and update schema context
             await drafting_graph.aupdate_state(
                 config,
-                {"messages": [HumanMessage(content=prompt)], "current_draft_json": current_draft_json},
+                {
+                    "messages": [HumanMessage(content=prompt)],
+                    "current_draft_json": current_draft_json,
+                    "schema_json": schema_json,
+                },
                 as_node="execute_tools"
             )
             event_inputs = {
                 "user_input": prompt,
                 "is_refinement": True,
                 "current_draft_json": current_draft_json,
+                "schema_json": schema_json,
             }
 
         resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"
