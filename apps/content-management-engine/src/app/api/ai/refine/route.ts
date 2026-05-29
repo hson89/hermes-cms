@@ -58,6 +58,13 @@ export async function POST(req: NextRequest) {
       abortController.abort()
     })
 
+    let timedOut = false
+    const timeoutId = setTimeout(() => {
+      console.warn('[AI Proxy Warning] Upstream request timed out after 90 seconds. Aborting.')
+      timedOut = true
+      abortController.abort()
+    }, 90000)
+
     let response: Response
     try {
       response = await fetch(`${authoringServiceUrl}/api/ai/refine`, {
@@ -69,14 +76,39 @@ export async function POST(req: NextRequest) {
         signal: abortController.signal,
         body: JSON.stringify({
           ...body,
+          session_id: body.session_id !== undefined && body.session_id !== null ? String(body.session_id) : undefined,
           tenant_id: tenantId,
           user_id: user.id,
           style_modifier_prompt: styleModifierPrompt,
         }),
       })
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        return new Response('Aborted', { status: 499 })
+      if (err.name === 'AbortError' || abortController.signal.aborted) {
+        const isTimeout = timedOut || (Date.now() - startTime >= 89000)
+        const errorMessage = isTimeout 
+          ? 'Gateway Timeout: The Content Authoring Service took too long to respond (timeout 90s).' 
+          : 'Request aborted'
+        
+        await payload.create({
+          collection: 'ai-audit-logs',
+          data: {
+            user: user.id,
+            tenant: tenantId,
+            requestType: 'refine',
+            prompt: body.prompt,
+            model: body.modelOverride || 'unknown',
+            provider: body.modelOverride?.split('/')[0] || 'unknown',
+            status: 'error',
+            errorMessage: errorMessage,
+            durationMs: Date.now() - startTime,
+            styleModifier: body.style_modifier_id,
+          } as any,
+          overrideAccess: true,
+        })
+        return new Response(JSON.stringify({ error: errorMessage }), { 
+          status: isTimeout ? 504 : 499,
+          headers: { 'Content-Type': 'application/json' }
+        })
       }
       console.error('[AI Proxy Error] Failed to connect to Content Authoring Service:', err)
       // Log error to Audit Logs
@@ -102,6 +134,8 @@ export async function POST(req: NextRequest) {
         status: 502,
         headers: { 'Content-Type': 'application/json' }
       })
+    } finally {
+      clearTimeout(timeoutId)
     }
 
     if (!response.ok) {
@@ -185,12 +219,43 @@ export async function POST(req: NextRequest) {
         controller.enqueue(chunk)
       },
       async flush() {
+        let resolvedSessionId: string | number | undefined = body.drafting_session_id || body.sessionId || body.session_id
+        if (resolvedSessionId) {
+          if (typeof resolvedSessionId === 'string' && resolvedSessionId.includes('-')) {
+            try {
+              const sessions = await payload.find({
+                collection: 'drafting-sessions',
+                where: {
+                  aiSessionId: { equals: resolvedSessionId }
+                },
+                limit: 1,
+                overrideAccess: true,
+              })
+              resolvedSessionId = sessions.docs[0]?.id || undefined
+            } catch (e) {
+              console.error('[AI Proxy] Failed to lookup drafting session by UUID:', e)
+              resolvedSessionId = undefined
+            }
+          } else {
+            try {
+              const doc = await payload.findByID({
+                collection: 'drafting-sessions',
+                id: resolvedSessionId,
+                overrideAccess: true,
+              })
+              if (!doc) resolvedSessionId = undefined
+            } catch (_) {
+              resolvedSessionId = undefined
+            }
+          }
+        }
+
         await payload.create({
           collection: 'ai-audit-logs',
           data: {
             user: user.id,
             tenant: tenantId,
-            session: body.sessionId,
+            session: resolvedSessionId || undefined,
             requestType: 'refine',
             prompt: body.prompt,
             model: modelName || modelProvider,

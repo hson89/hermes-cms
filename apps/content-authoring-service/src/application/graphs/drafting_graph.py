@@ -4,6 +4,7 @@ StateGraph for AI Content Drafting workflow using LangGraph.
 
 from typing import Annotated, Any, Dict, List, Literal, Optional, TypedDict
 import json
+import operator
 
 from langchain_core.messages import BaseMessage, ToolMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
@@ -29,7 +30,7 @@ class DraftingState(TypedDict):
     user_id: str
     schema_json: Optional[Dict[str, Any]]
     current_draft_json: Optional[Dict[str, Any]]
-    validation_payloads: List[Dict[str, Any]]
+    validation_payloads: Annotated[List[Dict[str, Any]], operator.add]
     
     # State parameters for dynamic formatting
     content_type_slug: Optional[str]

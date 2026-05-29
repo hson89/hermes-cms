@@ -37,15 +37,32 @@ export const Badge: React.FC<BadgeProps> = ({
     lg: 'text-[12px] px-3 py-1.5'
   }
 
+  // Map static colors to Alexandria semantic design tokens for tenant-aware theming
+  const colorMap: Record<string, string> = {
+    blue: 'primary',
+    green: 'success',
+    emerald: 'success',
+    red: 'danger',
+    amber: 'gold',
+    orange: 'gold',
+    purple: 'primary',
+    pink: 'primary',
+    indigo: 'primary',
+    slate: 'neutral',
+    gray: 'neutral',
+  }
+
+  const resolvedColor = colorMap[color] || color
+
   const colorClasses: Record<string, string> = {
     primary: 'bg-primary/10 text-primary border-primary/20',
     success: 'bg-success-container/20 text-success border-success/20',
     danger: 'bg-error-container/20 text-error border-error/20',
     neutral: 'bg-surface-variant text-on-surface-variant border-outline-variant/15',
-    gold: 'bg-tertiary-container/20 text-tertiary border-tertiary/20'
+    gold: 'bg-tertiary-container/20 text-tertiary border-tertiary/20',
   }
 
-  const colorClass = colorClasses[color] || `bg-${color}/10 text-${color} border-${color}/20`
+  const colorClass = colorClasses[resolvedColor] || colorClasses.primary
 
   return (
     <span className={`inline-flex items-center gap-1 rounded-full font-label font-bold border ${sizeClasses[size]} ${colorClass} ${className}`}>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Icon } from '../ui/atoms/Icon'
 import { useAuth } from '@payloadcms/ui'
+import { BRANDING } from '@/constants/branding'
 
 export const DashboardClient: React.FC = () => {
   const { user } = useAuth()
@@ -73,7 +74,7 @@ export const DashboardClient: React.FC = () => {
           <div className="max-w-2xl relative z-10 text-on-primary">
             <h1 className="font-headline text-5xl font-bold mb-6 tracking-tight leading-tight">The Digital Curator.</h1>
             <p className="font-body text-lg text-primary-fixed-dim leading-relaxed">
-              Welcome to the Hermes AI administrative interface. Manage your structured content, configure AI behavior, and oversee your multi-tenant environments.
+              Welcome to the {BRANDING.appName} administrative interface. Manage your structured content, configure AI behavior, and oversee your multi-tenant environments.
             </p>
           </div>
         </section>
@@ -87,7 +88,7 @@ export const DashboardClient: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Icon name="auto_awesome" className="text-primary" size={20} />
                 </div>
-                <h2 className="font-headline text-2xl font-bold text-on-surface m-0">Hermes AI</h2>
+                <h2 className="font-headline text-2xl font-bold text-on-surface m-0">{BRANDING.aiName}</h2>
               </div>
               <p className="font-body text-on-surface-variant text-lg leading-relaxed mb-0 max-w-xl">
                 I am your scholarly co-author. Tell me what you want to create, and I will find the right schema and draft it for you instantly.

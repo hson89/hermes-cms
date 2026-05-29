@@ -1,4 +1,5 @@
-import type { CollectionBeforeChangeHook } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionAfterChangeHook } from 'payload'
+import { TemplateService } from '../../services/template_service'
 
 /**
  * Helper to safely extract headers across different environments/mock states.
@@ -136,4 +137,36 @@ export const beforeChangeHook: CollectionBeforeChangeHook = async ({
   }
 
   return data
+}
+
+/**
+ * Trigger mapping health checks for all templates using this content type.
+ * R005: Schema Alignment.
+ */
+export const afterChangeHook: CollectionAfterChangeHook = async ({
+  doc,
+  req,
+  operation,
+}) => {
+  if (operation !== 'update') return
+
+  const { payload } = req
+  const templateService = new TemplateService(payload)
+
+  // Find all templates associated with this content type
+  const templates = await payload.find({
+    collection: 'page-templates' as any,
+    where: {
+      contentType: { equals: doc.id },
+    },
+    limit: 1000,
+    overrideAccess: true,
+  })
+
+  // Trigger health checks in parallel
+  await Promise.all(
+    templates.docs.map((template: any) => 
+      templateService.checkMappingHealth(template.id)
+    )
+  )
 }

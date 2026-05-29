@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/atoms/Button'
 import { Card } from '@/components/ui/molecules/Card'
 import { FormField } from '@/components/ui/molecules/FormField'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 
 /**
  * MarketplaceAppEditPage component.
@@ -140,7 +141,7 @@ export const MarketplaceAppEditPage: React.FC = () => {
         subtitle={isEditMode 
           ? 'Modify the service endpoint and metadata for this global marketplace integration used across tenant environments.'
           : 'Add a new 3rd-party integration to the Hermes AI global directory for tenant-wide availability.'}
-        breadcrumbs={['Hermes AI', 'Marketplace', 'App Registry']}
+        breadcrumbs={[BRANDING.appName, 'Marketplace', 'App Registry']}
         showAction={true}
         actionText="Return to List"
         actionIcon="arrow_back"

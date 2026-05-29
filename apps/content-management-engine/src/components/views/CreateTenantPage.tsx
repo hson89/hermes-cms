@@ -281,8 +281,8 @@ export const CreateTenantPage: React.FC = () => {
 
       {/* Success Notification Banner */}
       {success && (
-        <div className="mb-8 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
-          <Icon name="check_circle" className="text-green-600" />
+        <div className="mb-8 p-4 bg-success-container/20 text-success rounded-xl flex items-center gap-3 border border-success/20 animate-fade-slide-up">
+          <Icon name="check_circle" className="text-success" />
           <span className="font-body text-sm font-semibold">{success}</span>
         </div>
       )}
@@ -343,7 +343,7 @@ export const CreateTenantPage: React.FC = () => {
                   ? 'bg-primary text-on-primary ring-4 ring-primary/20' 
                   : 'bg-surface-container text-outline'
               }`}>
-                '3'
+                3
               </div>
               <div className="pt-1">
                 <span className={`block font-label text-[10px] uppercase tracking-widest ${step === 3 ? 'font-bold text-primary' : 'text-outline'}`}>Step 03</span>

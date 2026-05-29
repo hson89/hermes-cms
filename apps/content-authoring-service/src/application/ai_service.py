@@ -191,6 +191,11 @@ class AIService:
             session_id=session_id
         )
 
+        # Safe check in case settings is mocked in unit tests
+        recursion_limit = getattr(settings, "LANGGRAPH_RECURSION_LIMIT", 25)
+        if not isinstance(recursion_limit, int):
+            recursion_limit = 25
+
         config = {
             "configurable": {
                 "thread_id": session_id,
@@ -198,6 +203,7 @@ class AIService:
                 "langfuse_client": self.langfuse_client,
                 "model_override": None,
             },
+            "recursion_limit": recursion_limit,
             "callbacks": [langfuse_handler] if langfuse_handler else [],
             "metadata": {
                 "langfuse_user_id": user_id,
@@ -310,6 +316,11 @@ class AIService:
             session_id=session_id
         )
 
+        # Safe check in case settings is mocked in unit tests
+        recursion_limit = getattr(settings, "LANGGRAPH_RECURSION_LIMIT", 25)
+        if not isinstance(recursion_limit, int):
+            recursion_limit = 25
+
         config = {
             "configurable": {
                 "thread_id": session_id,
@@ -317,6 +328,7 @@ class AIService:
                 "langfuse_client": self.langfuse_client,
                 "model_override": None,
             },
+            "recursion_limit": recursion_limit,
             "callbacks": [langfuse_handler] if langfuse_handler else [],
             "metadata": {
                 "langfuse_user_id": user_id,

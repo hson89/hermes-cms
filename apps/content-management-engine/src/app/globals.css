@@ -11,8 +11,8 @@
 :root {
   --primary: #094cb2;
   --on-primary: #ffffff;
-  --primary-container: #eff6ff;
-  --on-primary-container: #001946;
+  --primary-container: #3366cc;
+  --on-primary-container: #e7ebff;
   --primary-fixed: #d9e2ff;
   --on-primary-fixed: #001946;
   --primary-fixed-dim: #b1c5ff;
@@ -64,6 +64,11 @@
   --inverse-surface: #303031;
   --inverse-on-surface: #f2f0f1;
   --inverse-primary: #b1c5ff;
+  
+  --success: #0d8a57;
+  --on-success: #ffffff;
+  --success-container: #e8f5e9;
+  --on-success-container: #0d8a57;
 }
 
 .dark {
@@ -115,6 +120,11 @@
   --inverse-surface: #e1e3e6;
   --inverse-on-surface: #1b1c1d;
   --inverse-primary: #3366cc;
+  
+  --success: #12b76a;
+  --on-success: #003822;
+  --success-container: #005234;
+  --on-success-container: #d1fadf;
 }
 
 @theme {
@@ -173,6 +183,11 @@
   --color-inverse-surface: var(--inverse-surface);
   --color-inverse-on-surface: var(--inverse-on-surface);
   --color-inverse-primary: var(--inverse-primary);
+  
+  --color-success: var(--success);
+  --color-on-success: var(--on-success);
+  --color-success-container: var(--success-container);
+  --color-on-success-container: var(--on-success-container);
 
   --font-display: "Noto Serif", serif;
   --font-headline: "Noto Serif", serif;
@@ -200,12 +215,13 @@
 /* 1. Sidebar Control */
 .alexandria-nav {
   display: flex !important;
-  width: 18rem !important;
+  width: var(--sidebar-width, 18rem) !important;
   z-index: 1000 !important;
+  transition: width 0.3s ease-in-out !important;
 }
 
 aside.nav {
-  width: 18rem !important;
+  width: var(--sidebar-width, 18rem) !important;
   display: block !important;
   position: fixed !important;
   left: 0 !important;
@@ -213,6 +229,7 @@ aside.nav {
   height: 100vh !important;
   z-index: 1000 !important;
   background: var(--color-surface-container) !important;
+  transition: width 0.3s ease-in-out !important;
 }
 
 /* Hide Payload's built-in sidebar/nav elements we don't want */
@@ -222,12 +239,13 @@ aside.nav {
 
 /* 2. Content Wrap Control */
 .template-default__wrap {
-  margin-left: 18rem !important;
-  width: calc(100% - 18rem) !important;
+  margin-left: var(--sidebar-width, 18rem) !important;
+  width: calc(100% - var(--sidebar-width, 18rem)) !important;
   min-height: 100vh;
   position: relative;
   display: flex !important;
   flex-direction: column !important;
+  transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out !important;
 }
 
 /* 3. Header Control */
@@ -303,8 +321,8 @@ body {
 
 /* Alexandria High-End Editorial Primary Buttons (WCAG AAA Compliant Gradient) */
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #094cb2 0%, #063a8d 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%) !important;
+  color: var(--on-primary) !important;
   transition: all 0.2s ease-in-out;
 }
 
@@ -318,151 +336,64 @@ body {
 }
 
 .dark .btn-primary-gradient {
-  background: linear-gradient(135deg, #4782ff 0%, #2b61d6 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%) !important;
+  color: var(--on-primary) !important;
 }
 
 .dark .btn-primary-gradient:hover {
   background: linear-gradient(135deg, #3a75f0 0%, #2053c7 100%) !important;
 }
 
-/* Custom ghost borders for form controls */
-.ghost-border {
-  box-shadow: inset 0 0 0 1px rgba(195, 198, 213, 0.15);
+/* Custom scrollbar for panels */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-secondary-container); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-secondary-fixed-dim); }
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.dark .glass-panel {
+  background: rgba(16, 20, 31, 0.8);
 }
 
 .ghost-border-focus:focus-within {
   box-shadow: inset 0 0 0 2px #3366cc, 0 0 12px rgba(51, 102, 204, 0.15);
 }
 
-/* 5. Custom View Cleanups */
-.template-default__wrap:has(.custom-tenant-view) .doc-header,
-.template-default__wrap:has(.custom-tenant-view) .collection-edit__header,
-.template-default__wrap:has(.custom-tenant-view) .collection-list__header,
-.template-default__wrap:has(.custom-tenant-view) .gutter,
-.template-default__wrap:has(.custom-tenant-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-tenant-view) [class*="collection-edit"],
-.template-default__wrap:has(.custom-tenant-view) [class*="collection-list"],
-.template-default__wrap:has(.custom-site-view) .doc-header,
-.template-default__wrap:has(.custom-site-view) .collection-edit__header,
-.template-default__wrap:has(.custom-site-view) .collection-list__header,
-.template-default__wrap:has(.custom-site-view) .gutter,
-.template-default__wrap:has(.custom-site-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-site-view) [class*="collection-edit"],
-.template-default__wrap:has(.custom-site-view) [class*="collection-list"],
-.template-default__wrap:has(.custom-user-view) .doc-header,
-.template-default__wrap:has(.custom-user-view) .collection-edit__header,
-.template-default__wrap:has(.custom-user-view) .collection-list__header,
-.template-default__wrap:has(.custom-user-view) .gutter,
-.template-default__wrap:has(.custom-user-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-user-view) [class*="collection-edit"],
-.template-default__wrap:has(.custom-user-view) [class*="collection-list"],
-.template-default__wrap:has(.custom-generator-view) .doc-header,
-.template-default__wrap:has(.custom-generator-view) .collection-edit__header,
-.template-default__wrap:has(.custom-generator-view) .collection-list__header,
-.template-default__wrap:has(.custom-generator-view) .gutter,
-.template-default__wrap:has(.custom-generator-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-generator-view) [class*="collection-edit"],
-.template-default__wrap:has(.custom-generator-view) [class*="collection-list"],
-.template-default__wrap:has(.custom-editor-view) .doc-header,
-.template-default__wrap:has(.custom-editor-view) .collection-edit__header,
-.template-default__wrap:has(.custom-editor-view) .collection-list__header,
-.template-default__wrap:has(.custom-editor-view) .gutter,
-.template-default__wrap:has(.custom-editor-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-editor-view) [class*="collection-edit"],
-.template-default__wrap:has(.custom-editor-view) [class*="collection-list"],
-.template-default__wrap:has(.custom-marketplace-edit-view) .doc-header,
-.template-default__wrap:has(.custom-marketplace-edit-view) .gutter,
-.template-default__wrap:has(.custom-marketplace-edit-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-tenant-app-edit-view) .doc-header,
-.template-default__wrap:has(.custom-tenant-app-edit-view) .gutter,
-.template-default__wrap:has(.custom-tenant-app-edit-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-content-type-view) .doc-header,
-.template-default__wrap:has(.custom-content-type-view) .collection-edit__header,
-.template-default__wrap:has(.custom-content-type-view) .collection-list__header,
-.template-default__wrap:has(.custom-content-type-view) .gutter,
-.template-default__wrap:has(.custom-content-type-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-content-type-view) [class*="collection-edit"],
-.template-default__wrap:has(.custom-content-type-view) [class*="collection-list"],
-div:has(> .drafting-workspace-view) > .doc-header,
-div:has(> .drafting-workspace-view) > .collection-edit__header,
-div:has(> .drafting-workspace-view) > .gutter,
-div:has(> .drafting-workspace-view) > [class*="doc-header"],
-div:has(> .drafting-workspace-view) > [class*="collection-edit"],
-.template-default__wrap:has(.drafting-workspace-view) .doc-header,
-.template-default__wrap:has(.drafting-workspace-view) .gutter,
-.template-default__wrap:has(.drafting-workspace-view) [class*="doc-header"],
-div:has(> .custom-tenant-view) > .doc-header,
-div:has(> .custom-tenant-view) > .collection-edit__header,
-div:has(> .custom-tenant-view) > .collection-list__header,
-div:has(> .custom-tenant-view) > .gutter,
-div:has(> .custom-tenant-view) > [class*="doc-header"],
-div:has(> .custom-tenant-view) > [class*="collection-edit"],
-div:has(> .custom-tenant-view) > [class*="collection-list"],
-div:has(> .custom-site-view) > .doc-header,
-div:has(> .custom-site-view) > .collection-edit__header,
-div:has(> .custom-site-view) > .collection-list__header,
-div:has(> .custom-site-view) > .gutter,
-div:has(> .custom-site-view) > [class*="doc-header"],
-div:has(> .custom-site-view) > [class*="collection-edit"],
-div:has(> .custom-site-view) > [class*="collection-list"],
-div:has(> .custom-user-view) > .doc-header,
-div:has(> .custom-user-view) > .collection-edit__header,
-div:has(> .custom-user-view) > .collection-list__header,
-div:has(> .custom-user-view) > .gutter,
-div:has(> .custom-user-view) > [class*="doc-header"],
-div:has(> .custom-user-view) > [class*="collection-edit"],
-div:has(> .custom-user-view) > [class*="collection-list"],
-div:has(> .custom-generator-view) > .doc-header,
-div:has(> .custom-generator-view) > .collection-edit__header,
-div:has(> .custom-generator-view) > .collection-list__header,
-div:has(> .custom-generator-view) > .gutter,
-div:has(> .custom-generator-view) > [class*="doc-header"],
-div:has(> .custom-generator-view) > [class*="collection-edit"],
-div:has(> .custom-generator-view) > [class*="collection-list"],
-div:has(> .custom-editor-view) > .doc-header,
-div:has(> .custom-editor-view) > .collection-edit__header,
-div:has(> .custom-editor-view) > .collection-list__header,
-div:has(> .custom-editor-view) > .gutter,
-div:has(> .custom-editor-view) > [class*="doc-header"],
-div:has(> .custom-editor-view) > [class*="collection-edit"],
-div:has(> .custom-editor-view) > [class*="collection-list"],
-div:has(> .custom-content-type-view) > .doc-header,
-div:has(> .custom-content-type-view) > .collection-edit__header,
-div:has(> .custom-content-type-view) > .collection-list__header,
-div:has(> .custom-content-type-view) > .gutter,
-div:has(> .custom-content-type-view) > [class*="doc-header"],
-div:has(> .custom-content-type-view) > [class*="collection-edit"],
-div:has(> .custom-content-type-view) > [class*="collection-list"],
-div:has(> .custom-marketplace-view) > .doc-header,
-div:has(> .custom-marketplace-view) > .collection-edit__header,
-div:has(> .custom-marketplace-view) > .collection-list__header,
-div:has(> .custom-marketplace-view) > .gutter,
-div:has(> .custom-marketplace-view) > [class*="doc-header"],
-div:has(> .custom-marketplace-view) > [class*="collection-edit"],
-div:has(> .custom-marketplace-view) > [class*="collection-list"],
-div:has(> .custom-marketplace-edit-view) > .doc-header,
-div:has(> .custom-marketplace-edit-view) > .collection-edit__header,
-div:has(> .custom-marketplace-edit-view) > .gutter,
-div:has(> .custom-marketplace-edit-view) > [class*="doc-header"],
-div:has(> .custom-marketplace-edit-view) > [class*="collection-edit"],
-div:has(> .custom-tenant-app-view) > .doc-header,
-div:has(> .custom-tenant-app-view) > .collection-edit__header,
-div:has(> .custom-tenant-app-view) > .collection-list__header,
-div:has(> .custom-tenant-app-view) > .gutter,
-div:has(> .custom-tenant-app-view) > [class*="doc-header"],
-div:has(> .custom-tenant-app-view) > [class*="collection-edit"],
-div:has(> .custom-tenant-app-view) > [class*="collection-list"],
-div:has(> .custom-tenant-app-edit-view) > .doc-header,
-div:has(> .custom-tenant-app-edit-view) > .collection-edit__header,
-div:has(> .custom-tenant-app-edit-view) > .gutter,
-div:has(> .custom-tenant-app-edit-view) > [class*="doc-header"],
-div:has(> .custom-tenant-app-edit-view) > [class*="collection-edit"],
-div:has(> .custom-jwt-view) > .doc-header,
-div:has(> .custom-jwt-view) > .collection-list__header,
-div:has(> .custom-jwt-view) > .gutter,
-div:has(> .custom-jwt-view) > [class*="doc-header"],
-div:has(> .custom-jwt-view) > [class*="collection-list"] {
+/* 5. Custom View Cleanups (Isolated CSS Contract) */
+.template-default__wrap:has(.custom-view-isolated) .doc-header,
+.template-default__wrap:has(.custom-view-isolated) .collection-edit__header,
+.template-default__wrap:has(.custom-view-isolated) .collection-list__header,
+.template-default__wrap:has(.custom-view-isolated) .gutter,
+.template-default__wrap:has(.custom-view-isolated) [class*="doc-header"],
+.template-default__wrap:has(.custom-view-isolated) [class*="collection-edit"],
+.template-default__wrap:has(.custom-view-isolated) [class*="collection-list"],
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .doc-header,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .collection-edit__header,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .collection-list__header,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) .gutter,
+.template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="doc-header"],
+.template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="collection-edit"],
+.template-default__wrap:has([class*="custom-"][class*="-view"]) [class*="collection-list"],
+div:has(> .custom-view-isolated) > .doc-header,
+div:has(> .custom-view-isolated) > .collection-edit__header,
+div:has(> .custom-view-isolated) > .collection-list__header,
+div:has(> .custom-view-isolated) > .gutter,
+div:has(> .custom-view-isolated) > [class*="doc-header"],
+div:has(> .custom-view-isolated) > [class*="collection-edit"],
+div:has(> .custom-view-isolated) > [class*="collection-list"],
+div:has(> [class*="custom-"][class*="-view"]) > .doc-header,
+div:has(> [class*="custom-"][class*="-view"]) > .collection-edit__header,
+div:has(> [class*="custom-"][class*="-view"]) > .collection-list__header,
+div:has(> [class*="custom-"][class*="-view"]) > .gutter,
+div:has(> [class*="custom-"][class*="-view"]) > [class*="doc-header"],
+div:has(> [class*="custom-"][class*="-view"]) > [class*="collection-edit"],
+div:has(> [class*="custom-"][class*="-view"]) > [class*="collection-list"] {
   display: none !important;
   visibility: hidden !important;
   height: 0 !important;
@@ -470,27 +401,6 @@ div:has(> .custom-jwt-view) > [class*="collection-list"] {
   margin: 0 !important;
 }
 
-/* Custom view cleanup for API Keys */
-.template-default__wrap:has(.custom-api-key-view) .doc-header,
-.template-default__wrap:has(.custom-api-key-view) .collection-edit__header,
-.template-default__wrap:has(.custom-api-key-view) .collection-list__header,
-.template-default__wrap:has(.custom-api-key-view) .gutter,
-.template-default__wrap:has(.custom-api-key-view) [class*="doc-header"],
-.template-default__wrap:has(.custom-api-key-view) [class*="collection-edit__header"],
-.template-default__wrap:has(.custom-api-key-view) [class*="collection-list__header"],
-div:has(.custom-api-key-view) .doc-header,
-div:has(.custom-api-key-view) .collection-edit__header,
-div:has(.custom-api-key-view) .collection-list__header,
-div:has(.custom-api-key-view) .gutter,
-div:has(.custom-api-key-view) [class*="doc-header"],
-div:has(.custom-api-key-view) [class*="collection-edit__header"],
-div:has(.custom-api-key-view) [class*="collection-list__header"] {
-  display: none !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
 
 /* Alexandria Text Animations (from animate-text skill) */
 @keyframes soft-blur-in {
@@ -552,6 +462,33 @@ html:has(.custom-editor-view) {
   margin-top: 0 !important;
   height: 100vh !important;
   max-height: 100vh !important;
+}
+
+.template-default__wrap:has(.custom-editor-view.no-header) > .app-header,
+.template-default__wrap:has(.custom-editor-view.no-header) > header,
+.template-default__wrap:has(.custom-editor-view.no-header) .app-header:not(.custom-editor-view.no-header *) {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide default dashboard header / doc headers when our visual designer is open */
+body:has(.custom-editor-view) .app-header,
+body:has(.custom-editor-view) .app-header__wrapper,
+body:has(.custom-editor-view) .doc-header,
+body:has(.custom-editor-view) .collection-edit__header,
+body:has(.custom-editor-view) .collection-list__header,
+body:has(.custom-editor-view) .payload-admin-header,
+body:has(.custom-editor-view) .step-nav,
+body:has(.custom-editor-view) .app-header__step-nav,
+body:has(.custom-editor-view) h1:not(.custom-editor-view h1):not(.alexandria-nav h1),
+body:has(.custom-editor-view) header:not(.designer-toolbar) {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* Reset parent paddings/margins/max-width to ensure no empty gaps for drafting workspace */
@@ -704,3 +641,95 @@ html:has(.custom-editor-view) {
   margin: 1.5rem 0;
   opacity: 0.4;
 }
+
+/* ── Alexandria Animations & Interactions ────────────────────────────────── */
+
+.glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.ghost-border { border: 1px solid var(--outline-variant); border-color: color-mix(in srgb, var(--outline-variant) 15%, transparent); }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-variant); border-radius: 4px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .animate-reveal.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  
+  .shimmer-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2s infinite linear;
+  }
+
+  .dropdown-content {
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transform-origin: top;
+    max-height: 0;
+    opacity: 0;
+    transform: scaleY(0.95);
+    pointer-events: none;
+    overflow: hidden;
+  }
+  
+  .dropdown-content.is-open {
+    max-height: 400px;
+    opacity: 1;
+    transform: scaleY(1);
+    pointer-events: auto;
+  }
+  
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .spring-toggle {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  }
+
+  @keyframes savePulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(9, 76, 178, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(9, 76, 178, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(9, 76, 178, 0); }
+  }
+  .save-pulse {
+    animation: savePulse 0.5s ease-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-content {
+    display: none;
+  }
+  .dropdown-content.is-open {
+    display: block;
+  }
+  .animate-reveal { opacity: 1; transform: none; }
+}
+

@@ -24,7 +24,16 @@ A scholarly, premium reading experience. Dense information made effortless throu
 - **Buttons:** Primary = gradient fill, Secondary = surface-high bg + primary text, Tertiary = text + hover underline.
 - **Cards:** No divider lines. Use spacing or alternating surface colors.
 - **Inputs:** White bg, ghost border, focus = primary border.
+- **Top Navigation (Atomic):** Contextual bars with glassmorphic backgrounds (80% opacity), breadcrumbs for orientation, and contextual action slots. Height: 5rem (h-20).
+
+## Animations & Interactions
+- **Reveal:** Staggered entrance with 20px translateY and 0.6s cubic-bezier(0.16, 1, 0.3, 1).
+- **Shimmer:** Linear infinite 90deg gradient for primary CTAs to indicate "alive" states.
+- **Lift:** -2px translateY + diffused shadow on hover for interactive panels.
+- **Spring Toggle:** 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) for boolean switches.
+- **Pulse:** Save/Success feedback with scale(1.05) and outward ring glow.
 
 ## Rules
 - Use whitespace as structure. Serif for narrative text. One primary action per view.
 - Never use sharp corners — minimum `sm` roundness.
+- Respect `prefers-reduced-motion` by disabling complex transforms and transitions.

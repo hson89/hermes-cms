@@ -1,8 +1,9 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/plan.md
+/home/itlight/dev/hermes-cms/specs/006-template-builder/plan.md
 <!-- SPECKIT END -->
+
 
 # Hermes AI — Agent Guidelines
 
@@ -79,7 +80,7 @@ hermes-cms/
 ├── k8s/                      # Kubernetes manifests
 ├── scripts/start-dev.sh      # One-command local dev startup (Unix)
 ├── scripts/start-dev.ps1     # One-command local dev startup (Windows)
-├── specs/001-ai-headless-cms/ # Feature spec, plan, tasks, data model, contracts
+├── specs/006-template-builder/ # Feature spec, plan, tasks, data model, contracts
 ├── DESIGN.md                 # "Alexandria" design system tokens
 └── README.md
 ```
@@ -120,7 +121,7 @@ hermes-cms/
 
 The visual language is codename **"Alexandria — High-End Editorial"**.
 Refer to `DESIGN.md` at the project root for full token definitions:
-- Primary: `#3366cc`, Tertiary/gold: `#6d5e00`
+- Primary: `#094cb2`, Tertiary/gold: `#6d5e00`
 - Fonts: Noto Serif (headlines), Inter (body & labels)
 - Glassmorphism floating menus, gradient CTAs, no hard borders
 - Tonal elevation via surface tokens, not box-shadows
@@ -188,7 +189,11 @@ docker-compose stop
    `tasks.md`, and supporting artifacts.
 10. **Payload CMS & UI Safety (with Pre-Commit Hook Enforcement):** When working with Payload CMS backend concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) or making UI/UX modifications/custom views in `apps/content-management-engine/`, you MUST invoke the unified `payload` skill (located in `.agents/skills/payload/SKILL.md`) first. An automated git pre-commit hook is active; if staged files contain changes under `apps/content-management-engine/`, it reminds/enforces that you have invoked and followed this skill before you commit. Always check the Alexandria Layout & Admin UI Guardrails section in the skill, verify whether the custom view is auto-wrapped by the framework's default templates, and apply deep-ancestor `:has()` CSS overrides in `globals.css` to prevent double-nesting and layout spacing gaps.
 
-
+### TypeScript Safe Casting Spectrum (Strictly Avoid 'as any')
+When dealing with dynamic database schemas, local payload requests, or out-of-sync type unions in `payload-types.ts`, you MUST use the **TypeScript Safe Casting Spectrum** instead of `as any`:
+- **`as never` (Bottom-Type):** Use solely on locally mismatched string constants (like out-of-sync collection slugs `collection: 'new-collection' as never`) to preserve strict type validation on all adjacent options (like `data` or `where` filters).
+- **`Record<string, unknown> / unknown`:** Use for arbitrary dynamic JSON shapes to enforce writing runtime type guards (like `typeof` checks) instead of bypassing compilation checks.
+- **Double Casting (`as unknown as T`):** Use solely when you know the runtime payload structure matches but the compiler cannot structurally unify them (e.g. `req as unknown as PayloadRequest` inside Next.js routes).
 
 ### Payload CMS 3.x Custom Components (CRITICAL)
 When adding custom React components to `payload.config.ts`:

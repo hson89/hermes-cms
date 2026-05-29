@@ -14,7 +14,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled, 
   ...props 
 }) => {
-  const baseStyles = 'font-label font-bold tracking-wide rounded-full py-3.5 px-6 transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+  const baseStyles = 'font-label font-bold tracking-wide rounded-full py-3.5 px-6 transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
   
   const variantStyles = {
     primary: 'btn-primary-gradient hover:scale-[1.02] active:scale-[0.98]',

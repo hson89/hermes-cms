@@ -13,6 +13,9 @@ import { ContentItems } from './collections/ContentItems'
 import { HostedSites } from './collections/HostedSites'
 import { AuditLogs } from './collections/AuditLogs'
 import { Media } from './collections/Media'
+import { BuildingBlocks } from './collections/BuildingBlocks'
+import { PageTemplates } from './collections/PageTemplates'
+import { TemplateDeployments } from './collections/TemplateDeployments'
 import { AIPromptHistory } from './collections/AIPromptHistory'
 import { DraftingSessions } from './collections/DraftingSessions'
 import { StyleModifiers } from './collections/StyleModifiers'
@@ -48,6 +51,10 @@ const configPromise = buildConfig({
           Component: '/src/components/views/DraftingWorkspace#DraftingWorkspace',
           path: '/draft/:contentTypeId?',
         },
+        builder: {
+          Component: '/src/components/views/TemplateWorkspace#TemplateWorkspace',
+          path: '/templates/builder/:templateId?',
+        },
       },
       Nav: ['/src/components/ui/organisms/Nav#Nav'] as any,
       header: ['/src/components/ui/organisms/Header#Header'] as any,
@@ -60,6 +67,9 @@ const configPromise = buildConfig({
     ContentItems,
     HostedSites,
     Media,
+    BuildingBlocks,
+    PageTemplates,
+    TemplateDeployments,
     AuditLogs,
     APIKeys,
     AIPromptHistory,
@@ -87,6 +97,9 @@ const configPromise = buildConfig({
         'media': { customTenantField: true },
         'audit-logs': { customTenantField: true },
         'hosted-sites': { customTenantField: true },
+        'building-blocks': { customTenantField: true },
+        'page-templates': { customTenantField: true },
+        'template-deployments': { customTenantField: true },
         'ai-prompt-history': {},
         'drafting-sessions': { customTenantField: true },
         'style-modifiers': {},

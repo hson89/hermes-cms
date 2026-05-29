@@ -48,7 +48,15 @@ Hermes AI utilizes a modular, hybrid architecture designed for enterprise-grade 
   * **Dynamic Content Types & Items:** Relies on dynamic Payload Collection configurations to deliver REST and GraphQL endpoints.
   * **Session Persistence:** Manages active draft state and version rollback histories (up to 10 versions) in the `DraftingSessions` collection.
 
-### 2. Content Authoring Service (AI Microservice)
+### 2. Template Builder Engine
+* **Framework:** Custom Payload Admin View using `dnd-kit` and React 19.2+.
+* **Responsibilities:**
+  * **Visual Assembly:** Allows Content Architects to drag and drop registered building blocks into a canvas to design page layouts.
+  * **Schema Association:** Provides a mapping interface to bind block properties (from the Block Registry) to Content Type fields.
+  * **Resolution Engine (Hydration):** A server-side service (`TemplateService`) that joins Content Item data with Page Template structures to deliver a "Hydrated Block Tree" (JSON) to frontend applications via `GET /api/content/[id]/hydrate`.
+  * **Deployment Webhooks:** Triggers synchronization events to `HostedSites` when templates are published, using the `TemplateDeployments` collection for history.
+
+### 3. Content Authoring Service (AI Microservice)
 * **Framework:** FastAPI 0.136+ (Python 3.14+).
 * **LLM Engine:** LangChain 1.2+ with provider-agnostic switching (via `init_chat_model`).
 * **Database:** PostgreSQL 18 (Local port `5433` / DB: `hermes_authoring`) via SQLAlchemy 2.0 and Alembic.

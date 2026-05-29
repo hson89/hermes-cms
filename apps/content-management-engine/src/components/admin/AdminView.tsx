@@ -1,12 +1,13 @@
 import React from 'react'
 import type { AdminViewServerProps } from 'payload'
-import { Nav } from './Nav'
-import { Header } from './Header'
+import { Nav } from '../ui/organisms/Nav'
+import { TopNavBar, TopNavBarProps } from '../ui/organisms/TopNavBar'
 
-interface AdminViewProps extends AdminViewServerProps {
+interface AdminViewProps extends Partial<AdminViewServerProps> {
   children: React.ReactNode
   className?: string
   hideHeader?: boolean
+  topNavProps?: TopNavBarProps
 }
 
 /**
@@ -18,7 +19,7 @@ interface AdminViewProps extends AdminViewServerProps {
  * 3. Maintain consistent desktop offsets (18rem sidebar, 5rem header).
  */
 export const AdminView: React.FC<AdminViewProps> = (props) => {
-  const { children, className = 'custom-editor-view', hideHeader = false } = props
+  const { children, className = 'custom-editor-view', hideHeader = false, topNavProps } = props
 
   return (
     <div className="template-default min-h-screen flex flex-row">
@@ -28,10 +29,10 @@ export const AdminView: React.FC<AdminViewProps> = (props) => {
       {/* 2. Content Wrap */}
       <div className="template-default__wrap flex-1 flex flex-col min-h-screen">
         {/* 3. Custom Top App Header */}
-        {!hideHeader && <Header />}
+        {!hideHeader && <TopNavBar {...topNavProps} />}
 
         {/* 4. Child Content Container */}
-        <div className={`${className} ${hideHeader ? 'no-header' : ''}`}>
+        <div className={`custom-view-isolated ${className} ${hideHeader ? 'no-header' : ''}`}>
           {children}
         </div>
       </div>

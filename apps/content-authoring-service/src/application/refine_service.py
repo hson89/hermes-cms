@@ -63,6 +63,11 @@ class RefineService:
             trace_id=langfuse_trace_id,
             session_id=resolved_session_id
         )
+        # Safe check in case settings is mocked in unit tests
+        recursion_limit = getattr(settings, "LANGGRAPH_RECURSION_LIMIT", 25)
+        if not isinstance(recursion_limit, int):
+            recursion_limit = 25
+
         config = {
             "configurable": {
                 "thread_id": resolved_session_id,
@@ -70,6 +75,7 @@ class RefineService:
                 "langfuse_client": self.ai_service.langfuse_client,
                 "model_override": model_override,
             },
+            "recursion_limit": recursion_limit,
             "callbacks": [langfuse_handler] if langfuse_handler else [],
             "metadata": {
                 "langfuse_user_id": user_id,
@@ -98,16 +104,21 @@ class RefineService:
             }
             event_inputs = inputs
         else:
-            # Subsequent turn: Append user turn
+            # Subsequent turn: Append user turn and update schema context
             await drafting_graph.aupdate_state(
                 config,
-                {"messages": [HumanMessage(content=prompt)], "current_draft_json": current_draft_json},
+                {
+                    "messages": [HumanMessage(content=prompt)],
+                    "current_draft_json": current_draft_json,
+                    "schema_json": schema_json,
+                },
                 as_node="execute_tools"
             )
             event_inputs = {
                 "user_input": prompt,
                 "is_refinement": True,
                 "current_draft_json": current_draft_json,
+                "schema_json": schema_json,
             }
 
         resolved_model = model_override or f"{settings.LANGCHAIN_MODEL_PROVIDER}/{settings.LANGCHAIN_MODEL}"

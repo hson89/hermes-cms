@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     LANGCHAIN_ENDPOINT_URL: str | None = None
     SCHEMA_GENERATION_TIMEOUT: int = 120
     SCHEMA_GENERATION_POLL_INTERVAL: int = 4
+    LANGGRAPH_RECURSION_LIMIT: int = 25
 
     # Image Configuration
     IMAGE_MODEL_PROVIDER: str = "openai"

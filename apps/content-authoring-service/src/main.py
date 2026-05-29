@@ -216,6 +216,14 @@ class RefineRequest(AIBaseRequest):
     content_schema: dict
     session_id: str | None = None
 
+    @field_validator("session_id", mode="before")
+    @classmethod
+    def coerce_session_id_to_str(cls, v: Any) -> str | None:
+        if v is None:
+            return v
+        return str(v)
+
+
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────

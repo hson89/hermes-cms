@@ -3,6 +3,7 @@
 import { RootPage } from '@payloadcms/next/views'
 import configPromise from '@/payload.config'
 import { importMap } from '../importMap'
+import { BRANDING } from '@/constants/branding'
 
 type Args = {
   params: Promise<{
@@ -14,7 +15,7 @@ type Args = {
 }
 
 export const metadata = {
-  title: 'Hermes AI Admin',
+  title: BRANDING.adminTitle,
 }
 
 const Page = ({ params, searchParams }: Args) =>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import { Icon } from '@/components/ui/atoms/Icon'
 import { RegistryHeader } from '@/components/ui/molecules/RegistryHeader'
+import { BRANDING } from '@/constants/branding'
 import { SearchInput } from '@/components/ui/molecules/SearchInput'
 import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips'
 import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTable'
@@ -374,9 +375,10 @@ export const ContentTypeListPage: React.FC = () => {
       <RegistryHeader
         title="Content Types Registry"
         subtitle="Govern dynamic content schema models, control AI-assisted definitions, inspect field signatures, and verify multi-tenant data boundaries."
-        breadcrumbs={['Hermes AI', 'Schema Registry']}
+        breadcrumbs={[BRANDING.appName, 'Schema Registry']}
         showAction={true}
-        actionText="Create Schema"
+        actionText="Create Content Type"
+        actionIcon="add"
         onActionClick={() => router.push('/admin/collections/content-types/create')}
       />
 
