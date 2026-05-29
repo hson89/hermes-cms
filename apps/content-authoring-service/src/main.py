@@ -81,6 +81,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from src.application.mcp.sse_transport import router as mcp_router
+app.include_router(mcp_router)
+
 
 # ── Request / Response models ─────────────────────────────────────────────────
 

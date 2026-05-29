@@ -6,6 +6,7 @@
 fastapi==0.136.1
 uvicorn[standard]>=0.34.0
 pydantic-settings>=2.8.0
+mcp>=1.1.2
 
 # ── AI / LLM ──────────────────────────────────────────────────────────────────
 langchain>=1.2.0
