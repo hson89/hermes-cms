@@ -39,6 +39,23 @@ export const ContentItemListPage: React.FC = () => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [itemToDelete, setItemToDelete] = useState<ContentItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [hostedSites, setHostedSites] = useState<any[]>([])
+
+  // Fetch all active hosted-sites once to map preview URLs
+  useEffect(() => {
+    const fetchHostedSites = async () => {
+      try {
+        const res = await fetch('/api/hosted-sites?limit=100')
+        if (res.ok) {
+          const data = await res.json()
+          setHostedSites(data.docs || [])
+        }
+      } catch (err) {
+        console.error('Failed to load hosted sites for preview mapping:', err)
+      }
+    }
+    fetchHostedSites()
+  }, [])
 
   // Debounce search inputs to avoid heavy live refetching
   useEffect(() => {
@@ -249,8 +266,49 @@ export const ContentItemListPage: React.FC = () => {
       headerClassName: 'text-right pr-2',
       renderCell: (item) => {
         const itemIdStr = String(item.id)
+
+        // Resolve tenant slug and article slug
+        const tenantSlug = typeof item.tenant === 'object' && item.tenant !== null ? item.tenant.slug : null
+        const articleSlug = (item.fieldsData && typeof item.fieldsData === 'object' && !Array.isArray(item.fieldsData))
+          ? (item.fieldsData as Record<string, any>).slug
+          : null
+
+        let previewUrl: string | null = null
+        if (tenantSlug && articleSlug) {
+          // Find matching hosted site for the tenant
+          const itemTenantId = typeof item.tenant === 'object' && item.tenant !== null ? item.tenant.id : item.tenant
+          const hostedSite = hostedSites.find(site => {
+            const siteTenantId = typeof site.tenant === 'object' && site.tenant !== null ? site.tenant.id : site.tenant
+            return String(siteTenantId) === String(itemTenantId)
+          })
+
+          let baseUrl = 'http://localhost:3001' // Default local dev port for Next.js blog
+          if (hostedSite) {
+            if (hostedSite.template === 'astro-portfolio') {
+              baseUrl = 'http://localhost:3002'
+            } else if (hostedSite.template === 'nextjs-blog') {
+              baseUrl = 'http://localhost:3001'
+            }
+          }
+          previewUrl = `${baseUrl}/${tenantSlug}/${articleSlug}`
+        }
+
         return (
-          <div className="flex lg:justify-end items-center justify-end">
+          <div className="flex lg:justify-end items-center justify-end gap-1">
+            {previewUrl && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  window.open(previewUrl!, '_blank')
+                }}
+                title="Preview in Frontend"
+                className="size-8 rounded-full hover:bg-surface-container flex items-center justify-center text-outline-variant hover:text-primary transition-all border-none bg-transparent cursor-pointer relative"
+              >
+                <Icon name="visibility" size={18} />
+              </button>
+            )}
+
             <button
               type="button"
               onClick={(e) => toggleMenu(itemIdStr, e)}
@@ -265,6 +323,20 @@ export const ContentItemListPage: React.FC = () => {
                 className="absolute right-6 top-12 bg-surface/90 backdrop-blur-md border border-outline-variant/15 rounded-xl modal-shadow w-48 py-1.5 z-40 animate-fade-slide-up text-left"
                 onClick={(e) => e.stopPropagation()}
               >
+                {previewUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(previewUrl!, '_blank')
+                      setActiveMenuId(null)
+                    }}
+                    className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                  >
+                    <Icon name="visibility" size={14} />
+                    Preview Entry
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => router.push(`/admin/collections/content-items/${item.id}`)}
