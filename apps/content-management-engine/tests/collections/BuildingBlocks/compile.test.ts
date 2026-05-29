@@ -85,4 +85,105 @@ describe('Building Blocks Visual Schema Compiler', () => {
     expect(result.properties.image_source).toBeDefined()
     expect(result.properties.slides).toBeUndefined()
   })
+
+  it('should compile dynamic properties with custom API keys and handle Subheading and Divider', () => {
+    const canvasElements: BlockElement[] = [
+      {
+        id: 'promo_title',
+        type: 'Heading',
+        name: 'Promo Title',
+        icon: 'title',
+        category: 'atomic',
+        properties: { required: true },
+        mappings: {}
+      },
+      {
+        id: 'promo_subtitle',
+        type: 'Subheading',
+        name: 'Promo Subtitle',
+        icon: 'subject',
+        category: 'atomic',
+        properties: {},
+        mappings: {}
+      },
+      {
+        id: 'sep_line',
+        type: 'Divider',
+        name: 'Separator Line',
+        icon: 'horizontal_rule',
+        category: 'atomic',
+        properties: {},
+        mappings: {}
+      }
+    ]
+
+    const result = compileBlockSchema(canvasElements)
+
+    // Divider should NOT be in properties (it's visual only)
+    expect(result.properties.sep_line).toBeUndefined()
+
+    // Heading with custom ID should use custom ID
+    expect(result.properties.promo_title).toBeDefined()
+    expect(result.properties.promo_title.type).toBe('string')
+    expect(result.properties.promo_title.required).toBe(true)
+
+    // Subheading with custom ID should use custom ID
+    expect(result.properties.promo_subtitle).toBeDefined()
+    expect(result.properties.promo_subtitle.type).toBe('string')
+    expect(result.properties.promo_subtitle.default).toBe('Subheading Title')
+  })
+
+  it('should compile nested fields inside visual column structures recursively', () => {
+    const canvasElements: BlockElement[] = [
+      {
+        id: 'columns_layout',
+        type: 'Columns',
+        name: 'Layout Columns',
+        icon: 'view_column',
+        category: 'layout',
+        properties: {},
+        mappings: {},
+        children: [
+          // Column 1 elements
+          [
+            {
+              id: 'col_heading',
+              type: 'Heading',
+              name: 'Column Title',
+              icon: 'title',
+              category: 'atomic',
+              properties: {},
+              mappings: {}
+            }
+          ],
+          // Column 2 elements
+          [
+            {
+              id: 'col_paragraph',
+              type: 'Text',
+              name: 'Column Body',
+              icon: 'notes',
+              category: 'atomic',
+              properties: {},
+              mappings: {}
+            }
+          ]
+        ] as any
+      }
+    ]
+
+    const result = compileBlockSchema(canvasElements)
+
+    // Visual layout is preserved in its nested tree form
+    expect(result.visualLayout[0].type).toBe('Columns')
+    const layoutColumns = result.visualLayout[0]
+    const childrenList = layoutColumns.children as any
+    expect(childrenList[0][0].id).toBe('col_heading')
+
+    // Schema properties are compiled flat for Content Delivery API
+    expect(result.properties.col_heading).toBeDefined()
+    expect(result.properties.col_heading.type).toBe('string')
+    expect(result.properties.col_paragraph).toBeDefined()
+    expect(result.properties.col_paragraph.type).toBe('string')
+  })
 })
