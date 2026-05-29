@@ -5,6 +5,21 @@
 **Status**: Draft  
 **Input**: User description: "I want to expose the @apps/content-authoring-service/ to support A2A, MCP proposal so that AI tools like Claude Desktop, ChatGPT, Gemini can work directly with my AI Agents and the user can use their AI tools to working directly and don't have to go to our UI to interact with my AI Agent. I want to also add support A2UI and AGUI (Agent-to-UI)."
 
+## Clarifications
+
+### Session 2026-05-29
+
+- Q: How should the Python `content-authoring-service` validate the tenant API key provided by external tools and retrieve the associated tenant scope? → A: Validate the API key via a synchronous internal REST call to the Next.js CMS (`/api/api-keys/validate`) using the `X-Internal-Secret` header.
+- Q: To support local tools like Claude Desktop AND cloud-based tools like ChatGPT or Gemini, which network/transport protocols should the `content-authoring-service` implement? → A: Support both Stdio (for local developer desktop setup) and SSE (Server-Sent Events) for cloud/web-based integrations.
+- Q: How should the A2UI/AGUI JSON payload emitted by the Hermes Agents be structured to represent visual components? → A: Use a custom, lightweight Alexandria-aligned JSON schema defining standard components (e.g., Card, Table, Chart, Form) mapped to Alexandria design system tokens.
+- Q: What boundaries and constraints are explicitly out of scope for this initial integration phase? → A: Out of scope are client-side A2UI rendering libraries, multi-user real-time conflict synchronization, WebSockets transport, and custom rate-limiting/billing.
+- Q: How should external AI clients pass the Hermes tenant API Key to the content-authoring-service for stdio and SSE transports? → A: Use environment variable `HERMES_API_KEY` for stdio transport, and HTTP header `X-API-Key` or `Authorization: Bearer` for SSE transport.
+- Q: How should Claude Desktop or other stdio-based clients invoke the Hermes MCP server? → A: Configured to invoke the shell/PowerShell wrapper script: `scripts/run-mcp-stdio.sh` (Unix) or `scripts/run-mcp-stdio.ps1` (Windows) to handle virtualenv and environment setup.
+- Q: Which HTTP endpoints should the content-authoring-service expose for the SSE (Server-Sent Events) transport? → A: Expose `GET /api/v1/mcp/sse` (to establish the stream) and `POST /api/v1/mcp/message` (for client JSON-RPC requests).
+- Q: How should MCP and A2A external requests and tool executions be traced using our Langfuse infrastructure? → A: Log every session/request as a unified Langfuse trace, with all tool executions and LLM steps as spans tagged with `tenant_id` and client metadata.
+- Q: How should the A2UI/AGUI JSON payload map design styles to the Alexandria Design System? → A: Use semantic design tokens in the JSON schema (e.g., `theme: "primary"`, `typography: "serif"`) that the client application resolves, keeping the Python microservice decoupled from CSS details.
+
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Direct Interaction via Claude Desktop (Priority: P1)
@@ -13,7 +28,7 @@ As a content creator, I want to connect my Claude Desktop application to Hermes 
 
 **Why this priority**: This is the core requirement. Enabling external AI tools to use Hermes Agents fulfills the primary goal of making the CMS "omnipresent" and reducing UI friction.
 
-**Independent Test**: Can be tested by configuring Claude Desktop with the Hermes MCP server and successfully calling a "Draft Content" tool from the Claude interface.
+**Independent Test**: Can be tested by configuring Claude Desktop with the Hermes MCP server (using the workspace wrapper script `scripts/run-mcp-stdio.sh` or `.ps1`) and successfully calling a "Draft Content" tool from the Claude interface.
 
 **Acceptance Scenarios**:
 
@@ -77,19 +92,28 @@ As an external tool or agent, I want to automatically discover what Hermes Agent
 
 - **FR-001**: System MUST implement the Model Context Protocol (MCP) server specification within the `content-authoring-service`.
 - **FR-002**: System MUST expose a hybrid set of MCP "Tools", including a general conversational agent tool alongside discrete functional capabilities (e.g., draft_content).
-- **FR-003**: System MUST authenticate external tool requests using an API Key.
-- **FR-004**: System MUST support the Stdio transport protocol for MCP connections.
+- **FR-003**: System MUST authenticate external tool requests using an API Key. The Python service will retrieve the API key from the `HERMES_API_KEY` environment variable (for Stdio transport) or the `X-API-Key` / `Authorization` header (for SSE transport), and validate it via a synchronous internal REST call to the Next.js CMS (`/api/api-keys/validate`) using the `X-Internal-Secret` header.
+- **FR-004**: System MUST support both Stdio (for local desktop tools like Claude Desktop) and HTTP SSE (Server-Sent Events) transport protocols (for cloud/web-based external agents) for MCP connections. The SSE transport MUST expose `GET /api/v1/mcp/sse` to establish the connection and `POST /api/v1/mcp/message` to receive client JSON-RPC messages.
 - **FR-005**: System MUST enforce tenant-level isolation for all external agent interactions based on the provided credentials.
 - **FR-006**: System MUST provide a mechanism for external tools to list and discover available agents and their specialized domains.
 - **FR-007**: System MUST support the A2UI (Agent-to-UI) standard for emitting interactive UI components.
-- **FR-008**: System MUST provide Agent-Generated UI (AGUI) templates that adhere to the Alexandria Design System.
+- **FR-008**: System MUST provide Agent-Generated UI (AGUI) templates that utilize the Alexandria semantic design tokens (e.g., theme, typography, elevation) in their JSON schema payloads.
+- **FR-009**: System MUST provide standard wrapper scripts `scripts/run-mcp-stdio.sh` (for Unix) and `scripts/run-mcp-stdio.ps1` (for Windows) in the repository root to simplify local developer stdio configuration and handle virtualenv bootstrap and environment variables.
+- **FR-010**: System MUST trace all incoming MCP/A2A session requests, tool calls, and downstream LLM operations using Langfuse, grouping them under a single trace tagged with `tenant_id` and `client_id` for end-to-end observability and auditing.
+
+### Out of Scope
+
+- Client-side A2UI rendering libraries (the client host application is responsible for parsing and rendering the Alexandria JSON DSL).
+- Real-time multi-user collaborative editing and session synchronization (sessions are isolated and ephemeral).
+- WebSockets transport protocol (focusing entirely on Stdio and HTTP SSE).
+- Native API-level rate-limiting and billing management (delegated to standard infrastructure API gateway layers).
 
 ### Key Entities
 
 - **MCP Tool**: A stateless wrapper around a Hermes Agent capability (e.g., "create-content", "search-knowledge-base").
 - **Agent Context**: Ephemeral state and history maintained in memory during an A2A/MCP session for the duration of the transport connection.
 - **External Connection**: A validated session from a 3rd-party AI tool (Claude, ChatGPT, etc.).
-- **A2UI Component**: A pure JSON schema (Custom DSL) defining component types, properties, and data bindings mapped to Alexandria design tokens, emitted by the agent.
+- **A2UI Component**: A custom, lightweight Alexandria-aligned JSON schema (Custom DSL) defining component types (e.g., `card`, `table`, `chart`, `form`), hierarchical data properties, and action bindings mapped to semantic Alexandria design tokens (such as `theme: "primary"`, `typography: "serif"`, and `elevation: "flat"`), resolved by the client host, emitted by the agent.
 
 ## Success Criteria *(mandatory)*
 
@@ -106,4 +130,3 @@ As an external tool or agent, I want to automatically discover what Hermes Agent
 - **External Support**: We assume the target tools (Claude Desktop, etc.) fully support the MCP/A2A specifications as they are released.
 - **Network Accessibility**: We assume the `content-authoring-service` is reachable by the external tools (either via local stdio for desktop apps or public endpoints for cloud-based AI).
 - **A2UI Host Support**: We assume the host application (e.g., a custom dashboard or future Claude capability) can interpret the A2UI JSON schema.
- assume the host application (e.g., a custom dashboard or future Claude capability) can interpret the A2UI JSON schema.
