@@ -117,6 +117,7 @@
 - [ ] T022 [P] Create and update user guides/docs in `docs/architecture.md` and `specs/007-a2a-mcp-integration/quickstart.md`
 - [ ] T023 Code cleanup, PEP-8 compliance, and type annotations verification in all new python files
 - [ ] T024 Run end-to-end integration checklist and verify Claude Desktop connection
+- [ ] T025 Perform connection handshake latency benchmarking to verify that SSE connection establishment consistently takes less than 500ms (verifying SC-002)
 
 ---
 

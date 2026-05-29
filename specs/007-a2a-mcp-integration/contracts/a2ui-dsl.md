@@ -2,6 +2,12 @@
 
 This contract specifies the custom, lightweight, Alexandria-aligned JSON schema for UI layout descriptions returned from Hermes AI Agents during tool invocations or chat responses.
 
+## Graceful Degradation and Client Fallbacks
+
+If a client or host application (e.g., standard Claude Desktop, standard ChatGPT web client) does not support custom A2UI/AGUI rendering or fails to parse a specific custom visual layout token, the following fallback rules MUST be observed:
+1. **Content Preservation**: The client MUST ignore the `visual` JSON property completely and fall back to rendering the standard markdown `text` property contained in the `content` block.
+2. **Text Summarization**: The Hermes AI Agent MUST ensure that any critical details or tabular metrics presented in the `visual` block are also briefly summarized in the accompanying markdown `text` so that the interaction remains fully functional in headless/pure-text environments.
+
 ---
 
 ## 1. Visual Response Payload

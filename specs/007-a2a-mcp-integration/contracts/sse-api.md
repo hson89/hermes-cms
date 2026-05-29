@@ -2,6 +2,14 @@
 
 This contract specifies the Server-Sent Events (SSE) transport endpoints implemented in the `content-authoring-service` for cloud-based MCP clients.
 
+## Authentication Rules
+
+To support various API clients, the service accepts the tenant API key in two formats:
+1. **Custom Header**: `X-API-Key: <hermes-tenant-api-key>`
+2. **Standard Header**: `Authorization: Bearer <hermes-tenant-api-key>`
+
+Both methods pass the raw Hermes tenant API key directly. The FastAPI microservice validates this token via an internal synchronous REST request to Next.js Content Management Engine's `/api/api-keys/validate` endpoint using the `X-Internal-Secret` security header.
+
 ---
 
 ## 1. Connection Establishment (SSE Endpoint)

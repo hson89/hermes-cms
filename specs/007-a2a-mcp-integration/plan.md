@@ -77,7 +77,9 @@ apps/content-authoring-service/
     ├── application/
     │   └── mcp/                      # [NEW] Application layer for MCP handling
     │       ├── __init__.py
+    │       ├── a2ui.py               # A2UI classes & Alexandria style mapper
     │       ├── server.py             # MCP Server setup and tools registry
+    │       ├── session.py            # Session context and in-memory registry
     │       ├── sse_transport.py      # SSE connection registry and protocol mapping
     │       └── tools.py              # Individual MCP tools (draft, schema)
     ├── infrastructure/
