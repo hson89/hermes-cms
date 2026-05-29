@@ -19,8 +19,8 @@
 
 **Purpose**: Project initialization, virtualenv configuration, and core dependency installation.
 
-- [ ] T001 Add `mcp` SDK to Python dependencies list in `apps/content-authoring-service/requirements.txt`
-- [ ] T002 Configure Python virtualenv and install new dependencies in `apps/content-authoring-service/`
+- [x] T001 Add `mcp` SDK to Python dependencies list in `apps/content-authoring-service/requirements.txt`
+- [x] T002 Configure Python virtualenv and install new dependencies in `apps/content-authoring-service/`
 
 ---
 
@@ -30,11 +30,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 [P] Write Jest unit tests for the Next.js API key validation route in `apps/content-management-engine/tests/api/api-keys/validate.test.ts`
-- [ ] T004 Implement custom Payload API key validation Route Handler in `apps/content-management-engine/src/app/(payload)/api/api-keys/validate/route.ts`
-- [ ] T005 [P] Write pytest unit tests for the CMS Client in `apps/content-authoring-service/tests/infrastructure/clients/test_cms_client.py`
-- [ ] T006 Implement `CMSClient` class inside `apps/content-authoring-service/src/infrastructure/clients/cms_client.py` to communicate with Payload CMS validation endpoint
-- [ ] T007 Implement ephemeral `MCPSessionContext` and in-memory session registry inside `apps/content-authoring-service/src/application/mcp/session.py`
+- [x] T003 [P] Write Jest unit tests for the Next.js API key validation route in `apps/content-management-engine/tests/api/api-keys/validate.test.ts`
+- [x] T004 Implement custom Payload API key validation Route Handler in `apps/content-management-engine/src/app/(payload)/api/api-keys/validate/route.ts`
+- [x] T005 [P] Write pytest unit tests for the CMS Client in `apps/content-authoring-service/tests/infrastructure/clients/test_cms_client.py`
+- [x] T006 Implement `CMSClient` class inside `apps/content-authoring-service/src/infrastructure/clients/cms_client.py` to communicate with Payload CMS validation endpoint
+- [x] T007 Implement ephemeral `MCPSessionContext` and in-memory session registry inside `apps/content-authoring-service/src/application/mcp/session.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel.
 
@@ -47,14 +47,14 @@
 **Independent Test**: Configure Claude Desktop with the Hermes MCP server (using the workspace wrapper script `scripts/run-mcp-stdio.sh` or `.ps1`) and successfully call a "Draft Content" tool from the Claude interface.
 
 ### Tests for User Story 1
-- [ ] T008 [P] [US1] Write pytest tests for stdio transport and JSON-RPC message exchange in `apps/content-authoring-service/tests/application/mcp/test_mcp_stdio.py`
+- [x] T008 [P] [US1] Write pytest tests for stdio transport and JSON-RPC message exchange in `apps/content-authoring-service/tests/application/mcp/test_mcp_stdio.py`
 
 ### Implementation for User Story 1
-- [ ] T009 [P] [US1] Implement dynamic mapping of Hermes agent capabilities to MCP tools in `apps/content-authoring-service/src/application/mcp/tools.py`
-- [ ] T010 [US1] Implement the core MCP server module with stdio transport interface in `apps/content-authoring-service/src/application/mcp/server.py`
-- [ ] T011 [US1] Write Unix developer bootstrap shell script at `scripts/run-mcp-stdio.sh`
-- [ ] T012 [US1] Write Windows developer bootstrap PowerShell script at `scripts/run-mcp-stdio.ps1`
-- [ ] T013 [US1] Integrate standard Langfuse logging and trace grouping for all tool invocations inside `apps/content-authoring-service/src/application/mcp/server.py`
+- [x] T009 [P] [US1] Implement dynamic mapping of Hermes agent capabilities to MCP tools in `apps/content-authoring-service/src/application/mcp/tools.py`
+- [x] T010 [US1] Implement the core MCP server module with stdio transport interface in `apps/content-authoring-service/src/application/mcp/server.py`
+- [x] T011 [US1] Write Unix developer bootstrap shell script at `scripts/run-mcp-stdio.sh`
+- [x] T012 [US1] Write Windows developer bootstrap PowerShell script at `scripts/run-mcp-stdio.ps1`
+- [x] T013 [US1] Integrate standard Langfuse logging and trace grouping for all tool invocations inside `apps/content-authoring-service/src/application/mcp/server.py`
 
 **Checkpoint**: User Story 1 (Claude stdio integration) is fully functional and testable.
 
