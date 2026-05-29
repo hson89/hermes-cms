@@ -76,7 +76,7 @@ As an external tool or agent, I want to automatically discover what Hermes Agent
 ### Functional Requirements
 
 - **FR-001**: System MUST implement the Model Context Protocol (MCP) server specification within the `content-authoring-service`.
-- **FR-002**: System MUST expose Hermes AI Agent capabilities as MCP "Tools".
+- **FR-002**: System MUST expose a hybrid set of MCP "Tools", including a general conversational agent tool alongside discrete functional capabilities (e.g., draft_content).
 - **FR-003**: System MUST authenticate external tool requests using an API Key.
 - **FR-004**: System MUST support the Stdio transport protocol for MCP connections.
 - **FR-005**: System MUST enforce tenant-level isolation for all external agent interactions based on the provided credentials.
@@ -87,9 +87,9 @@ As an external tool or agent, I want to automatically discover what Hermes Agent
 ### Key Entities
 
 - **MCP Tool**: A stateless wrapper around a Hermes Agent capability (e.g., "create-content", "search-knowledge-base").
-- **Agent Context**: The state and history maintained during an A2A/MCP session to ensure coherent multi-turn conversations.
+- **Agent Context**: Ephemeral state and history maintained in memory during an A2A/MCP session for the duration of the transport connection.
 - **External Connection**: A validated session from a 3rd-party AI tool (Claude, ChatGPT, etc.).
-- **A2UI Component**: A standardized, JSON-serializable representation of a UI element (e.g., a "Content Card" or "Data Table") emitted by the agent.
+- **A2UI Component**: A pure JSON schema (Custom DSL) defining component types, properties, and data bindings mapped to Alexandria design tokens, emitted by the agent.
 
 ## Success Criteria *(mandatory)*
 
@@ -106,3 +106,4 @@ As an external tool or agent, I want to automatically discover what Hermes Agent
 - **External Support**: We assume the target tools (Claude Desktop, etc.) fully support the MCP/A2A specifications as they are released.
 - **Network Accessibility**: We assume the `content-authoring-service` is reachable by the external tools (either via local stdio for desktop apps or public endpoints for cloud-based AI).
 - **A2UI Host Support**: We assume the host application (e.g., a custom dashboard or future Claude capability) can interpret the A2UI JSON schema.
+ assume the host application (e.g., a custom dashboard or future Claude capability) can interpret the A2UI JSON schema.
