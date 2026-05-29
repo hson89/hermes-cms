@@ -67,11 +67,11 @@
 **Independent Test**: Run a curl/script to connect to `/api/v1/mcp/sse` and verify it establishes a stream and successfully returns a tool response for `POST /api/v1/mcp/message`.
 
 ### Tests for User Story 2
-- [ ] T014 [P] [US2] Write pytest integration tests for SSE connection and client JSON-RPC endpoint in `apps/content-authoring-service/tests/application/mcp/test_mcp_sse.py`
+- [x] T014 [P] [US2] Write pytest integration tests for SSE connection and client JSON-RPC endpoint in `apps/content-authoring-service/tests/application/mcp/test_mcp_sse.py`
 
 ### Implementation for User Story 2
-- [ ] T015 [P] [US2] Implement the SSE connection registry and protocol mapping in `apps/content-authoring-service/src/application/mcp/sse_transport.py`
-- [ ] T016 [US2] Register SSE route `GET /api/v1/mcp/sse` and message route `POST /api/v1/mcp/message` in `apps/content-authoring-service/src/main.py`
+- [x] T015 [P] [US2] Implement the SSE connection registry and protocol mapping in `apps/content-authoring-service/src/application/mcp/sse_transport.py`
+- [x] T016 [US2] Register SSE route `GET /api/v1/mcp/sse` and message route `POST /api/v1/mcp/message` in `apps/content-authoring-service/src/main.py`
 
 **Checkpoint**: User Story 2 (SSE connection streaming) is functional.
 
@@ -84,11 +84,11 @@
 **Independent Test**: Call the drafting agent via Claude or curl and verify that the response payload includes a `visual` block conforming to the Alexandria component schema.
 
 ### Tests for User Story 3
-- [ ] T017 [P] [US3] Write pytest schema validation tests for agent-emitted A2UI components in `apps/content-authoring-service/tests/application/mcp/test_a2ui.py`
+- [x] T017 [P] [US3] Write pytest schema validation tests for agent-emitted A2UI components in `apps/content-authoring-service/tests/application/mcp/test_a2ui.py`
 
 ### Implementation for User Story 3
-- [ ] T018 [US3] Define A2UI JSON schema/classes and Alexandria token style mapper inside `apps/content-authoring-service/src/application/mcp/a2ui.py`
-- [ ] T019 [US3] Integrate A2UI visual response blocks into agent tool result formatting inside `apps/content-authoring-service/src/application/mcp/tools.py`
+- [x] T018 [US3] Define A2UI JSON schema/classes and Alexandria token style mapper inside `apps/content-authoring-service/src/application/mcp/a2ui.py`
+- [x] T019 [US3] Integrate A2UI visual response blocks into agent tool result formatting inside `apps/content-authoring-service/src/application/mcp/tools.py`
 
 **Checkpoint**: User Story 3 (A2UI JSON payload generation) is functional.
 
@@ -101,10 +101,10 @@
 **Independent Test**: Query the MCP tool discovery endpoint and verify it returns all registered agents dynamically.
 
 ### Tests for User Story 4
-- [ ] T020 [P] [US4] Write pytest tests for dynamic tool listing and schema discovery in `apps/content-authoring-service/tests/application/mcp/test_discovery.py`
+- [x] T020 [P] [US4] Write pytest tests for dynamic tool listing and schema discovery in `apps/content-authoring-service/tests/application/mcp/test_discovery.py`
 
 ### Implementation for User Story 4
-- [ ] T021 [US4] Support dynamic agent lookup and automated discovery payload generation inside `apps/content-authoring-service/src/application/mcp/server.py`
+- [x] T021 [US4] Support dynamic agent lookup and automated discovery payload generation inside `apps/content-authoring-service/src/application/mcp/server.py`
 
 **Checkpoint**: Dynamic capability discovery is functional.
 
@@ -114,10 +114,10 @@
 
 **Purpose**: Refactoring, optimization, security auditing, and documentation.
 
-- [ ] T022 [P] Create and update user guides/docs in `docs/architecture.md` and `specs/007-a2a-mcp-integration/quickstart.md`
-- [ ] T023 Code cleanup, PEP-8 compliance, and type annotations verification in all new python files
-- [ ] T024 Run end-to-end integration checklist and verify Claude Desktop connection
-- [ ] T025 Perform connection handshake latency benchmarking to verify that SSE connection establishment consistently takes less than 500ms (verifying SC-002)
+- [x] T022 [P] Create and update user guides/docs in `docs/architecture.md` and `specs/007-a2a-mcp-integration/quickstart.md`
+- [x] T023 Code cleanup, PEP-8 compliance, and type annotations verification in all new python files
+- [x] T024 Run end-to-end integration checklist and verify Claude Desktop connection
+- [x] T025 Perform connection handshake latency benchmarking to verify that SSE connection establishment consistently takes less than 500ms (verifying SC-002)
 
 ---
 

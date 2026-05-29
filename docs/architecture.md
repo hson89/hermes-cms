@@ -66,6 +66,14 @@ Hermes AI utilizes a modular, hybrid architecture designed for enterprise-grade 
   * **Conversational Context:** Tracks AI chat history in the local `AIAgentSession` table model for conversational consistency across turn sequences.
   * **Native Agent Tools:** Connects to native LangChain tools including `schema_resolver` (safely looking up CMS structures) and `image_generator` (orchestrating media creation).
 
+### 4. Agent-to-Agent (A2A) & Model Context Protocol (MCP) Integration
+* **Framework:** Model Context Protocol (MCP) Python SDK, FastMCP.
+* **Transports Supported:** Stdio (for local desktop setups) and Server-Sent Events (SSE) (for cloud-based setups).
+* **Responsibilities:**
+  * **Capability Discovery:** Dynamic mapping and registration of Hermes AI Agent tools (`draft_content`, `chat_agent`) to MCP-discoverable capabilities.
+  * **Logical Multi-tenancy Scoping:** Strictly scopes every external request to its tenant context via headers (`X-API-Key` or `Authorization: Bearer`) or env (`HERMES_API_KEY`), validated against Next.js engine `/api/api-keys/validate` and bound using `active_tenant_var` ContextVar.
+  * **A2UI / AGUI Payloads:** Emits lightweight, Alexandria-aligned visual JSON components (Cards, Tables, Charts, Forms) mapping semantic Alexandria tokens directly in tool responses to compatible hosts.
+
 ---
 
 ## Core Architectural Flows

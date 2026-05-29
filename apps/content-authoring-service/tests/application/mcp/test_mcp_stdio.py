@@ -46,10 +46,18 @@ async def test_mcp_draft_content_tool_success(mock_ai_class, mock_draft_class, m
             "tenant": "tenant_123"
         })
         
-        contents, _ = await mcp.call_tool("draft_content", {
+        res = await mcp.call_tool("draft_content", {
             "prompt": "Create blog post about Alexandria design system",
             "content_type_slug": "posts"
         })
+        
+        # Handle CallToolResult or 2-tuple response robustly
+        if isinstance(res, tuple):
+            contents = res[0]
+        elif hasattr(res, "content"):
+            contents = res.content
+        else:
+            contents = res
         
         # Assert
         assert len(contents) > 0
@@ -81,10 +89,18 @@ async def test_mcp_chat_agent_tool_success(mock_ai_class, mock_cms_class):
             "tenant": "tenant_123"
         })
         
-        contents, _ = await mcp.call_tool("chat_agent", {
+        res = await mcp.call_tool("chat_agent", {
             "prompt": "Create a new content type for recipes",
             "session_id": "session-123"
         })
+        
+        # Handle CallToolResult or 2-tuple response robustly
+        if isinstance(res, tuple):
+            contents = res[0]
+        elif hasattr(res, "content"):
+            contents = res.content
+        else:
+            contents = res
         
         # Assert
         assert len(contents) > 0

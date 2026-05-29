@@ -2,7 +2,7 @@ import os
 import uuid
 import logging
 import json
-from typing import Optional
+from typing import Optional, Any
 from mcp.server.fastmcp import FastMCP
 
 from src.infrastructure.clients.cms_client import CMSClient
@@ -22,7 +22,7 @@ async def draft_content(
     prompt: str,
     content_type_slug: Optional[str] = None,
     session_id: Optional[str] = None
-) -> str:
+) -> Any:
     """
     Drafts and structures high-quality content matching the scoped tenant's content schemas.
     
@@ -110,7 +110,40 @@ async def draft_content(
             except Exception:
                 pass
                 
-        return "".join(response_markdown)
+        text_response = "".join(response_markdown)
+        
+        if final_draft_content and isinstance(final_draft_content, dict):
+            try:
+                from src.application.mcp.a2ui import A2UICard, A2UITable, create_a2ui_response
+                table_rows = [
+                    ["Title", final_draft_content.get("title") or final_draft_content.get("name") or "Untitled"],
+                    ["Content Type", content_type_slug or "Default"],
+                    ["Word Count", f"{len(str(final_draft_content).split())} words"]
+                ]
+                table_rows = [[str(cell) if cell is not None else "" for cell in row] for row in table_rows]
+                
+                table = A2UITable(
+                    theme="neutral",
+                    typography="sans",
+                    data={
+                        "headers": ["Metric", "Value"],
+                        "rows": table_rows
+                    }
+                )
+                
+                card = A2UICard(
+                    title="Content Draft Status",
+                    description="Successfully completed drafting",
+                    theme="success",
+                    typography="serif",
+                    elevation="glass",
+                    children=[table]
+                )
+                return create_a2ui_response(text_response, card)
+            except Exception as a2ui_err:
+                logger.error(f"Failed to build A2UI block for draft_content: {a2ui_err}")
+                
+        return text_response
 
     except ValueError as val_err:
         return f"Authentication Error: {str(val_err)}"
@@ -122,7 +155,7 @@ async def draft_content(
 async def chat_agent(
     prompt: str,
     session_id: Optional[str] = None
-) -> str:
+) -> Any:
     """
     Interacts with the Hermes AI co-creation agent to design content types or configure schemas.
     
@@ -209,7 +242,44 @@ async def chat_agent(
             except Exception:
                 pass
                 
-        return "".join(response_markdown)
+        text_response = "".join(response_markdown)
+        
+        if final_schema_state and isinstance(final_schema_state, dict):
+            try:
+                from src.application.mcp.a2ui import A2UICard, A2UITable, create_a2ui_response
+                fields = final_schema_state.get("fields", [])
+                table_rows = []
+                for field in fields:
+                    if isinstance(field, dict):
+                        table_rows.append([
+                            str(field.get("name", "Unnamed")),
+                            str(field.get("type", "text")),
+                            str(field.get("required", False))
+                        ])
+                
+                if table_rows:
+                    table = A2UITable(
+                        theme="neutral",
+                        typography="sans",
+                        data={
+                            "headers": ["Field Name", "Type", "Required"],
+                            "rows": table_rows
+                        }
+                    )
+                    
+                    card = A2UICard(
+                        title="Schema Definition",
+                        description=f"Active Schema State ({len(table_rows)} fields)",
+                        theme="primary",
+                        typography="serif",
+                        elevation="glass",
+                        children=[table]
+                    )
+                    return create_a2ui_response(text_response, card)
+            except Exception as a2ui_err:
+                logger.error(f"Failed to build A2UI block for chat_agent: {a2ui_err}")
+                
+        return text_response
 
     except ValueError as val_err:
         return f"Authentication Error: {str(val_err)}"

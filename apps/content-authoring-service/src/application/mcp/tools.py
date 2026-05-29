@@ -10,11 +10,22 @@ from src.application.drafting_service import DraftingService
 
 logger = logging.getLogger(__name__)
 
+import contextvars
+
+# ContextVar to store active tenant metadata during an HTTP request
+active_tenant_var: contextvars.ContextVar[Dict[str, Any]] = contextvars.ContextVar("active_tenant_var")
+
 async def get_active_tenant(session_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Validates the API key from the environment or context and returns the key validation metadata.
     Raises ValueError if validation fails.
     """
+    try:
+        # Check context variable first (set during HTTP requests)
+        return active_tenant_var.get()
+    except LookupError:
+        pass
+
     # 1. Obtain HERMES_API_KEY from environment (standard for stdio local transport)
     api_key = os.environ.get("HERMES_API_KEY")
     if not api_key:
