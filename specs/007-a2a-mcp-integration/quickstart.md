@@ -2,6 +2,9 @@
 
 This guide explains how to connect external AI assistants (such as Claude Desktop) to the Hermes CMS MCP Server, and perform test calls in development.
 
+> [!NOTE]
+> For a comprehensive guide covering full architecture, Server-Sent Events (SSE) handshakes, Agent-to-UI (A2UI) DSL specifications, Langfuse tracing, and WSL 2 troubleshooting, please refer to the detailed [manual.md](file:///home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/manual.md).
+
 ---
 
 ## 1. Local Stdio Integration with Claude Desktop
