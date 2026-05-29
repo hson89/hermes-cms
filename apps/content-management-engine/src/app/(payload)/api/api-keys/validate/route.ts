@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Parse Request Body
-  let body: any
+  let body: Record<string, unknown>
   try {
-    body = await req.json()
+    body = (await req.json()) as Record<string, unknown>
   } catch (err) {
     return NextResponse.json(
       { error: 'Invalid JSON request body' },
@@ -31,7 +31,10 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { apiKey } = body
+  const apiKey = typeof body === 'object' && body !== null && typeof body.apiKey === 'string'
+    ? body.apiKey
+    : undefined
+
   if (!apiKey) {
     return NextResponse.json(
       { error: 'API Key is required' },

@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, Request, HTTPException, status
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from mcp.server.sse import SseServerTransport
 
 from src.application.mcp.server import mcp
@@ -77,7 +77,7 @@ async def handle_message(request: Request):
         session_id_param = request.query_params.get("session_id")
         if session_id_param is None:
             logger.warning("Received request without session_id")
-            return Response("session_id is required", status_code=400)
+            return JSONResponse(status_code=400, content={"detail": "session_id is required"})
             
         return await sse_transport.handle_post_message(request.scope, request.receive, request._send)
     finally:

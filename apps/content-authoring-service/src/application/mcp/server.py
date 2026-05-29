@@ -206,6 +206,11 @@ async def chat_agent(
             aggregated_explanation.append(res.get("message", ""))
             final_schema_state = res.get("schema")
         else:
+            # Verify session tenant matches authenticated tenant
+            compat_session = await ai_service.get_session(resolved_session_id)
+            if compat_session and str(compat_session.tenant_id) != str(tenant_id):
+                return "Authentication Error: The requested session does not belong to the active tenant context."
+
             # Continue co-creation session stream
             async for event in ai_service.continue_generation_session_stream(
                 session_id=resolved_session_id,

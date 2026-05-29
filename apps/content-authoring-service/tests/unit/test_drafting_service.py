@@ -287,3 +287,26 @@ async def test_generate_draft_stream_conversational_no_healing(drafting_service,
 
     mock_model.ainvoke.assert_not_called()
     assert not any(e["event"] == "DRAFT_COMPLETE" for e in events)
+
+@pytest.mark.asyncio
+async def test_generate_draft_stream_tenant_mismatch(drafting_service, mock_ai_service):
+    mock_db = AsyncMock()
+    mock_graph = MockDraftingGraph([])
+    
+    mock_state_container = MagicMock()
+    mock_state_container.values = {"tenant_id": "tenant-other"}
+    mock_graph.aget_state.return_value = mock_state_container
+    
+    with pytest.raises(ValueError, match="Session does not belong to the active tenant context"):
+        async for _ in drafting_service.generate_draft_stream(
+            prompt="write an article about saving fuel",
+            content_type_slug="articles",
+            schema_json={"fields": [{"name": "title", "type": "text"}]},
+            tenant_id="tenant-my",
+            user_id="user-123",
+            db=mock_db,
+            session_id="session-123",
+            drafting_graph=mock_graph
+        ):
+            pass
+

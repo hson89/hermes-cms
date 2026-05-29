@@ -78,6 +78,7 @@ async def test_mcp_chat_agent_tool_success(mock_ai_class, mock_cms_class):
         yield {"event": "STATE_DELTA", "data": {"fields": []}}
         
     mock_ai.continue_generation_session_stream.side_effect = mock_schema_generator
+    mock_ai.get_session = AsyncMock(return_value=None)
 
     # Act
     with patch.dict("os.environ", {"HERMES_API_KEY": "local-developer-api-key", "INTERNAL_SERVICE_SECRET": "internal-secret"}):
@@ -105,3 +106,42 @@ async def test_mcp_chat_agent_tool_success(mock_ai_class, mock_cms_class):
         # Assert
         assert len(contents) > 0
         assert any("Generating schema" in content.text for content in contents)
+
+@pytest.mark.asyncio
+@patch("src.application.mcp.tools.CMSClient", new_callable=MagicMock)
+@patch("src.application.mcp.server.AIService", new_callable=MagicMock)
+async def test_mcp_chat_agent_tool_tenant_mismatch(mock_ai_class, mock_cms_class):
+    # Arrange
+    mock_ai = mock_ai_class.return_value
+    
+    # Setup mock session with different tenant
+    mock_session = MagicMock()
+    mock_session.tenant_id = "tenant-other"
+    mock_ai.get_session = AsyncMock(return_value=mock_session)
+    
+    # Act
+    with patch.dict("os.environ", {"HERMES_API_KEY": "local-developer-api-key", "INTERNAL_SERVICE_SECRET": "internal-secret"}):
+        mock_cms = mock_cms_class.return_value
+        mock_cms.validate_api_key = AsyncMock(return_value={
+            "id": "key_123",
+            "label": "Claude Key",
+            "email": "editor@tenant.com",
+            "tenant": "tenant_123"
+        })
+        
+        res = await mcp.call_tool("chat_agent", {
+            "prompt": "Create a new content type",
+            "session_id": "session-123"
+        })
+        
+        # Handle CallToolResult or 2-tuple response robustly
+        if isinstance(res, tuple):
+            contents = res[0]
+        elif hasattr(res, "content"):
+            contents = res.content
+        else:
+            contents = res
+            
+        assert len(contents) > 0
+        assert any("Authentication Error: The requested session does not belong to the active tenant context." in content.text for content in contents)
+

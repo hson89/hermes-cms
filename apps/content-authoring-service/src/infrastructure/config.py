@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Security
     INTERNAL_SERVICE_SECRET: str = ""
-    MARKETPLACE_JWT_SECRET: str = "test-secret-123"
+    MARKETPLACE_JWT_SECRET: str = "hermes-marketplace-jwt-secret-key-32bytes"
     CMS_ENGINE_URL: str = "http://localhost:3000"
 
     # LLM Configuration

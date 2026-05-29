@@ -204,6 +204,11 @@ Return ONLY the slug or "NONE". Do not include any other text or markdown block.
         state_container = await drafting_graph.aget_state(config)
         is_refinement = False
 
+        if state_container and state_container.values:
+            session_tenant = state_container.values.get("tenant_id")
+            if session_tenant and str(session_tenant) != str(tenant_id):
+                raise ValueError("Session does not belong to the active tenant context.")
+
         if not state_container or not state_container.values:
             # First turn: Initialize state
             inputs = {

@@ -71,6 +71,6 @@ async def test_sse_post_message_missing_session(mock_cms_class):
         
         # Assert
         assert response.status_code == 400
-        assert "session_id is required" in response.text
+        assert "session_id is required" in response.json()["detail"]
 
 
