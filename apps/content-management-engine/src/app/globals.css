@@ -313,11 +313,36 @@ aside.nav {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
+/* Global Typography Defaults matching Alexandria Design System */
+html, body, button, input, select, textarea, .template-default, .template-default__wrap {
+  font-family: var(--font-body), "Inter", sans-serif !important;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-on-surface);
-  font-family: var(--font-body), sans-serif;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-headline), "Noto Serif", Georgia, serif !important;
+}
+
+.font-display {
+  font-family: var(--font-display), "Noto Serif", Georgia, serif !important;
+}
+.font-headline {
+  font-family: var(--font-headline), "Noto Serif", Georgia, serif !important;
+}
+.font-body {
+  font-family: var(--font-body), "Inter", sans-serif !important;
+}
+.font-label {
+  font-family: var(--font-label), "Public Sans", sans-serif !important;
+}
+.font-code {
+  font-family: var(--font-code), "JetBrains Mono", monospace !important;
+}
+
 
 /* Alexandria High-End Editorial Primary Buttons (WCAG AAA Compliant Gradient) */
 .btn-primary-gradient {
