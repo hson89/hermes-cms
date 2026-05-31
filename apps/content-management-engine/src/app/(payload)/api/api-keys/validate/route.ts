@@ -14,14 +14,25 @@ export async function POST(req: NextRequest) {
   const internalSecret = process.env.INTERNAL_SERVICE_SECRET
 
   if (!internalSecret) {
-    console.error('Security Fail-Closed: INTERNAL_SERVICE_SECRET is unset or empty in Next.js environment.')
+    console.error('CRITICAL SECURITY ERROR: INTERNAL_SERVICE_SECRET environment variable is missing!')
     return NextResponse.json(
-      { error: 'Internal server configuration error.' },
+      { error: 'Internal server configuration error' },
       { status: 500 }
     )
   }
 
-  if (secret !== internalSecret) {
+  if (!secret) {
+    return NextResponse.json(
+      { error: 'Internal authentication failed' },
+      { status: 401 }
+    )
+  }
+
+  // Mitigate Timing Attacks via Double HMAC-SHA256 Timing-Safe Comparison
+  const secretHash = crypto.createHash('sha256').update(secret).digest()
+  const expectedHash = crypto.createHash('sha256').update(internalSecret).digest()
+
+  if (!crypto.timingSafeEqual(secretHash, expectedHash)) {
     return NextResponse.json(
       { error: 'Internal authentication failed' },
       { status: 401 }

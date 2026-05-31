@@ -93,3 +93,52 @@ async def test_cms_client_validation_http_error():
         
         # Assert
         assert result is None
+
+@pytest.mark.asyncio
+async def test_cms_client_validation_uses_shared_client():
+    # Arrange
+    cms_url = "http://localhost:3000"
+    internal_secret = "hermes-internal-secret"
+    api_key = "valid-test-api-key"
+    
+    mock_response_data = {
+        "valid": True,
+        "apiKey": {
+            "id": "key_1",
+            "label": "Test Key",
+            "email": "test@tenant.com",
+            "tenant": "tenant_1"
+        }
+    }
+    
+    from unittest.mock import MagicMock
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = mock_response_data
+    
+    # Mock httpx.AsyncClient instance
+    mock_shared_client = MagicMock(spec=httpx.AsyncClient)
+    mock_shared_client.post = AsyncMock(return_value=mock_response)
+    mock_shared_client.aclose = AsyncMock()
+    
+    client = CMSClient(cms_url=cms_url, internal_secret=internal_secret, client=mock_shared_client)
+    
+    # Act
+    result = await client.validate_api_key(api_key)
+    
+    # Assert
+    assert result is not None
+    assert result["id"] == "key_1"
+    
+    # Verify post arguments on shared client
+    mock_shared_client.post.assert_called_once_with(
+        f"{cms_url}/api/api-keys/validate",
+        headers={
+            "X-Internal-Secret": internal_secret,
+            "Content-Type": "application/json"
+        },
+        json={"apiKey": api_key}
+    )
+    
+    # Verify the shared client was NOT closed
+    mock_shared_client.aclose.assert_not_called()
