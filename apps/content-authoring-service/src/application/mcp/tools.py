@@ -52,10 +52,16 @@ async def fetch_schema_for_slug(content_type_slug: str, tenant_id: str) -> Optio
         "X-Internal-Secret": settings.INTERNAL_SERVICE_SECRET,
         "Content-Type": "application/json",
     }
+    params = {
+        "where[slug][equals]": content_type_slug,
+        "where[tenant][equals]": tenant_id
+    }
     try:
-        async with httpx.AsyncClient() as client:
-            url = f"{cms_url}/api/content-types?where[slug][equals]={content_type_slug}&where[tenant][equals]={tenant_id}"
-            response = await client.get(url, headers=headers)
+        # Prevent Socket leaks & enforce standard 5-second timeouts
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            url = f"{cms_url}/api/content-types"
+            # Prevent injection by passing dictionary parameters safely
+            response = await client.get(url, headers=headers, params=params)
             if response.status_code == 200:
                 docs = response.json().get("docs", [])
                 if docs:

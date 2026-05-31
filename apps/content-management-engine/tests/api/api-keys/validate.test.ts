@@ -14,6 +14,10 @@ describe('API Key Validation Custom Endpoint', () => {
   const createdApiKeys: string[] = []
 
   beforeAll(async () => {
+    // Prevent timing-safe validation 500 errors by pre-setting test secret
+    if (!process.env.INTERNAL_SERVICE_SECRET) {
+      process.env.INTERNAL_SERVICE_SECRET = 'hermes-internal-secret'
+    }
     payload = await getPayload({ config: await config })
     
     // Create an active tenant
@@ -37,6 +41,10 @@ describe('API Key Validation Custom Endpoint', () => {
         id,
         overrideAccess: true,
       }).catch(() => {})
+    }
+    // Safely tear down PostgreSQL client pool connections to prevent open handles
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
     }
   })
 
@@ -63,6 +71,25 @@ describe('API Key Validation Custom Endpoint', () => {
     expect(res2.status).toBe(401)
     const body2 = await res2.json()
     expect(body2.error).toBe('Internal authentication failed')
+  })
+
+  it('should return 500 if INTERNAL_SERVICE_SECRET is unset in the environment', async () => {
+    const originalSecret = process.env.INTERNAL_SERVICE_SECRET
+    delete process.env.INTERNAL_SERVICE_SECRET
+
+    try {
+      const req = createMockRequest({ apiKey: 'some-key' }, { 'X-Internal-Secret': 'some-secret' })
+      const res = await POST(req)
+      expect(res.status).toBe(500)
+      const body = await res.json()
+      expect(body.error).toBe('Internal server configuration error')
+    } finally {
+      if (originalSecret === undefined) {
+        delete process.env.INTERNAL_SERVICE_SECRET
+      } else {
+        process.env.INTERNAL_SERVICE_SECRET = originalSecret
+      }
+    }
   })
 
   it('should return 400 if apiKey is missing in the body', async () => {

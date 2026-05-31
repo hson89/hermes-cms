@@ -31,9 +31,13 @@ async def validate_mcp_api_key(request: Request) -> Dict[str, Any]:
             detail="Authentication failed: API key missing in headers."
         )
 
+    # Retrieve shared connection pool from global app lifespan
+    shared_client = getattr(request.app.state, "http_client", None)
+
     cms_client = CMSClient(
         cms_url=settings.CMS_ENGINE_URL,
-        internal_secret=settings.INTERNAL_SERVICE_SECRET
+        internal_secret=settings.INTERNAL_SERVICE_SECRET,
+        client=shared_client
     )
     key_info = await cms_client.validate_api_key(api_key)
     if not key_info:
