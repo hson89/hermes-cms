@@ -15,6 +15,18 @@ import contextvars
 # ContextVar to store active tenant metadata during an HTTP request
 active_tenant_var: contextvars.ContextVar[Dict[str, Any]] = contextvars.ContextVar("active_tenant_var")
 
+# Shared HTTPX client pool for stdio / out-of-request operations
+_stdio_client: Optional[httpx.AsyncClient] = None
+
+def get_stdio_client() -> httpx.AsyncClient:
+    global _stdio_client
+    if _stdio_client is None:
+        _stdio_client = httpx.AsyncClient(
+            timeout=5.0,
+            limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+        )
+    return _stdio_client
+
 async def get_active_tenant(session_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Validates the API key from the environment or context and returns the key validation metadata.
@@ -32,10 +44,11 @@ async def get_active_tenant(session_id: Optional[str] = None) -> Dict[str, Any]:
         logger.error("Authentication failed: HERMES_API_KEY is not set in environment.")
         raise ValueError("Authentication failed: HERMES_API_KEY environment variable is not configured.")
 
-    # 2. Initialize CMSClient and validate key
+    # 2. Initialize CMSClient and validate key using shared client pool
     cms_client = CMSClient(
         cms_url=settings.CMS_ENGINE_URL,
-        internal_secret=settings.INTERNAL_SERVICE_SECRET
+        internal_secret=settings.INTERNAL_SERVICE_SECRET,
+        client=get_stdio_client()
     )
     
     key_info = await cms_client.validate_api_key(api_key)
@@ -57,15 +70,15 @@ async def fetch_schema_for_slug(content_type_slug: str, tenant_id: str) -> Optio
         "where[tenant][equals]": tenant_id
     }
     try:
-        # Prevent Socket leaks & enforce standard 5-second timeouts
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            url = f"{cms_url}/api/content-types"
-            # Prevent injection by passing dictionary parameters safely
-            response = await client.get(url, headers=headers, params=params)
-            if response.status_code == 200:
-                docs = response.json().get("docs", [])
-                if docs:
-                    return docs[0].get("schema")
+        client = get_stdio_client()
+        url = f"{cms_url}/api/content-types"
+        # Prevent injection by passing dictionary parameters safely
+        response = await client.get(url, headers=headers, params=params)
+        if response.status_code == 200:
+            docs = response.json().get("docs", [])
+            if docs:
+                return docs[0].get("schema")
     except Exception as e:
         logger.error(f"Failed to fetch content type schema for slug '{content_type_slug}': {e}")
     return None
+

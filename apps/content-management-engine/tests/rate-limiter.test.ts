@@ -1,4 +1,6 @@
+import { describe, beforeEach, it, expect } from '@jest/globals'
 import { isRateLimited } from '../src/services/rate-limiter'
+
 
 describe('Rate Limiter Service', () => {
   let createCalls: any[] = []
@@ -41,4 +43,20 @@ describe('Rate Limiter Service', () => {
     const limited = await isRateLimited(userId, mockPayload)
     expect(limited).toBe(true)
   })
+
+  it('should evict the oldest user when cache size exceeds 10000', async () => {
+    // 1. Add first user 'oldest-user'
+    await isRateLimited('oldest-user', mockPayload)
+
+    // 2. Add 10000 other unique users to trigger eviction
+    for (let i = 0; i < 10000; i++) {
+      await isRateLimited(`user-${i}`, mockPayload)
+    }
+
+    // 3. Since cache size is capped at 10000, 'oldest-user' should have been evicted.
+    // Querying it now should return false as it's treated as a fresh entry.
+    const limited = await isRateLimited('oldest-user', mockPayload)
+    expect(limited).toBe(false)
+  })
 })
+

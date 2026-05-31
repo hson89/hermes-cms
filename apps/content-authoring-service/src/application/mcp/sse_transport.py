@@ -16,6 +16,9 @@ router = APIRouter(prefix="/api/v1/mcp", tags=["MCP"])
 # SSE transport configuration with relative path matching the post message endpoint
 sse_transport = SseServerTransport(endpoint="/api/v1/mcp/message")
 
+# Canonical multi-tenant session ownership map (session_id -> tenant_id)
+session_tenant_registry: Dict[str, str] = {}
+
 async def validate_mcp_api_key(request: Request) -> Dict[str, Any]:
     """Helper to validate API key from request headers."""
     api_key = request.headers.get("x-api-key")
@@ -53,18 +56,35 @@ async def validate_mcp_api_key(request: Request) -> Dict[str, Any]:
 async def handle_sse(request: Request):
     """Establishes the SSE stream connection for cloud-based MCP clients."""
     key_info = await validate_mcp_api_key(request)
+    tenant_id = str(key_info["tenant"])
     
     # Store tenant context in contextvar for execution within the session
     token = active_tenant_var.set(key_info)
     
     try:
         async def sse_app_wrapper(scope, receive, send):
+            # Capture active sessions pre-connection to identify the new session_id
+            pre_keys = set(sse_transport._read_stream_writers.keys())
             async with sse_transport.connect_sse(scope, receive, send) as streams:
-                await mcp._mcp_server.run(
-                    streams[0],
-                    streams[1],
-                    mcp._mcp_server.create_initialization_options()
-                )
+                post_keys = set(sse_transport._read_stream_writers.keys())
+                new_keys = post_keys - pre_keys
+                new_session_id = list(new_keys)[0] if new_keys else None
+                
+                if new_session_id:
+                    canonical_id = str(new_session_id)
+                    session_tenant_registry[canonical_id] = tenant_id
+                    logger.info(f"Registered MCP SSE session {canonical_id} for tenant {tenant_id}")
+                
+                try:
+                    await mcp._mcp_server.run(
+                        streams[0],
+                        streams[1],
+                        mcp._mcp_server.create_initialization_options()
+                    )
+                finally:
+                    if new_session_id:
+                        session_tenant_registry.pop(str(new_session_id), None)
+                        logger.info(f"Unregistered MCP SSE session {str(new_session_id)}")
                 
         return await sse_app_wrapper(request.scope, request.receive, request._send)
     finally:
@@ -74,15 +94,36 @@ async def handle_sse(request: Request):
 async def handle_message(request: Request):
     """Receives JSON-RPC request messages from client."""
     key_info = await validate_mcp_api_key(request)
+    tenant_id = str(key_info["tenant"])
     
-    token = active_tenant_var.set(key_info)
-    
+    session_id_param = request.query_params.get("session_id")
+    if session_id_param is None:
+        logger.warning("Received request without session_id")
+        return JSONResponse(status_code=400, content={"detail": "session_id is required"})
+        
+    from uuid import UUID
     try:
-        session_id_param = request.query_params.get("session_id")
-        if session_id_param is None:
-            logger.warning("Received request without session_id")
-            return JSONResponse(status_code=400, content={"detail": "session_id is required"})
+        canonical_session_id = str(UUID(hex=session_id_param))
+    except ValueError:
+        try:
+            canonical_session_id = str(UUID(session_id_param))
+        except ValueError:
+            return JSONResponse(status_code=400, content={"detail": "Invalid session_id format"})
             
+    # Enforce multi-tenant logical session isolation
+    registered_tenant = session_tenant_registry.get(canonical_session_id)
+    if not registered_tenant or registered_tenant != tenant_id:
+        logger.error(
+            f"[Security Violation] Tenant {tenant_id} attempted to post message to session "
+            f"{canonical_session_id} belonging to tenant {registered_tenant}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: The requested session does not belong to the active tenant context."
+        )
+        
+    token = active_tenant_var.set(key_info)
+    try:
         return await sse_transport.handle_post_message(request.scope, request.receive, request._send)
     finally:
         active_tenant_var.reset(token)

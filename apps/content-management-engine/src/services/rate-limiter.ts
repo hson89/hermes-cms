@@ -45,6 +45,14 @@ export async function isRateLimited(userId: string, payload: BasePayload): Promi
   recentTimestamps.push(now)
   userRequestCache.set(userId, recentTimestamps)
 
+  // Enforce OOM protection (FIFO eviction on Map size > 10000)
+  if (userRequestCache.size > 10000) {
+    const oldestKey = userRequestCache.keys().next().value
+    if (oldestKey !== undefined) {
+      userRequestCache.delete(oldestKey)
+    }
+  }
+
   // 4. Asynchronously log the request to the database out-of-band so we don't block the request path!
   payload.create({
     collection: 'ai-rate-limits',

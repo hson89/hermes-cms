@@ -74,3 +74,29 @@ async def test_sse_post_message_missing_session(mock_cms_class):
         assert "session_id is required" in response.json()["detail"]
 
 
+@pytest.mark.asyncio
+@patch("src.application.mcp.sse_transport.CMSClient", new_callable=MagicMock)
+async def test_sse_post_message_tenant_mismatch(mock_cms_class):
+    # Arrange
+    mock_cms = mock_cms_class.return_value
+    mock_cms.validate_api_key = AsyncMock(return_value={
+        "id": "key_123",
+        "label": "Claude Key",
+        "email": "editor@tenant.com",
+        "tenant": "tenant_123"
+    })
+    
+    # Ensure a non-matching session or unregistered session throws 403 Forbidden
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/mcp/message?session_id=12345678123456781234567812345678", # Valid hex string for UUID
+            headers={"X-API-Key": "valid-key"},
+            json={"jsonrpc": "2.0", "method": "tools/list", "id": 1}
+        )
+        
+        # Assert
+        assert response.status_code == 403
+        assert "The requested session does not belong to the active tenant context." in response.json()["detail"]
+
+
+

@@ -20,14 +20,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 def require_internal_secret(key: str | None = Security(api_key_header)) -> None:
-    """Validate the internal service-to-service secret header."""
+    """Validate the internal service-to-service secret header in a timing-safe manner."""
+    import secrets
     if not INTERNAL_SECRET:
         logger.error("Security Fail-Closed: INTERNAL_SERVICE_SECRET is unset or empty in the environment settings.")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Server configuration error: Internal service secret is not configured.",
         )
-    if key != INTERNAL_SECRET:
+    if not key or not secrets.compare_digest(key, INTERNAL_SECRET):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid internal service secret.",
