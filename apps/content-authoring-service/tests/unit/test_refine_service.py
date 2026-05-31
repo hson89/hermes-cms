@@ -92,3 +92,25 @@ async def test_refine_draft_with_style_modifier(refine_service, mock_ai_service)
     
     assert mock_graph.called_inputs is not None
     assert mock_graph.called_inputs["style_modifier_prompt"] == style_prompt
+
+@pytest.mark.asyncio
+async def test_refine_draft_stream_tenant_mismatch(refine_service):
+    mock_db = AsyncMock()
+    mock_graph = MockDraftingGraph()
+    
+    # Pre-seed state with a different tenant ID
+    mock_state_container = MagicMock()
+    mock_state_container.values = {"tenant_id": "tenant-different"}
+    mock_graph.aget_state = AsyncMock(return_value=mock_state_container)
+
+    with pytest.raises(ValueError, match="Session does not belong to the active tenant context"):
+        async for _ in refine_service.refine_draft_stream(
+            prompt="Make it better",
+            current_draft_json={"title": "Hello World"},
+            schema_json={},
+            tenant_id="tenant-active",
+            user_id="user-1",
+            db=mock_db,
+            drafting_graph=mock_graph
+        ):
+            pass

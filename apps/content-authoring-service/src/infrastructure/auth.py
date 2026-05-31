@@ -16,11 +16,17 @@ api_key_header = APIKeyHeader(name="X-Internal-Secret", auto_error=False)
 security = HTTPBearer()
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 def require_internal_secret(key: str | None = Security(api_key_header)) -> None:
     """Validate the internal service-to-service secret header."""
     if not INTERNAL_SECRET:
-        # If no secret is configured, allow all (development mode)
-        return
+        logger.error("Security Fail-Closed: INTERNAL_SERVICE_SECRET is unset or empty in the environment settings.")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Server configuration error: Internal service secret is not configured.",
+        )
     if key != INTERNAL_SECRET:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -4,6 +4,15 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+# Keep a module-level global AsyncClient to leverage HTTP connection pooling
+_client: Optional[httpx.AsyncClient] = None
+
+def _get_client() -> httpx.AsyncClient:
+    global _client
+    if _client is None or _client.is_closed:
+        _client = httpx.AsyncClient(timeout=10.0)
+    return _client
+
 class CMSClient:
     """
     Client for communicating with the Next.js Content Management Engine.
@@ -26,17 +35,17 @@ class CMSClient:
         json_data = {"apiKey": api_key}
         
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(url, headers=headers, json=json_data)
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get("valid") and "apiKey" in data:
-                        return data["apiKey"]
-                else:
-                    logger.warning(
-                        f"API Key validation failed with status {response.status_code}: {response.text}"
-                    )
+            client = _get_client()
+            response = await client.post(url, headers=headers, json=json_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("valid") and "apiKey" in data:
+                    return data["apiKey"]
+            else:
+                logger.warning(
+                    f"API Key validation failed with status {response.status_code}: {response.text}"
+                )
         except Exception as e:
             logger.error(f"Error validating API key: {str(e)}")
             

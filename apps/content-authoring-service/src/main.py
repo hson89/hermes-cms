@@ -126,6 +126,7 @@ class CopilotEditRequest(BaseModel):
     content_item_id: str
     section_id: str
     prompt: str
+    original_text: str = ""
     tenant_id: str
     user_id: str
     langfuse_trace_id: str | None = None
@@ -144,6 +145,7 @@ class SessionMessageRequest(BaseModel):
     prompt: str
     current_schema: dict | None = None
     langfuse_trace_id: str | None = None
+    tenant_id: str | None = None
 
     @field_validator("prompt")
     @classmethod
@@ -480,6 +482,7 @@ async def copilot_edit(body: CopilotEditRequest, request: Request) -> dict:
             content_item_id=body.content_item_id,
             section_id=body.section_id,
             prompt=body.prompt,
+            original_text=body.original_text,
             tenant_id=body.tenant_id,
             user_id=body.user_id,
             langfuse_trace_id=body.langfuse_trace_id,
@@ -509,6 +512,15 @@ async def post_session_message(
     of explanation tokens and final schema updates.
     """
     ai_service: AIService = request.app.state.ai_service
+
+    # Securely validate session ownership against tenant context (Principle I)
+    if body.tenant_id:
+        session = await ai_service.get_session(session_id, db=db, schema_graph=request.app.state.schema_graph)
+        if session and str(session.tenant_id) != str(body.tenant_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden: The requested session does not belong to the active tenant context."
+            )
 
     async def event_generator():
         try:

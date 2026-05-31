@@ -1,40 +1,52 @@
 import { BasePayload } from 'payload'
 
+// Safe in-memory sliding-window cache for high performance
+const userRequestCache = new Map<string, number[]>()
+
+// Cleanup interval to prune completely idle users from memory
+if (typeof global !== 'undefined') {
+  const intervalId = (global as any)._rateLimiterPruneInterval
+  if (intervalId) {
+    clearInterval(intervalId)
+  }
+  ;(global as any)._rateLimiterPruneInterval = setInterval(() => {
+    const now = Date.now()
+    const oneMinuteAgo = now - 60 * 1000
+    userRequestCache.forEach((timestamps, userId) => {
+      const active = timestamps.filter((ts: number) => ts > oneMinuteAgo)
+      if (active.length === 0) {
+        userRequestCache.delete(userId)
+      } else {
+        userRequestCache.set(userId, active)
+      }
+    })
+  }, 30000)
+}
+
 /**
  * Checks if a user has exceeded the rate limit of 10 requests per minute globally.
- * Uses the AIRateLimits collection with overrideAccess: true to bypass tenant scoping.
+ * Highly optimized non-blocking in-memory cache to prevent Postgres saturation.
  */
 export async function isRateLimited(userId: string, payload: BasePayload): Promise<boolean> {
-  const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString()
+  const now = Date.now()
+  const oneMinuteAgo = now - 60 * 1000
 
-  // Find requests from this user in the last minute
-  const result = await payload.find({
-    collection: 'ai-rate-limits',
-    where: {
-      and: [
-        {
-          userId: {
-            equals: userId,
-          },
-        },
-        {
-          timestamp: {
-            greater_than_equal: oneMinuteAgo,
-          },
-        },
-      ],
-    },
-    overrideAccess: true, // Bypass tenant isolation for global user limit
-    pagination: false,
-    limit: 11, // Optimization: only need to know if it's >= 10
-  })
+  // 1. Get user request timestamps
+  const timestamps = userRequestCache.get(userId) || []
 
-  if (result.docs.length >= 10) {
+  // 2. Filter out expired timestamps (> 1 minute old)
+  const recentTimestamps = timestamps.filter((ts: number) => ts > oneMinuteAgo)
+
+  if (recentTimestamps.length >= 10) {
     return true
   }
 
-  // Record the current request
-  await payload.create({
+  // 3. Record the current request timestamp
+  recentTimestamps.push(now)
+  userRequestCache.set(userId, recentTimestamps)
+
+  // 4. Asynchronously log the request to the database out-of-band so we don't block the request path!
+  payload.create({
     collection: 'ai-rate-limits',
     data: {
       userId,
@@ -42,6 +54,8 @@ export async function isRateLimited(userId: string, payload: BasePayload): Promi
       requestPath: 'internal-proxy',
     },
     overrideAccess: true,
+  }).catch((err) => {
+    console.error('[RateLimiter] Asynchronous database log failed:', err)
   })
 
   return false

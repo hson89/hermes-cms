@@ -285,6 +285,7 @@ class TestCopilotEditEndpoint:
             content_item_id="12345",
             section_id="67890",
             prompt="Make this paragraph more formal.",
+            original_text="",
             tenant_id="415",
             user_id="30",
             langfuse_trace_id=None,

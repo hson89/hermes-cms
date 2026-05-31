@@ -32,7 +32,7 @@ export const Tenants: CollectionConfig = {
     // Read: Multi-tenant plugin will automatically filter results based on user/tenant association.
     // Super-admins and Global API keys can see all via userHasAccessToAllTenants hook in config.
     read: ({ req }) => {
-      const authHeader = req.headers.get('authorization')
+      const authHeader = req.headers?.get?.('authorization')
       if (authHeader?.includes('demo-api-key-123456789')) return true
       return Boolean(req.user)
     },

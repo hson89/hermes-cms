@@ -300,7 +300,7 @@ def get_copilot_prompt(langfuse_client=None) -> ChatPromptTemplate:
             
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
-        ("user", "Content item: {content_item_id}\nSection: {section_id}\nInstruction: {prompt}"),
+        ("user", "Content item: {content_item_id}\nSection: {section_id}\nOriginal text:\n\"\"\"\n{original_text}\n\"\"\"\n\nInstruction: {prompt}"),
     ])
     
     if metadata:

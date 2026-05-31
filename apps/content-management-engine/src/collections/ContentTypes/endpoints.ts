@@ -240,6 +240,16 @@ export const getSessionStatusEndpoint: Endpoint = {
       }
 
       const result = await response.json()
+
+      // Enforce strict logical tenant isolation (Principle I)
+      if (result.tenant_id && String(result.tenant_id) !== String(tenantId)) {
+        console.error(`[Security Violation] User ${user.id} from tenant ${tenantId} attempted to access session ${sessionId} belonging to tenant ${result.tenant_id}`)
+        return Response.json(
+          { error: 'Forbidden: Session does not belong to the active tenant context.' },
+          { status: 403 },
+        )
+      }
+
       return Response.json(result)
     } catch (err) {
       console.error('[session-status] Unexpected error:', err)
@@ -329,6 +339,7 @@ export const postSessionMessageEndpoint: Endpoint = {
           prompt: prompt.trim(),
           current_schema: currentSchema || null,
           langfuse_trace_id: trace?.id,
+          tenant_id: tenantId,
         }),
       })
 

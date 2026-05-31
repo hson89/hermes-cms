@@ -20,11 +20,11 @@ export const copilotEditEndpoint: Endpoint = {
       }
 
       const body = (req.json ? await req.json() : req.data) || {}
-      const { contentItemId, sectionId, prompt } = body
+      const { contentItemId, sectionId, prompt, originalText } = body
 
-      if (!contentItemId || !sectionId || !prompt) {
+      if (!contentItemId || !sectionId || !prompt || !originalText) {
         return Response.json(
-          { error: 'Missing required fields: contentItemId, sectionId, prompt' },
+          { error: 'Missing required fields: contentItemId, sectionId, prompt, originalText' },
           { status: 400 },
         )
       }
@@ -60,6 +60,7 @@ export const copilotEditEndpoint: Endpoint = {
           content_item_id: contentItemId,
           section_id: sectionId,
           prompt,
+          original_text: originalText,
           tenant_id: tenantId,
           user_id: user.id,
           langfuse_trace_id: trace?.id,

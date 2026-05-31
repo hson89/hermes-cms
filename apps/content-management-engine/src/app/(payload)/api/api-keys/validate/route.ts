@@ -11,7 +11,15 @@ import crypto from 'crypto'
 export async function POST(req: NextRequest) {
   // 1. Validate Internal Secret
   const secret = req.headers.get('X-Internal-Secret')
-  const internalSecret = process.env.INTERNAL_SERVICE_SECRET || 'hermes-internal-secret'
+  const internalSecret = process.env.INTERNAL_SERVICE_SECRET
+
+  if (!internalSecret) {
+    console.error('Security Fail-Closed: INTERNAL_SERVICE_SECRET is unset or empty in Next.js environment.')
+    return NextResponse.json(
+      { error: 'Internal server configuration error.' },
+      { status: 500 }
+    )
+  }
 
   if (secret !== internalSecret) {
     return NextResponse.json(

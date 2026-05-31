@@ -16,13 +16,16 @@ export const Nav: React.FC<any> = () => {
   const [isContentOpen, setIsContentOpen] = useState(true)
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(true)
 
-  // Persistent collapse state
-  const [isCollapsed, setIsCollapsed] = useState(() => {
+  // Persistent collapse state initialized safely for SSR
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  // Hydrate state from localStorage safely after initial mount
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('sidebar-collapsed') === 'true'
+      const stored = localStorage.getItem('sidebar-collapsed') === 'true'
+      setIsCollapsed(stored)
     }
-    return false
-  })
+  }, [])
 
   // Synchronize CSS custom property across the app
   useEffect(() => {

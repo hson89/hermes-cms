@@ -42,6 +42,7 @@ async def test_edit_section_invokes_llm(copilot_service: CopilotService):
             content_item_id=content_item_id,
             section_id=section_id,
             prompt=prompt,
+            original_text="Original content text",
             tenant_id=tenant_id,
             user_id=user_id
         )
@@ -55,6 +56,7 @@ async def test_edit_section_invokes_llm(copilot_service: CopilotService):
         assert "professional writing assistant" in messages[0].content.lower()
         assert content_item_id in messages[1].content
         assert section_id in messages[1].content
+        assert "Original content text" in messages[1].content
         assert prompt in messages[1].content
 
 
@@ -79,6 +81,7 @@ async def test_edit_section_handles_runtime_error(copilot_service: CopilotServic
                 content_item_id="123",
                 section_id="abc",
                 prompt="fix",
+                original_text="original text",
                 tenant_id=tenant_id,
                 user_id=user_id
             )

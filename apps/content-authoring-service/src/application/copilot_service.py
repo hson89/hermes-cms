@@ -68,6 +68,7 @@ class CopilotService:
         content_item_id: str,
         section_id: str,
         prompt: str,
+        original_text: str = "",
         tenant_id: UUID,
         user_id: UUID,
         langfuse_trace_id: str | None = None,
@@ -79,6 +80,7 @@ class CopilotService:
             content_item_id: The Payload ContentItem document ID.
             section_id:      The block/section identifier within the content.
             prompt:          The editing instruction (e.g. "make more formal").
+            original_text:   The original text of the content block/section.
             tenant_id:       UUID of the requesting tenant.
             user_id:         UUID of the requesting user.
             langfuse_trace_id: Optional trace ID to link this generation to a parent trace.
@@ -91,7 +93,8 @@ class CopilotService:
         messages = copilot_prompt.format_messages(
             content_item_id=content_item_id,
             section_id=section_id,
-            prompt=prompt
+            prompt=prompt,
+            original_text=original_text
         )
 
         # Initialize Langfuse handler
