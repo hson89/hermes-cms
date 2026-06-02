@@ -79,6 +79,18 @@ if [ "$SKIP_LANGFUSE" = false ]; then
     done
 fi
 
+echo "⏳ Waiting for CMS database to be ready..."
+for i in {1..30}; do
+    if docker compose exec -T postgres_cms pg_isready -h localhost -U postgres >/dev/null 2>&1; then
+        echo "✅ CMS database is ready!"
+        break
+    fi
+    sleep 1
+done
+
+echo "🌱 Seeding default templates..."
+docker compose exec -T content_management_engine pnpm tsx src/scripts/seed-default-templates.ts || echo "⚠️ Seeding default templates skipped or failed."
+
 echo ""
 echo "✨ All services are running!"
 echo "--------------------------------------------------"

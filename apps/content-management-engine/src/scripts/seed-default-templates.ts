@@ -472,6 +472,26 @@ async function seed() {
   console.log('Payload initialized.')
 
   try {
+    // Check if the default template already exists
+    console.log('Checking if default template is already seeded...')
+    const templateCheck = await payload.find({
+      collection: 'page-templates' as any,
+      where: {
+        slug: {
+          equals: 'aurelian-spectre-v12',
+        },
+        isGlobal: {
+          equals: true,
+        },
+      },
+      limit: 1,
+    } as any)
+
+    if (templateCheck.docs && templateCheck.docs.length > 0) {
+      console.log('Default template "aurelian-spectre-v12" already exists. Seeding skipped.')
+      return
+    }
+
     // 1. Resolve or Create Super Admin user
     console.log('Checking for Super Admin user...')
     const userSearch = await payload.find({
@@ -691,14 +711,17 @@ async function seed() {
     }
 
     console.log('--- SEEDING SYSTEM SUCESSFULLY COMPLETE ---')
-    process.exit(0)
   } catch (err) {
     console.error('Seeding failed with error:', err)
-    process.exit(1)
+    throw err
   }
 }
 
-seed().catch((err) => {
-  console.error('Fatal execution error:', err)
-  process.exit(1)
-})
+seed()
+  .then(() => {
+    process.exit(0)
+  })
+  .catch((err) => {
+    console.error('Fatal execution error:', err)
+    process.exit(1)
+  })

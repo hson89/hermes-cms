@@ -95,6 +95,18 @@ echo "📦 Installing local dependencies..."
 (cd apps/site-templates/nextjs-blog && pnpm install)
 (cd apps/site-templates/astro-portfolio && pnpm install)
 
+echo "⏳ Waiting for CMS database to be ready..."
+for i in {1..30}; do
+    if docker compose exec postgres_cms pg_isready -h localhost -U postgres >/dev/null 2>&1; then
+        echo "✅ CMS database is ready!"
+        break
+    fi
+    sleep 1
+done
+
+echo "🌱 Seeding default templates..."
+(cd apps/content-management-engine && pnpm tsx src/scripts/seed-default-templates.ts) || echo "⚠️ Seeding default templates skipped or failed."
+
 echo ""
 echo "✨ Infrastructure is running! Starting local applications..."
 echo "--------------------------------------------------"
