@@ -59,6 +59,9 @@ describe('APIKeys Collection Lifecycle & Access Isolation', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should successfully persist custom owner email when creating an API Key', async () => {

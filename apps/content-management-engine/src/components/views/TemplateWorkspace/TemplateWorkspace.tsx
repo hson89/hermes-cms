@@ -20,7 +20,7 @@ export const TemplateWorkspace = async (props: AdminViewServerProps) => {
   }
 
   // A route is collection-based ONLY if it explicitly starts with /admin/collections.
-  const isCollectionRoute = props.route?.path?.startsWith('/admin/collections')
+  const isCollectionRoute = (props as any).route?.path?.startsWith('/admin/collections')
   const isStandalone = !isCollectionRoute
 
   if (isBuilderPath) {

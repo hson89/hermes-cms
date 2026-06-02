@@ -99,6 +99,9 @@ describe('AI Drafting Session Promotion Integration Tests', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should prevent promotion if session is missing the contentType schema', async () => {

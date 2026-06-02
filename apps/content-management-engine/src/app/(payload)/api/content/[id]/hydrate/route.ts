@@ -12,9 +12,9 @@ import { NextRequest, NextResponse } from 'next/server'
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
-  const contentId = params.id
+  const { id: contentId } = await context.params
 
   try {
     const payload = await getPayload({ config: await config })

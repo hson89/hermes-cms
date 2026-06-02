@@ -48,6 +48,9 @@ describe('App Marketplace Isolation', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should isolate TenantApps between tenants', async () => {

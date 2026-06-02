@@ -35,6 +35,7 @@ interface ContentType {
   schema?: ContentTypeSchema
   generatedByAI?: boolean
   aiSessionId?: string
+  isGlobal?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -140,6 +141,17 @@ export const ContentTypeListPage: React.FC = () => {
     return () => window.removeEventListener('click', closeAll)
   }, [])
 
+  // Close menus on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveMenuId(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   // Deletion logic
   const triggerDelete = (contentType: ContentType, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -179,6 +191,55 @@ export const ContentTypeListPage: React.FC = () => {
     }
   }
 
+  const handleClone = async (contentType: ContentType, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setActiveMenuId(null)
+    setLoading(true)
+    setError('')
+    try {
+      const activeTenantId = (currentUser as any)?.tenants?.[0]?.tenant?.id || (currentUser as any)?.tenants?.[0]?.tenant
+      if (!activeTenantId) {
+        throw new Error('No active tenant associated with your user session.')
+      }
+
+      // Generate a unique slug/name for the cloned version
+      const cloneName = `Copy of ${contentType.name}`
+      const baseSlug = `${contentType.slug}-copy`
+      
+      const payload = {
+        name: cloneName,
+        slug: baseSlug,
+        status: 'draft',
+        schema: contentType.schema,
+        generatedByAI: false,
+        tenant: activeTenantId,
+        isGlobal: false,
+      }
+
+      const res = await fetch('/api/content-types', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.errors?.[0]?.message || result.message || 'Failed to clone the content type.')
+      }
+
+      setSuccess(`Content Type schema successfully cloned as "${cloneName}".`)
+      setTimeout(() => setSuccess(''), 3000)
+      fetchContentTypes()
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'Failed to clone Content Type schema.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filterOptions: FilterOption<'all' | 'draft' | 'published' | 'ai'>[] = [
     { value: 'all', label: 'All Schemas' },
     { value: 'draft', label: 'Drafts' },
@@ -200,9 +261,16 @@ export const ContentTypeListPage: React.FC = () => {
               {firstLetter}
             </div>
             <div>
-              <span className="block font-headline font-bold text-base text-on-surface leading-tight transition-colors group-hover:text-primary">
-                {contentType.name || 'Untitled Schema'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="block font-headline font-bold text-base text-on-surface leading-tight transition-colors group-hover:text-primary">
+                  {contentType.name || 'Untitled Schema'}
+                </span>
+                {contentType.isGlobal && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-gold/15 text-gold border border-gold/10 uppercase tracking-widest leading-none">
+                    Global
+                  </span>
+                )}
+              </div>
               <span className="block font-mono text-[10px] text-outline mt-0.5 max-w-[240px] truncate">
                 {contentType.slug}
               </span>
@@ -300,32 +368,49 @@ export const ContentTypeListPage: React.FC = () => {
                 className="absolute right-6 top-12 bg-surface/90 backdrop-blur-md border border-outline-variant/15 rounded-xl modal-shadow w-48 py-1.5 z-40 animate-fade-slide-up text-left"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  type="button"
-                  onClick={() => router.push(`/admin/draft/${contentType.id}`)}
-                  className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
-                >
-                  <Icon name="auto_awesome" size={14} className="text-primary" />
-                  Draft with AI
-                </button>
+                {(contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleClone(contentType, e)}
+                    className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                  >
+                    <Icon name="content_copy" size={14} className="text-primary" />
+                    Clone Schema
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  onClick={() => router.push(`/admin/collections/content-types/${contentType.id}`)}
-                  className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
-                >
-                  <Icon name="edit" size={14} />
-                  Edit Specifications
-                </button>
+                {(!contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/admin/draft/${contentType.id}`)}
+                    className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                  >
+                    <Icon name="auto_awesome" size={14} className="text-primary" />
+                    Draft with AI
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  onClick={(e) => triggerDelete(contentType, e)}
-                  className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-red-600 hover:bg-red-500/10 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
-                >
-                  <Icon name="delete" size={14} className="text-red-500" />
-                  Delete Schema
-                </button>
+                {(!contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/admin/collections/content-types/${contentType.id}`)}
+                    className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                  >
+                    <Icon name="edit" size={14} />
+                    Edit Specifications
+                  </button>
+                )}
+
+                {(!contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                  <button
+                    type="button"
+                    onClick={(e) => triggerDelete(contentType, e)}
+                    className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-red-600 hover:bg-red-500/10 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                  >
+                    <Icon name="delete" size={14} className="text-red-500" />
+                    Delete Schema
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -18,7 +18,7 @@ export const TemplateDeployments: CollectionConfig = {
     {
       name: 'template',
       type: 'relationship',
-      relationTo: 'page-templates',
+      relationTo: 'page-templates' as never,
       required: true,
     },
     {

@@ -32,6 +32,9 @@ describe('Audit Logging', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should log a warning to audit-logs when resolution fails', async () => {

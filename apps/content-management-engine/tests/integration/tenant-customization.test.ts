@@ -30,6 +30,9 @@ describe('Tenant Customization & Gating', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should return branding metadata including resolved logo url', async () => {

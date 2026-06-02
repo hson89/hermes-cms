@@ -40,6 +40,9 @@ describe('Cross-Tenant Data Access', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should return 403 or not found when requesting another tenant\'s ContentItem', async () => {

@@ -78,6 +78,9 @@ describe('HostedSites Integration', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should create a HostedSite with correct initial status', async () => {

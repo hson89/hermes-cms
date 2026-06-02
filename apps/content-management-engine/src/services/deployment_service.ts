@@ -129,7 +129,7 @@ export class DeploymentService {
     }
 
     const templateTenantId = typeof template.tenant === 'object' ? template.tenant.id : template.tenant
-    if (String(templateTenantId) !== String(tenantId)) {
+    if (!template.isGlobal && String(templateTenantId) !== String(tenantId)) {
       throw new Error('Unauthorized: Template does not belong to your tenant')
     }
 

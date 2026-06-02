@@ -50,16 +50,24 @@ export const beforeChangeHook: CollectionBeforeChangeHook = async ({
     }
   }
 
-  // 2. Uniqueness Validation of ContentType slug per tenant (FR-005)
-  if (data?.slug && data?.tenant) {
+  // 2. Uniqueness Validation of ContentType slug per tenant or global (FR-005)
+  if (data?.slug) {
+    const query: any = {
+      and: [
+        { slug: { equals: data.slug } }
+      ]
+    }
+    if (data.isGlobal) {
+      query.and.push({ isGlobal: { equals: true } })
+    } else if (data.tenant) {
+      query.and.push({ tenant: { equals: data.tenant } })
+    } else {
+      query.and.push({ tenant: { exists: false } })
+    }
+
     const duplicateCheck = await payload.find({
       collection: 'content-types' as any,
-      where: {
-        and: [
-          { tenant: { equals: data.tenant } },
-          { slug: { equals: data.slug } }
-        ]
-      },
+      where: query,
       limit: 1,
       overrideAccess: true,
     })
@@ -67,7 +75,11 @@ export const beforeChangeHook: CollectionBeforeChangeHook = async ({
     if (duplicateCheck.docs.length > 0) {
       const duplicateDoc = duplicateCheck.docs[0]
       if (operation === 'create' || String(duplicateDoc.id) !== String(originalDoc?.id)) {
-        throw new Error(`A Content Type with slug "${data.slug}" already exists for this tenant.`)
+        throw new Error(
+          data.isGlobal
+            ? `A global Content Type with slug "${data.slug}" already exists.`
+            : `A Content Type with slug "${data.slug}" already exists for this tenant.`
+        )
       }
     }
   }

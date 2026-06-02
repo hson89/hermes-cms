@@ -178,11 +178,12 @@ export class TemplateService {
 
     const errors: string[] = []
 
-    if (!template.layout || template.layout.length === 0) {
+    if ((!template.layout || template.layout.length === 0) && !template.htmlContent) {
       errors.push('Template layout is empty')
     }
 
-    ;(template.layout || []).forEach((instance: any, index: number) => {
+    if (template.layout && template.layout.length > 0) {
+      (template.layout || []).forEach((instance: any, index: number) => {
       const block = instance.block
       const mappings = instance.mappings || {}
       const blockSchema = block.schema?.properties || {}
@@ -195,6 +196,7 @@ export class TemplateService {
         }
       })
     })
+    }
 
     return {
       valid: errors.length === 0,

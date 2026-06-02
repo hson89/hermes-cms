@@ -34,6 +34,11 @@ export const TemplateLibrary: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null)
+  const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null)
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null)
+  const [previewTemplateName, setPreviewTemplateName] = useState<string>('')
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
 
   // Debounce search query
   useEffect(() => {
@@ -148,6 +153,29 @@ export const TemplateLibrary: React.FC = () => {
       setTemplateToDelete(templateId)
       setIsDeleteModalOpen(true)
     }
+    if (action === 'preview') {
+      const template = templates.find(t => t.id === templateId)
+      setPreviewTemplateId(templateId)
+      setPreviewTemplateName(template?.name || 'Template Blueprint')
+      setIsPreviewLoading(true)
+      setPreviewHtml(null)
+      
+      fetch(`/api/page-templates/${templateId}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load template content')
+          return res.json()
+        })
+        .then(data => {
+          setPreviewHtml(data.htmlContent || '<h1>No content found inside this blueprint</h1>')
+        })
+        .catch(err => {
+          console.error(err)
+          setPreviewHtml(`<h1>Error loading template</h1><p>${err.message}</p>`)
+        })
+        .finally(() => {
+          setIsPreviewLoading(false)
+        })
+    }
   }
 
   const handleDeleteConfirm = async () => {
@@ -169,6 +197,18 @@ export const TemplateLibrary: React.FC = () => {
     const handleClickOutside = () => setActiveMenu(null)
     window.addEventListener('click', handleClickOutside)
     return () => window.removeEventListener('click', handleClickOutside)
+  }, [])
+
+  // Listen to Escape key to close preview modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setPreviewTemplateId(null)
+        setPreviewHtml(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   if (error) {
@@ -307,7 +347,7 @@ export const TemplateLibrary: React.FC = () => {
                   <img 
                     src={template.image} 
                     alt={template.name}
-                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-multiply opacity-90"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-multiply opacity-90"
                   />
                   
                   {/* Actions Menu Trigger */}
@@ -439,6 +479,131 @@ export const TemplateLibrary: React.FC = () => {
         onCancel={() => { setIsDeleteModalOpen(false); setTemplateToDelete(null) }}
         type="danger"
       />
+
+      {/* Immersive Cinematic Preview Overlay Modal */}
+      {previewTemplateId && (
+        <div className="fixed inset-y-0 right-0 left-0 lg:left-[18rem] z-50 bg-neutral-950/80 backdrop-blur-md flex flex-col justify-center items-center p-6 md:p-10 animate-in fade-in duration-300">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-dim/20 w-full h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)] max-w-7xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Premium Glassmorphic Header */}
+            <header className="bg-surface-container-low px-6 py-4 flex justify-between items-center border-b border-surface-dim/20">
+              <div className="flex items-center gap-3">
+                <Icon name="auto_awesome" className="text-primary" />
+                <h3 className="font-headline text-lg font-bold text-on-surface tracking-tight">
+                  <span className="font-['Noto_Serif'] italic font-medium pr-1">"{previewTemplateName}"</span> — Immersive Preview
+                </h3>
+              </div>
+
+              {/* Viewport Width Control Toggles */}
+              <div className="hidden sm:flex items-center bg-surface-container rounded-xl p-1 border border-surface-dim/15">
+                <button
+                  onClick={() => setViewport('desktop')}
+                  className={`px-4 py-2 rounded-lg font-label text-xs font-bold transition-all border-none cursor-pointer flex items-center gap-2 ${viewport === 'desktop' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high bg-transparent'}`}
+                >
+                  <Icon name="desktop_windows" size={18} /> Desktop
+                </button>
+                <button
+                  onClick={() => setViewport('tablet')}
+                  className={`px-4 py-2 rounded-lg font-label text-xs font-bold transition-all border-none cursor-pointer flex items-center gap-2 ${viewport === 'tablet' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high bg-transparent'}`}
+                >
+                  <Icon name="tablet_mac" size={18} /> Tablet
+                </button>
+                <button
+                  onClick={() => setViewport('mobile')}
+                  className={`px-4 py-2 rounded-lg font-label text-xs font-bold transition-all border-none cursor-pointer flex items-center gap-2 ${viewport === 'mobile' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high bg-transparent'}`}
+                >
+                  <Icon name="smartphone" size={18} /> Mobile
+                </button>
+              </div>
+
+              {/* Exit Controller */}
+              <button
+                onClick={() => {
+                  setPreviewTemplateId(null)
+                  setPreviewHtml(null)
+                }}
+                className="flex items-center gap-2 bg-error/10 hover:bg-error/20 text-error px-4 py-2 font-label text-xs font-bold rounded-xl border border-error/20 transition-all duration-300 cursor-pointer"
+              >
+                <Icon name="arrow_back" size={16} /> Exit Preview
+              </button>
+            </header>
+
+            {/* Viewport Canvas container */}
+            <div className="flex-1 bg-surface p-6 flex justify-center items-center overflow-hidden relative">
+              {/* Floating Close Button - Always visible on UI */}
+              <button
+                onClick={() => {
+                  setPreviewTemplateId(null)
+                  setPreviewHtml(null)
+                }}
+                className="absolute bottom-10 right-10 z-50 flex items-center gap-2 bg-neutral-900/90 text-white hover:bg-error hover:text-white px-5 py-3 rounded-full shadow-2xl border border-white/10 transition-all duration-300 cursor-pointer font-label text-xs font-bold uppercase tracking-wider"
+              >
+                <Icon name="close" size={16} /> Close Preview
+              </button>
+              {isPreviewLoading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
+                  <span className="font-label text-xs font-bold text-outline uppercase tracking-widest animate-pulse">
+                    Synthesizing cinematic preview layout...
+                  </span>
+                </div>
+              ) : previewHtml ? (
+                <div 
+                  className={`h-full shadow-2xl transition-all duration-300 ${
+                    viewport === 'desktop' ? 'w-full rounded-2xl' :
+                    viewport === 'tablet' ? 'w-[768px] rounded-2xl' :
+                    'w-[375px] rounded-2xl'
+                  } bg-surface-container-lowest border border-surface-dim/20 overflow-hidden flex flex-col`}
+                >
+                  {/* Mock Browser Titlebar */}
+                  <div className="bg-surface-container-low px-4 py-3 flex items-center justify-between border-b border-surface-dim/20 select-none">
+                    {/* Window Controls */}
+                    <div className="flex items-center gap-1.5 w-24">
+                      <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                      <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                      <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                    </div>
+
+                    {/* Mock URL Bar */}
+                    <div className="flex-1 max-w-xl bg-surface-container-lowest border border-surface-dim/15 px-4 py-1.5 rounded-lg text-xs font-mono text-outline flex items-center justify-between shadow-inner">
+                      <div className="flex items-center gap-2 truncate">
+                        <Icon name="lock" size={12} className="text-secondary" />
+                        <span className="truncate">hermes-cms.local/preview/{previewTemplateName.toLowerCase().replace(/\s+/g, '-')}</span>
+                      </div>
+                      <Icon name="refresh" size={14} className="text-outline/60 cursor-pointer hover:text-primary transition-colors" />
+                    </div>
+
+                    {/* Preview Indicator Badge */}
+                    <div className="w-24 flex justify-end">
+                      <span className="bg-primary/10 border border-primary/20 text-primary font-label text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        Preview
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Active Sandboxed Iframe */}
+                  <div className="flex-1 bg-white relative">
+                    <iframe 
+                      srcDoc={previewHtml}
+                      title="Template Live Preview"
+                      className="w-full h-full border-none bg-white"
+                      sandbox="allow-scripts allow-same-origin allow-popups"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center">
+                  <Icon name="error" className="text-error mb-4" size={48} />
+                  <h4 className="font-headline text-lg font-bold text-on-surface">Compilation Error</h4>
+                  <p className="font-body text-sm text-on-surface-variant max-w-md mt-2">
+                    Could not resolve visual structure inside this blueprint template.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

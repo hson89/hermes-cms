@@ -8,7 +8,7 @@ async function check() {
     overrideAccess: true,
   })
   console.log('--- API KEYS ---')
-  console.log(JSON.stringify(keys.docs.map(k => ({ label: k.label, email: k.email, enableAPIKey: k.enableAPIKey, globalAccess: k.globalAccess })), null, 2))
+  console.log(JSON.stringify(keys.docs.map(k => ({ label: (k as any).label, email: (k as any).email, enableAPIKey: (k as any).enableAPIKey, globalAccess: (k as any).globalAccess })), null, 2))
   
   const tenants = await payload.find({
     collection: 'tenants',

@@ -1,5 +1,101 @@
-import type { CollectionConfig, CollectionBeforeChangeHook } from 'payload'
-import { tenantAccess } from '../access/tenantAccess'
+import type { CollectionConfig, CollectionBeforeChangeHook, Access, Where } from 'payload'
+import { getTenantIds } from '../Users/utils'
+
+export const pageTemplateAccess: {
+  read: Access
+  create: Access
+  update: Access
+  delete: Access
+} = {
+  read: ({ req: { user } }) => {
+    if (!user) return false
+    if ((user as any)?.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) return false
+
+    return {
+      or: [
+        {
+          tenant: {
+            in: tenantIds,
+          },
+        },
+        {
+          isGlobal: {
+            equals: true,
+          },
+        },
+      ],
+    } as unknown as Where
+  },
+  create: ({ req: { user } }) => {
+    if (!user) return false
+    if ((user as any)?.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) return false
+
+    return {
+      and: [
+        {
+          tenant: {
+            in: tenantIds,
+          },
+        },
+        {
+          isGlobal: {
+            not_equals: true,
+          },
+        },
+      ],
+    } as unknown as Where
+  },
+  update: ({ req: { user } }) => {
+    if (!user) return false
+    if ((user as any)?.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) return false
+
+    return {
+      and: [
+        {
+          tenant: {
+            in: tenantIds,
+          },
+        },
+        {
+          isGlobal: {
+            not_equals: true,
+          },
+        },
+      ],
+    } as unknown as Where
+  },
+  delete: ({ req: { user } }) => {
+    if (!user) return false
+    if ((user as any)?.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) return false
+
+    return {
+      and: [
+        {
+          tenant: {
+            in: tenantIds,
+          },
+        },
+        {
+          isGlobal: {
+            not_equals: true,
+          },
+        },
+      ],
+    } as unknown as Where
+  },
+}
 
 export const beforeChangeHook: CollectionBeforeChangeHook = async ({ data, req, operation, originalDoc }) => {
   if (operation === 'create' && req.user) {
@@ -36,10 +132,10 @@ export const PageTemplates: CollectionConfig = {
     },
   },
   access: {
-    read: tenantAccess,
-    create: tenantAccess,
-    update: tenantAccess,
-    delete: tenantAccess,
+    read: pageTemplateAccess.read,
+    create: pageTemplateAccess.create,
+    update: pageTemplateAccess.update,
+    delete: pageTemplateAccess.delete,
   },
   hooks: {
     beforeChange: [beforeChangeHook],
@@ -90,10 +186,15 @@ export const PageTemplates: CollectionConfig = {
       name: 'contentType',
       type: 'relationship',
       relationTo: 'content-types',
-      required: true,
+      required: false,
       label: 'Associated Content Type',
       admin: {
         description: 'The Content Type this template visualizes (1-to-1)',
+      },
+      validate: (val: any, { data }: any) => {
+        if (data?.isGlobal) return true
+        if (!val) return 'Associated Content Type is required for standard templates'
+        return true
       },
     },
     {
@@ -125,7 +226,7 @@ export const PageTemplates: CollectionConfig = {
         {
           name: 'block',
           type: 'relationship',
-          relationTo: 'building-blocks',
+          relationTo: 'building-blocks' as never,
           required: true,
         },
         {
@@ -197,13 +298,40 @@ export const PageTemplates: CollectionConfig = {
       },
     },
     {
+      name: 'isGlobal',
+      type: 'checkbox',
+      label: 'Global Template',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Available to all tenants by default. Only Super Admins can manage global templates.',
+      },
+      access: {
+        update: ({ req: { user } }) => (user as any)?.role === 'super-admin',
+        create: ({ req: { user } }) => (user as any)?.role === 'super-admin',
+      },
+    },
+    {
+      name: 'htmlContent',
+      type: 'textarea',
+      label: 'HTML Content',
+      admin: {
+        description: 'Raw HTML/CSS template code for static delivery.',
+      },
+    },
+    {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
-      required: true,
+      required: false,
       index: true,
       admin: {
         position: 'sidebar',
+      },
+      validate: (val: any, { data }: any) => {
+        if (data?.isGlobal) return true
+        if (!val) return 'Tenant is required for non-global templates'
+        return true
       },
     },
   ],

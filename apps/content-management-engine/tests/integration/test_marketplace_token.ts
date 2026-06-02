@@ -29,6 +29,9 @@ describe('Marketplace Token Generation', () => {
     for (const id of createdTenants) {
       await payload.delete({ collection: 'tenants', id, overrideAccess: true }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should generate a valid HS256 JWT and persist its hash', async () => {

@@ -23,6 +23,9 @@ describe('Tenant Resolution API', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should resolve tenant by primary domain', async () => {

@@ -45,7 +45,7 @@ describe('ContentTypes Collection Hooks', () => {
           req: mockReq,
           originalDoc: undefined,
           operation: 'create',
-        })
+        } as any)
       ).rejects.toThrow('A Content Type with slug "posts" already exists for this tenant.')
     })
 
@@ -66,7 +66,7 @@ describe('ContentTypes Collection Hooks', () => {
         req: mockReq,
         originalDoc: undefined,
         operation: 'create',
-      })
+      } as any)
 
       expect(result).toBe(incomingData)
     })
@@ -92,8 +92,31 @@ describe('ContentTypes Collection Hooks', () => {
           req: mockReq,
           originalDoc: undefined,
           operation: 'create',
-        })
+        } as any)
       ).rejects.toThrow('Duplicate field name "title" detected in schema definition.')
+    })
+
+    it('should bypass tenant uniqueness check and query globally for global content types', async () => {
+      findResults = [{ docs: [] }]
+
+      const incomingData = {
+        name: 'Global Blog',
+        slug: 'global-blog',
+        isGlobal: true,
+        schema: {
+          fields: [{ name: 'title', type: 'text', required: true }]
+        }
+      }
+
+      const result = await beforeChangeHook({
+        data: incomingData,
+        req: mockReq,
+        originalDoc: undefined,
+        operation: 'create',
+      } as any)
+
+      expect(result).toBe(incomingData)
+      expect(findCalls[0].where.and).toContainEqual({ isGlobal: { equals: true } })
     })
   })
 
@@ -134,7 +157,7 @@ describe('ContentTypes Collection Hooks', () => {
           req: mockReq,
           originalDoc,
           operation: 'update',
-        })
+        } as any)
       ).rejects.toThrow('Cannot delete field "price" because existing Content Items depend on this Content Type.')
     })
 
@@ -163,7 +186,7 @@ describe('ContentTypes Collection Hooks', () => {
           req: mockReq,
           originalDoc,
           operation: 'update',
-        })
+        } as any)
       ).rejects.toThrow('Required field "serial_number" cannot be added without a defaultValue because existing Content Items exist.')
     })
 
@@ -191,7 +214,7 @@ describe('ContentTypes Collection Hooks', () => {
         req: mockReq,
         originalDoc,
         operation: 'update',
-      })
+      } as any)
 
       expect(result).toBe(incomingData)
     })

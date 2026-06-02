@@ -81,6 +81,9 @@ describe('Tenant Impersonation', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should allow Super Admin to impersonate a tenant and log it', async () => {

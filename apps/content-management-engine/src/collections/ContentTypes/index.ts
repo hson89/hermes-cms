@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 import { generateSchemaEndpoint, getSessionStatusEndpoint, postSessionMessageEndpoint, exportSchemaEndpoint, exportSchemaTSEndpoint, listCollectionsEndpoint } from './endpoints'
 import { getTenantIds } from '../Users/utils'
 import { beforeChangeHook, afterChangeHook } from './hooks'
@@ -64,10 +64,19 @@ export const ContentTypes: CollectionConfig = {
       const tenantIds = getTenantIds(user)
       if (tenantIds.length === 0) return false
       return {
-        tenant: {
-          in: tenantIds,
-        },
-      }
+        and: [
+          {
+            tenant: {
+              in: tenantIds,
+            },
+          },
+          {
+            isGlobal: {
+              not_equals: true,
+            },
+          },
+        ],
+      } as unknown as Where
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
@@ -75,10 +84,19 @@ export const ContentTypes: CollectionConfig = {
       const tenantIds = getTenantIds(user)
       if (tenantIds.length === 0) return false
       return {
-        tenant: {
-          in: tenantIds,
-        },
-      }
+        and: [
+          {
+            tenant: {
+              in: tenantIds,
+            },
+          },
+          {
+            isGlobal: {
+              not_equals: true,
+            },
+          },
+        ],
+      } as unknown as Where
     },
   },
   fields: [
@@ -156,13 +174,32 @@ export const ContentTypes: CollectionConfig = {
       },
     },
     {
+      name: 'isGlobal',
+      type: 'checkbox',
+      label: 'Global Content Type',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Available to all tenants by default. Only Super Admins can manage global content types.',
+      },
+      access: {
+        update: ({ req: { user } }) => (user as any)?.role === 'super-admin',
+        create: ({ req: { user } }) => (user as any)?.role === 'super-admin',
+      },
+    },
+    {
       name: 'tenant',
       type: 'relationship',
       relationTo: 'tenants',
-      required: true,
+      required: false,
       index: true,
       admin: {
         position: 'sidebar',
+      },
+      validate: (val: any, { data }: any) => {
+        if (data?.isGlobal) return true
+        if (!val) return 'Tenant is required for non-global content types'
+        return true
       },
     },
   ],

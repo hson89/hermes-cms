@@ -42,6 +42,8 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
   const [status, setStatus] = useState<'active' | 'draft' | 'archived'>('draft')
   const [restrictedAccess, setRestrictedAccess] = useState(false)
   const [locked, setLocked] = useState(false)
+  const [isGlobal, setIsGlobal] = useState(false)
+  const [htmlContent, setHtmlContent] = useState('')
   const [createdAt, setCreatedAt] = useState<string | null>(null)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
   const [createdBy, setCreatedBy] = useState<string>('Admin')
@@ -106,6 +108,8 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
           setStatus(data.status || 'draft')
           setRestrictedAccess(!!data.restrictedAccess)
           setLocked(!!data.locked)
+          setIsGlobal(!!data.isGlobal)
+          setHtmlContent(data.htmlContent || '')
           setCreatedAt(data.createdAt ? new Date(data.createdAt).toLocaleDateString() : null)
           setUpdatedAt(data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : null)
           
@@ -244,8 +248,12 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
 
   const handleInitialize = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!templateName || !selectedContentType || !activeTenantId) {
+    if (!templateName) {
       setError('Please fill in all required fields.')
+      return
+    }
+    if (!isGlobal && (!selectedContentType || !activeTenantId)) {
+      setError('Please select a Content Type and Tenant for standard templates.')
       return
     }
 
@@ -261,12 +269,14 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
         name: templateName,
         description: templateDesc,
         slug,
-        contentType: selectedContentType.id,
+        contentType: isGlobal ? null : selectedContentType?.id,
         archetype,
-        tenant: activeTenantId,
+        tenant: isGlobal ? null : activeTenantId,
         status,
         restrictedAccess,
         locked,
+        isGlobal,
+        htmlContent,
         layout: [], // Initialize empty, Visual Builder will fill this
       }
 
@@ -497,6 +507,23 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
                     <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all spring-toggle peer-checked:bg-primary"></div>
                   </label>
                 </div>
+                {(user as any)?.role === 'super-admin' && (
+                  <div className="flex items-center justify-between group">
+                    <div className="flex flex-col">
+                      <span className="font-label text-sm uppercase tracking-wider text-on-background group-hover:text-primary transition-colors">Global Template</span>
+                      <span className="text-xs text-on-surface-variant">Available to all tenants by default</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer hover:scale-105 transition-transform duration-200">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={isGlobal}
+                        onChange={(e) => setIsGlobal(e.target.checked)}
+                      />
+                      <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all spring-toggle peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -511,7 +538,7 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
                 </h2>
                 <p className="font-body text-sm text-on-surface-variant m-0">Strict 1-to-1 mapping. Select the underlying schema this template will render.</p>
               </div>
-              <span className="bg-surface-container-high text-on-surface-variant font-label text-xs uppercase px-3 py-1 rounded-full border border-outline-variant/30">Required</span>
+              <span className="bg-surface-container-high text-on-surface-variant font-label text-xs uppercase px-3 py-1 rounded-full border border-outline-variant/30">{isGlobal ? 'Optional' : 'Required'}</span>
             </header>
 
             <div className="relative">
@@ -579,6 +606,30 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
               </div>
             </div>
           </section>
+
+          {/* HTML Template Code Section - Visible only if isGlobal is checked or if user is super-admin */}
+          {(isGlobal || (user as any)?.role === 'super-admin') && (
+            <section className={`bg-surface-container-lowest p-8 rounded-xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] border border-outline-variant/15 animate-reveal hover-lift ${revealedIndex >= 3 ? 'is-revealed' : ''}`}>
+              <h2 className="font-headline text-2xl text-on-background mb-4 flex items-center gap-3 m-0">
+                <Icon name="code" className="text-primary" filled />
+                HTML Template Specification
+              </h2>
+              <p className="font-body text-sm text-on-surface-variant mb-6 m-0">Define the static self-contained HTML and CSS blueprint for this landing page.</p>
+              <div>
+                <label className="sr-only" htmlFor="htmlContent">HTML Code</label>
+                <div className="relative focus-within:ring-1 focus-within:ring-primary rounded-lg bg-surface border border-outline-variant/30 transition-all hover:scale-[1.005] hover:shadow-md focus-within:scale-[1.005] focus-within:shadow-md">
+                  <textarea 
+                    className="w-full bg-transparent border-none py-3 px-4 text-on-background font-mono text-xs placeholder:text-outline focus:ring-0 rounded-lg resize-y outline-none min-h-[300px]" 
+                    id="htmlContent" 
+                    name="htmlContent" 
+                    placeholder="<!DOCTYPE html>..." 
+                    value={htmlContent}
+                    onChange={(e) => setHtmlContent(e.target.value)}
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Layout Archetype Selection */}
           <section className={`bg-surface-container-lowest p-8 rounded-xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] border border-outline-variant/15 relative z-0 animate-reveal hover-lift ${revealedIndex >= 4 ? 'is-revealed' : ''}`}>
@@ -720,7 +771,7 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
             <button 
               className={`shimmer-effect px-8 py-3 rounded-xl font-label uppercase tracking-wide text-sm font-bold btn-primary-gradient shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${savePulse ? 'save-pulse' : ''}`} 
               type="submit"
-              disabled={!templateName || !selectedContentType || isSubmitting}
+              disabled={!templateName || (!isGlobal && !selectedContentType) || isSubmitting}
             >
               <span className="">{isSubmitting ? (isEditing ? 'Saving...' : 'Initializing...') : (isEditing ? 'Save Changes' : 'Initialize Template')}</span>
               <Icon name={isEditing ? 'save' : 'arrow_forward'} className={`text-sm transition-transform duration-300 ${isSubmitting ? 'scale-0' : 'scale-100'}`} />

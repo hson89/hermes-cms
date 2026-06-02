@@ -22,6 +22,9 @@ describe('Tenant API Resolution Endpoint', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   const createMockRequest = (url: string, headers: Record<string, string> = {}) => {

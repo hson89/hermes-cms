@@ -22,6 +22,9 @@ describe('Tenant Soft-Delete', () => {
         overrideAccess: true,
       }).catch(() => {})
     }
+    if (payload.db && typeof payload.db.destroy === 'function') {
+      await payload.db.destroy()
+    }
   })
 
   it('should allow setting status to archived', async () => {

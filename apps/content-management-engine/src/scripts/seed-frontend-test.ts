@@ -37,7 +37,7 @@ async function seed() {
         enableAPIKey: true,
         globalAccess: true,
         apiKey: 'demo-api-key-123456789',
-      },
+      } as any,
       overrideAccess: true,
     })
     
@@ -47,7 +47,7 @@ async function seed() {
 
     // 3. Create a Blog Post Content Type
     console.log('Creating Blog Post Content Type...')
-    const contentType = await payload.create({
+    const contentType = await (payload.create as any)({
       collection: 'content-types',
       data: {
         name: 'Blog Post',
