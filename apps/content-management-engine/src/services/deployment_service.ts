@@ -149,7 +149,7 @@ export class DeploymentService {
     }
 
     const templateService = new TemplateService(this.payload)
-    const validation = await templateService.validateTemplateForDeployment(templateId, req)
+    const validation = await templateService.validateTemplateForDeployment(templateId)
     if (!validation.valid) {
       throw new Error(`Template validation failed: ${validation.errors.join(', ')}`)
     }

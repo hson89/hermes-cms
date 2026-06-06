@@ -155,6 +155,7 @@ Super-admin bypass: users with `role === 'super-admin'`.
 8. CMS ↔ AI auth: `X-Internal-Secret` header.
 9. Feature specs live under `specs/<feature-id>/`.
 10. **Payload CMS & UI Safety (with Pre-Commit Hook Enforcement):** When working with Payload CMS concepts (e.g., payload.config.ts, collections, fields, hooks, access control, custom endpoints) or making UI/UX modifications to the admin interface in `apps/content-management-engine/`, you MUST invoke the unified `payload` skill (located in `.agents/skills/payload/SKILL.md`) first. An automated git pre-commit hook is active; if staged files contain changes under `apps/content-management-engine/`, it reminds/enforces that you have invoked and followed this skill before you commit. Always check the Alexandria Layout & Admin UI Guardrails section in the skill, verify whether the custom view is auto-wrapped by the framework's default templates, and apply deep-ancestor `:has()` CSS overrides in `globals.css` to prevent layout gaps.
+11. **Multi-tenant Plugin Workaround:** The `payload-multi-tenant` plugin has a known issue where its `beforeOperation` hooks crash if `req` is passed during `overrideAccess: true` operations (specifically when `req.user.tenants` contains raw IDs instead of objects). In Service layers performing explicit tenant isolation, OMIT the `req` parameter from internal `payload` API calls to bypass these hooks safely.
 
 
 ## Payload CMS 3.x Custom Components (CRITICAL)

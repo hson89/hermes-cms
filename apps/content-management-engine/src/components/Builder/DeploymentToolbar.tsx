@@ -104,7 +104,7 @@ export const DeploymentToolbar: React.FC<DeploymentToolbarProps> = ({
             disabled={isSaving}
             className="px-6 py-2 bg-primary text-on-primary font-label text-sm font-bold uppercase tracking-widest rounded hover:opacity-90 transition-opacity border-none cursor-pointer disabled:opacity-50 shadow-sm"
           >
-            {isSaving ? 'Saving...' : 'Save Block'}
+            {isSaving ? 'Saving...' : 'Save Template'}
           </button>
         </div>
       )}

@@ -163,7 +163,7 @@ export class TemplateService {
    * FR-009: Pre-deployment Validation.
    * Checks for empty layouts and missing required mappings.
    */
-  async validateTemplateForDeployment(templateId: string | number, req?: PayloadRequest) {
+  async validateTemplateForDeployment(templateId: string | number) {
     const template = await this.payload.findByID({
       collection: 'page-templates' as any,
       id: templateId,
