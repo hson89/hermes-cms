@@ -24,7 +24,7 @@ export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
   if (!API_KEY) return null
 
   try {
-    const url = `${PAYLOAD_URL}/api/tenants?where[slug][equals]=${slug}`
+    const url = `${PAYLOAD_URL}/api/tenants?where[or][0][slug][equals]=${slug}&where[or][1][id][equals]=${slug}`
     console.log(`[CMS] Fetching: ${url}`)
     const res = await fetch(url, {
       headers: {

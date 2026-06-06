@@ -159,6 +159,6 @@ describe('HostedSites Integration', () => {
     })
 
     expect(updatedSite.status).toBe('active')
-    expect(updatedSite.deployedUrl).toContain('hermes-hosted.app')
+    expect(updatedSite.deployedUrl).toBe(`http://localhost:3002/${tenantA.id}`)
   }, 5000) // Lower timeout since simulation is faster now
 })

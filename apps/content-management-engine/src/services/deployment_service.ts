@@ -52,12 +52,16 @@ export class DeploymentService {
       // as it represents a long-running process completing.
       setTimeout(async () => {
         try {
+          const tenantId = typeof site.tenant === 'object' && site.tenant !== null ? site.tenant.id : site.tenant
+          const port = site.template === 'astro-portfolio' ? 3002 : 3001
+          const deployedUrl = site.domain ? `https://${site.domain}` : `http://localhost:${port}/${tenantId}`
+
           await this.payload.update({
             collection: 'hosted-sites',
             id: siteId,
             data: {
               status: 'active',
-              deployedUrl: `https://${site.domain || `site-${site.id}.hermes-hosted.app`}`,
+              deployedUrl,
             },
             overrideAccess: true,
           })

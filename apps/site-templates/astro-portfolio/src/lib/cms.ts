@@ -24,7 +24,7 @@ export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
 	if (!API_KEY) return null;
 
 	try {
-		const res = await fetch(`${PAYLOAD_URL}/api/tenants?where[slug][equals]=${slug}`, {
+		const res = await fetch(`${PAYLOAD_URL}/api/tenants?where[or][0][slug][equals]=${slug}&where[or][1][id][equals]=${slug}`, {
 			headers: {
 				'Authorization': `API-Key ${API_KEY}`,
 				'Content-Type': 'application/json',

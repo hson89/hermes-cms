@@ -16,6 +16,13 @@ async function check() {
   })
   console.log('--- TENANTS ---')
   console.log(JSON.stringify(tenants.docs.map(t => ({ id: t.id, slug: t.slug, name: t.name })), null, 2))
+
+  const sites = await payload.find({
+    collection: 'hosted-sites',
+    overrideAccess: true,
+  })
+  console.log('--- HOSTED SITES ---')
+  console.log(JSON.stringify(sites.docs.map(s => ({ id: s.id, name: s.name, template: s.template, tenant: typeof s.tenant === 'object' ? s.tenant?.id : s.tenant, status: s.status, deployedUrl: s.deployedUrl })), null, 2))
 }
 
 check().catch(console.error)

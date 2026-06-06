@@ -204,5 +204,24 @@ export const Tenants: CollectionConfig = {
       ],
     },
   ],
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation === 'create') {
+          await req.payload.create({
+            collection: 'hosted-sites' as never,
+            data: {
+              name: `${doc.name} Default Blog`,
+              template: 'nextjs-blog',
+              tenant: doc.id,
+              status: 'pending',
+            } as never,
+            req,
+          })
+        }
+        return doc
+      },
+    ],
+  },
   timestamps: true,
 }
