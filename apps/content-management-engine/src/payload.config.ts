@@ -98,7 +98,12 @@ const configPromise = buildConfig({
         'audit-logs': { customTenantField: true },
         'hosted-sites': { customTenantField: true },
         'building-blocks': { customTenantField: true },
-        'page-templates': { customTenantField: true },
+        'page-templates': {
+          customTenantField: true,
+          useTenantAccess: false,
+          useBaseFilter: false,
+          useBaseListFilter: false,
+        },
         'template-deployments': { customTenantField: true },
         'ai-prompt-history': {},
         'drafting-sessions': { customTenantField: true },
