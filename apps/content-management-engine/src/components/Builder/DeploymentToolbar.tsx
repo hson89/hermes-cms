@@ -11,6 +11,7 @@ interface DeploymentToolbarProps {
   templateName?: string
   archetype?: string
   category?: string
+  onDeploy?: () => void
 }
 
 /**
@@ -24,7 +25,8 @@ export const DeploymentToolbar: React.FC<DeploymentToolbarProps> = ({
   templateId,
   templateName,
   archetype = 'Landing Page',
-  category = 'Page Templates / Visual Builder'
+  category = 'Page Templates / Visual Builder',
+  onDeploy
 }) => {
   const router = useRouter()
   const [activeViewport, setActiveViewport] = React.useState<'desktop' | 'tablet' | 'mobile'>('desktop')
@@ -88,6 +90,13 @@ export const DeploymentToolbar: React.FC<DeploymentToolbarProps> = ({
 
           <button className="px-4 py-2 text-primary font-label text-sm font-bold uppercase tracking-widest hover:bg-primary/5 rounded transition-all border-none bg-transparent cursor-pointer">
             Preview
+          </button>
+
+          <button 
+            onClick={onDeploy}
+            className="px-4 py-2 text-primary font-label text-sm font-bold uppercase tracking-widest hover:bg-primary/5 rounded transition-all border-none bg-transparent cursor-pointer flex items-center gap-1"
+          >
+            <Icon name="publish" size={18} /> Deploy
           </button>
           
           <button 

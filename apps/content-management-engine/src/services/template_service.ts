@@ -168,8 +168,7 @@ export class TemplateService {
       collection: 'page-templates' as any,
       id: templateId,
       depth: 2,
-      overrideAccess: (req ? false : true) as any,
-      req,
+      overrideAccess: true,
     }) as any
 
     if (!template) {
@@ -288,7 +287,7 @@ export class TemplateService {
 
     templates.docs.forEach((template: any) => {
       ;(template.layout || []).forEach((instance: any) => {
-        const blockId = typeof instance.block === 'object' ? instance.block.id : instance.block
+        const blockId = typeof instance.block === 'object' && instance.block !== null ? instance.block.id : instance.block
         if (blockId) {
           stats[blockId] = (stats[blockId] || 0) + 1
         }

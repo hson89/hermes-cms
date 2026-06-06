@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1780746877817" clover="3.2.0">
+  <project timestamp="1780746877817" name="All files">
+    <metrics statements="69" coveredstatements="63" conditionals="52" coveredconditionals="40" methods="5" coveredmethods="5" elements="126" coveredelements="108" complexity="0" loc="69" ncloc="69" packages="2" files="2" classes="2"/>
+    <package name="app.(payload).api.templates.deploy">
+      <metrics statements="22" coveredstatements="22" conditionals="16" coveredconditionals="14" methods="1" coveredmethods="1"/>
+      <file name="route.ts" path="/home/itlight/dev/hermes-cms/apps/content-management-engine/src/app/(payload)/api/templates/deploy/route.ts">
+        <metrics statements="22" coveredstatements="22" conditionals="16" coveredconditionals="14" methods="1" coveredmethods="1"/>
+        <line num="14" count="6" type="stmt"/>
+        <line num="15" count="6" type="stmt"/>
+        <line num="16" count="6" type="stmt"/>
+        <line num="17" count="6" type="stmt"/>
+        <line num="19" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="23" count="5" type="stmt"/>
+        <line num="24" count="5" type="stmt"/>
+        <line num="26" count="5" type="cond" truecount="4" falsecount="0"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="33" count="4" type="stmt"/>
+        <line num="34" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="35" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="41" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="43" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="48" count="3" type="stmt"/>
+        <line num="49" count="3" type="stmt"/>
+        <line num="56" count="2" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="services">
+      <metrics statements="47" coveredstatements="41" conditionals="36" coveredconditionals="26" methods="4" coveredmethods="4"/>
+      <file name="deployment_service.ts" path="/home/itlight/dev/hermes-cms/apps/content-management-engine/src/services/deployment_service.ts">
+        <metrics statements="47" coveredstatements="41" conditionals="36" coveredconditionals="26" methods="4" coveredmethods="4"/>
+        <line num="15" count="17" type="stmt"/>
+        <line num="25" count="5" type="stmt"/>
+        <line num="26" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="33" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="36" count="5" type="stmt"/>
+        <line num="47" count="5" type="stmt"/>
+        <line num="49" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="53" count="5" type="stmt"/>
+        <line num="54" count="5" type="stmt"/>
+        <line num="55" count="5" type="cond" truecount="3" falsecount="1"/>
+        <line num="56" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="57" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="59" count="5" type="stmt"/>
+        <line num="68" count="5" type="stmt"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="108" count="11" type="stmt"/>
+        <line num="114" count="10" type="cond" truecount="1" falsecount="1"/>
+        <line num="115" count="0" type="stmt"/>
+        <line num="118" count="10" type="cond" truecount="1" falsecount="1"/>
+        <line num="119" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="120" count="1" type="stmt"/>
+        <line num="124" count="9" type="stmt"/>
+        <line num="131" count="8" type="cond" truecount="1" falsecount="1"/>
+        <line num="132" count="0" type="stmt"/>
+        <line num="135" count="8" type="cond" truecount="3" falsecount="1"/>
+        <line num="136" count="8" type="cond" truecount="4" falsecount="0"/>
+        <line num="137" count="1" type="stmt"/>
+        <line num="140" count="7" type="stmt"/>
+        <line num="141" count="7" type="stmt"/>
+        <line num="142" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="143" count="1" type="stmt"/>
+        <line num="147" count="6" type="stmt"/>
+        <line num="160" count="6" type="stmt"/>
+        <line num="162" count="6" type="stmt"/>
+        <line num="169" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="170" count="5" type="stmt"/>
+        <line num="176" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="177" count="1" type="stmt"/>
+        <line num="180" count="1" type="stmt"/>
+        <line num="184" count="5" type="stmt"/>
+        <line num="194" count="5" type="stmt"/>
+        <line num="196" count="1" type="stmt"/>
+        <line num="197" count="1" type="stmt"/>
+        <line num="205" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

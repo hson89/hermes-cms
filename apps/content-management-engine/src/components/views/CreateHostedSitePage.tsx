@@ -79,7 +79,7 @@ export const CreateHostedSitePage: React.FC = () => {
             setStatus(data.status || 'pending')
             setDeployedUrl(data.deployedUrl || '')
             
-            const tid = typeof data.tenant === 'object' ? data.tenant.id : data.tenant
+            const tid = typeof data.tenant === 'object' && data.tenant !== null ? data.tenant.id : data.tenant
             setSelectedTenantId(tid ? tid.toString() : '')
           }
         })

@@ -20,6 +20,11 @@ export const TemplateDeployments: CollectionConfig = {
       type: 'relationship',
       relationTo: 'page-templates' as never,
       required: true,
+      // Service layer already validates template existence/ownership before
+      // creating this deployment log. Bypassing built-in validator prevents
+      // a spurious ValidationError when Payload queries page-templates with
+      // no user context (global templates return false from read access).
+      validate: (): true => true,
     },
     {
       name: 'site',

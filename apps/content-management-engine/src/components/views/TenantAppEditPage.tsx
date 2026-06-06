@@ -80,8 +80,8 @@ export const TenantAppEditPage: React.FC = () => {
         })
         .then((data) => {
           if (data) {
-            setAppId(typeof data.app === 'object' ? data.app.id : data.app || '')
-            setTenantId(typeof data.tenant === 'object' ? data.tenant.id : data.tenant || '')
+            setAppId(typeof data.app === 'object' && data.app !== null ? data.app.id : data.app || '')
+            setTenantId(typeof data.tenant === 'object' && data.tenant !== null ? data.tenant.id : data.tenant || '')
             setStatus(data.status || 'active')
             setConfig(JSON.stringify(data.config || {}, null, 2))
           }

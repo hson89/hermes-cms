@@ -46,8 +46,8 @@ export const GenerateTokenButton: React.FC<GenerateTokenButtonProps> = ({
     setToken(null)
 
     try {
-      const tenantId = propsTenantId || (typeof doc?.tenant === 'object' ? doc.tenant.id : doc?.tenant)
-      const appId = propsAppId || (typeof doc?.app === 'object' ? doc.app.id : doc?.app)
+      const tenantId = propsTenantId || (typeof doc?.tenant === 'object' && doc.tenant !== null ? doc.tenant.id : doc?.tenant)
+      const appId = propsAppId || (typeof doc?.app === 'object' && doc.app !== null ? doc.app.id : doc?.app)
 
       if (!tenantId || !appId) {
         throw new Error('Missing required fields: tenantId or appId. Please ensure the document is saved.')

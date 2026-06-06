@@ -6,6 +6,7 @@ import { useAuth, useDocumentInfo } from '@payloadcms/ui'
 import { Icon } from '../../ui/atoms/Icon'
 import { TopNavBar } from '../../ui/organisms/TopNavBar'
 import { ConfirmationModal } from '../../ui/organisms/ConfirmationModal'
+import { DeployTemplateModal } from '../../ui/organisms/DeployTemplateModal'
 
 type Archetype = 'longform' | 'landing' | 'minimal'
 
@@ -60,6 +61,8 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [savePulse, setSavePulse] = useState(false)
+  const [isDeployModalOpen, setIsDeployModalOpen] = useState(false)
+  const [templateTenantId, setTemplateTenantId] = useState<string | number | null>(null)
 
   const activeTenantId = useMemo(() => {
     return (user as any)?.tenants?.[0]?.tenant?.id || (user as any)?.tenants?.[0]?.tenant
@@ -109,6 +112,8 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
           setRestrictedAccess(!!data.restrictedAccess)
           setLocked(!!data.locked)
           setIsGlobal(!!data.isGlobal)
+          const tenantVal = data.tenant
+          setTemplateTenantId(typeof tenantVal === 'object' && tenantVal !== null ? tenantVal.id : tenantVal)
           setHtmlContent(data.htmlContent || '')
           setCreatedAt(data.createdAt ? new Date(data.createdAt).toLocaleDateString() : null)
           setUpdatedAt(data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : null)
@@ -358,6 +363,17 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
           { label: 'Page Templates', path: '/admin/collections/page-templates' },
           { label: isEditing ? 'Edit Template' : 'Draft Template' },
         ]}
+        actions={
+          isEditing && (
+            <button
+              type="button"
+              onClick={() => setIsDeployModalOpen(true)}
+              className="px-4.5 py-2 bg-primary hover:bg-primary/95 text-white font-label text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-none focus:outline-none shadow-sm shadow-primary/10 hover:shadow-md hover:-translate-y-0.5"
+            >
+              <Icon name="publish" size={16} /> Deploy to Site
+            </button>
+          )
+        }
         status={{
           value: status,
           onChange: handleStatusChange,
@@ -812,6 +828,15 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
         onConfirm={handleDeleteConfirm}
         onCancel={() => setIsDeleteModalOpen(false)}
         type="danger"
+      />
+      {/* Deploy Template Modal */}
+      <DeployTemplateModal
+        isOpen={isDeployModalOpen}
+        templateId={effectiveId || null}
+        templateName={templateName}
+        templateTenantId={templateTenantId}
+        isGlobalTemplate={isGlobal}
+        onClose={() => setIsDeployModalOpen(false)}
       />
     </div>
   )

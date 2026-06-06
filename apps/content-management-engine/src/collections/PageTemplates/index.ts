@@ -8,11 +8,27 @@ export const pageTemplateAccess: {
   delete: Access
 } = {
   read: ({ req: { user } }) => {
-    if (!user) return false
+    // When no user is present (e.g. internal relationship field validation),
+    // allow access to global templates only. This prevents Payload's relationship
+    // validator from rejecting global template IDs when creating deployment logs.
+    if (!user) {
+      return {
+        isGlobal: {
+          equals: true,
+        },
+      } as unknown as Where
+    }
     if ((user as any)?.role === 'super-admin') return true
 
     const tenantIds = getTenantIds(user)
-    if (tenantIds.length === 0) return false
+    if (tenantIds.length === 0) {
+      // No tenants — still allow reading global templates
+      return {
+        isGlobal: {
+          equals: true,
+        },
+      } as unknown as Where
+    }
 
     return {
       or: [

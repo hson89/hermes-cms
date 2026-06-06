@@ -84,7 +84,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
           const itemData = await itemRes.json()
           
           // Determine the Content Type ID
-          const ctId = typeof itemData.contentType === 'object' ? itemData.contentType.id : itemData.contentType
+          const ctId = typeof itemData.contentType === 'object' && itemData.contentType !== null ? itemData.contentType.id : itemData.contentType
           
           // Fetch the Content Type schema
           const ctRes = await fetch(`/api/content-types/${ctId}`)
@@ -100,7 +100,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
           }
           
           // Determine the Tenant ID from the document itself
-          const itemTenantId = typeof itemData.tenant === 'object' ? itemData.tenant.id : itemData.tenant
+          const itemTenantId = typeof itemData.tenant === 'object' && itemData.tenant !== null ? itemData.tenant.id : itemData.tenant
           const finalTenantId = itemTenantId || resolvedTenantId
 
           if (!finalTenantId) {

@@ -1,8 +1,7 @@
-import { getPayload } from 'payload'
+import { getPayload, PayloadRequest } from 'payload'
 import config from '@/payload.config'
 import { DeploymentService } from '@/services/deployment_service'
 import { NextRequest, NextResponse } from 'next/server'
-import { headers as getHeaders } from 'next/headers'
 import { getPrimaryTenantId } from '@/collections/Users/utils'
 
 /**
@@ -12,18 +11,16 @@ import { getPrimaryTenantId } from '@/collections/Users/utils'
  */
 export async function POST(req: NextRequest) {
   try {
-    const headers = await getHeaders()
     const payload = await getPayload({ config: await config })
-    const { user } = await payload.auth({ headers })
+    const { user } = await payload.auth(req)
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const tenantId = getPrimaryTenantId(user)
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context not found' }, { status: 403 })
-    }
+    // Set user on request to ensure it's available for Local API access control checks
+    const payloadReq = req as unknown as PayloadRequest
+    payloadReq.user = user
 
     const body = await req.json()
     const { templateId, siteId } = body
@@ -35,13 +32,28 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    let tenantId = getPrimaryTenantId(user)
+    if (!tenantId) {
+      if ((user as any).role === 'super-admin') {
+        const site = await payload.findByID({
+          collection: 'hosted-sites',
+          id: siteId,
+          overrideAccess: true,
+        })
+        tenantId = typeof site?.tenant === 'object' ? (site?.tenant as any)?.id : site?.tenant
+      }
+      if (!tenantId) {
+        return NextResponse.json({ error: 'Tenant context not found' }, { status: 403 })
+      }
+    }
+
     const deploymentService = new DeploymentService(payload)
     const result = await deploymentService.deployTemplate({
       templateId,
       siteId,
       userId: user.id,
       tenantId,
-    })
+    }, payloadReq)
 
     return NextResponse.json({
       success: true,
@@ -55,3 +67,4 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+

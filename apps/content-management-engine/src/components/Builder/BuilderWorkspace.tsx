@@ -5,6 +5,7 @@ import { AdminView } from '../admin/AdminView'
 import { BlockLibrary } from './BlockLibrary'
 import { BuilderCanvas } from './BuilderCanvas'
 import { DeploymentToolbar } from './DeploymentToolbar'
+import { DeployTemplateModal } from '../ui/organisms/DeployTemplateModal'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -36,6 +37,9 @@ export const BuilderWorkspace: React.FC = () => {
   const [templateName, setTemplateName] = useState<string>('')
   const [archetype, setArchetype] = useState<string>('')
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null)
+  const [isDeployModalOpen, setIsDeployModalOpen] = useState(false)
+  const [templateTenantId, setTemplateTenantId] = useState<string | number | null>(null)
+  const [isGlobal, setIsGlobal] = useState(false)
   
   const { saveTemplate, isSaving } = useTemplatePersistence(templateId)
 
@@ -59,6 +63,9 @@ export const BuilderWorkspace: React.FC = () => {
         .then((data) => {
           setTemplateName(data.name || '')
           setArchetype(data.archetype || 'Landing Page')
+          setIsGlobal(!!data.isGlobal)
+          const tenantVal = data.tenant
+          setTemplateTenantId(typeof tenantVal === 'object' && tenantVal !== null ? tenantVal.id : tenantVal)
           if (data.layout) {
             setLayout(data.layout.map((item: any, index: number) => ({
               instanceId: item.instanceId || `instance-${index}-${Date.now()}`,
@@ -131,6 +138,7 @@ export const BuilderWorkspace: React.FC = () => {
         templateName={templateName}
         archetype={archetype}
         category="Page Templates / Visual Builder"
+        onDeploy={() => setIsDeployModalOpen(true)}
       />
       
       {!templateId || templateId === 'new' ? (
@@ -178,6 +186,15 @@ export const BuilderWorkspace: React.FC = () => {
           </DndContext>
         </div>
       )}
+      {/* Deploy Template Modal */}
+      <DeployTemplateModal
+        isOpen={isDeployModalOpen}
+        templateId={templateId || null}
+        templateName={templateName}
+        templateTenantId={templateTenantId}
+        isGlobalTemplate={isGlobal}
+        onClose={() => setIsDeployModalOpen(false)}
+      />
     </AdminView>
   )
 }

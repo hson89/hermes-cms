@@ -43,7 +43,7 @@ export const generateMarketplaceTokenEndpoint: Endpoint = {
       // Verify that the user has access to the requested tenant
       if ((user as any).role !== 'super-admin') {
         const userTenants = (user as any).tenants?.map((t: any) => {
-          const tid = typeof t.tenant === 'object' ? t.tenant.id : t.tenant
+          const tid = typeof t.tenant === 'object' && t.tenant !== null ? t.tenant.id : t.tenant
           return isNaN(Number(tid)) ? tid : Number(tid)
         }) || []
         

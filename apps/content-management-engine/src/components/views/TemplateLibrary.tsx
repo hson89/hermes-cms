@@ -10,6 +10,7 @@ import { FilterChips, FilterOption } from '@/components/ui/molecules/FilterChips
 import { RegistryPagination } from '@/components/ui/molecules/RegistryPagination'
 import { ConfirmationModal } from '@/components/ui/organisms/ConfirmationModal'
 import { Badge } from '@/components/ui/atoms/Badge'
+import { DeployTemplateModal } from '@/components/ui/organisms/DeployTemplateModal'
 
 interface Template {
   id: string
@@ -20,6 +21,8 @@ interface Template {
   image: string
   status: 'Live' | 'Draft' | 'Archived'
   updatedAt: string
+  tenant?: any
+  isGlobal?: boolean
 }
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop'
@@ -54,6 +57,8 @@ export const TemplateLibrary: React.FC = () => {
   const [previewHtml, setPreviewHtml] = useState<string | null>(null)
   const [previewTemplateName, setPreviewTemplateName] = useState<string>('')
   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+  const [isDeployModalOpen, setIsDeployModalOpen] = useState(false)
+  const [templateToDeploy, setTemplateToDeploy] = useState<Template | null>(null)
 
   // Debounce search input
   useEffect(() => {
@@ -139,7 +144,9 @@ export const TemplateLibrary: React.FC = () => {
           day: 'numeric',
           month: 'short',
           year: 'numeric'
-        })
+        }),
+        tenant: doc.tenant,
+        isGlobal: doc.isGlobal
       }))
       
       setTemplates(mappedTemplates)
@@ -187,6 +194,13 @@ export const TemplateLibrary: React.FC = () => {
     if (action === 'delete') {
       setTemplateToDelete(templateId)
       setIsDeleteModalOpen(true)
+    }
+    if (action === 'deploy') {
+      const template = templates.find(t => t.id === templateId)
+      if (template) {
+        setTemplateToDeploy(template)
+        setIsDeployModalOpen(true)
+      }
     }
     if (action === 'preview') {
       const template = templates.find(t => t.id === templateId)
@@ -426,13 +440,22 @@ export const TemplateLibrary: React.FC = () => {
                             Edit Schema
                           </button>
 
-                          <button
+                           <button
                             type="button"
                             onClick={(e) => handleAction(e, 'preview', template.id)}
                             className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
                           >
                             <Icon name="visibility" size={14} />
                             Preview Layout
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => handleAction(e, 'deploy', template.id)}
+                            className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                          >
+                            <Icon name="publish" size={14} />
+                            Deploy to Site
                           </button>
 
                           <button
@@ -602,6 +625,18 @@ export const TemplateLibrary: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Deploy Template Modal */}
+      <DeployTemplateModal
+        isOpen={isDeployModalOpen}
+        templateId={templateToDeploy?.id || null}
+        templateName={templateToDeploy?.name || ''}
+        templateTenantId={typeof templateToDeploy?.tenant === 'object' ? templateToDeploy?.tenant?.id : templateToDeploy?.tenant}
+        isGlobalTemplate={!!templateToDeploy?.isGlobal}
+        onClose={() => {
+          setIsDeployModalOpen(false)
+          setTemplateToDeploy(null)
+        }}
+      />
     </div>
   )
 }

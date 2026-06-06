@@ -72,7 +72,7 @@ export const CreateUserPage: React.FC = () => {
             
             // Extract tenant IDs
             const mappedIds = (data.tenants || []).map((t: any) => {
-              if (t.tenant && typeof t.tenant === 'object') {
+              if (t.tenant && typeof t.tenant === 'object' && t.tenant !== null) {
                 return t.tenant.id
               }
               return t.tenant
