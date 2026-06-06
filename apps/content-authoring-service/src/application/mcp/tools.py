@@ -67,7 +67,8 @@ async def fetch_schema_for_slug(content_type_slug: str, tenant_id: str) -> Optio
     }
     params = {
         "where[slug][equals]": content_type_slug,
-        "where[tenant][equals]": tenant_id
+        "where[or][0][tenant][equals]": tenant_id,
+        "where[or][1][isGlobal][equals]": "true"
     }
     try:
         client = get_stdio_client()

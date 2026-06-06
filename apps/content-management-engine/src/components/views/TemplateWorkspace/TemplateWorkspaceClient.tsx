@@ -7,6 +7,7 @@ import { Icon } from '../../ui/atoms/Icon'
 import { TopNavBar } from '../../ui/organisms/TopNavBar'
 import { ConfirmationModal } from '../../ui/organisms/ConfirmationModal'
 import { DeployTemplateModal } from '../../ui/organisms/DeployTemplateModal'
+import { getTenantAndGlobalContentTypesQuery } from '../../../utils/contentTypes'
 
 type Archetype = 'longform' | 'landing' | 'minimal'
 
@@ -159,7 +160,7 @@ export const TemplateWorkspaceClient: React.FC<{ serverId?: string }> = ({ serve
         const headers: HeadersInit = {}
         if (token) headers['Authorization'] = `JWT ${token}`
 
-        const res = await fetch(`/api/content-types?where[tenant][equals]=${activeTenantId}&limit=100`, { headers })
+        const res = await fetch(`/api/content-types?${getTenantAndGlobalContentTypesQuery(activeTenantId)}`, { headers })
         if (res.ok) {
           const data = await res.json()
           setContentTypes(data.docs || [])

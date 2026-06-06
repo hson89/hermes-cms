@@ -7,6 +7,7 @@ import { ChatPanel } from '../ui/organisms/ChatPanel'
 import { EditorPanel } from '../ui/organisms/EditorPanel'
 import { DraftingTemplate } from '../ui/templates/DraftingTemplate'
 import { RecoveryDialog } from '../ui/organisms/RecoveryDialog'
+import { getTenantAndGlobalContentTypesQuery } from '../../utils/contentTypes'
 
 /**
  * DraftingWorkspace Page Component.
@@ -207,7 +208,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
         const finalTenantId = resolvedTenantId || activeTenantId
         if (finalTenantId) {
           try {
-            const ctsRes = await fetch(`/api/content-types?where[tenant][equals]=${finalTenantId}&limit=100`)
+            const ctsRes = await fetch(`/api/content-types?${getTenantAndGlobalContentTypesQuery(finalTenantId)}`)
             if (ctsRes.ok) {
               const ctsData = await ctsRes.json()
               if (ctsData?.docs) {

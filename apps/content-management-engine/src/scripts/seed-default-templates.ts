@@ -584,6 +584,8 @@ async function seed() {
       tenant: null,
       schema: {
         fields: [
+          { name: 'title', label: 'Title', type: 'text', required: true, unique: true },
+          { name: 'slug', label: 'Slug', type: 'text', required: true, unique: true },
           { name: 'brand', label: 'Brand Name', type: 'text', required: true },
           { name: 'model', label: 'Model Name', type: 'text', required: true },
           { name: 'engine', label: 'Engine Specifications', type: 'text', required: true },

@@ -35,7 +35,7 @@ async def schema_resolver(
     try:
         async with httpx.AsyncClient() as client:
             # First, find the content type by slug and tenant to get its ID to ensure logical tenant isolation
-            find_url = f"{cms_url}/api/content-types?where[slug][equals]={content_type_slug}&where[tenant][equals]={tenant_id}"
+            find_url = f"{cms_url}/api/content-types?where[slug][equals]={content_type_slug}&where[or][0][tenant][equals]={tenant_id}&where[or][1][isGlobal][equals]=true"
             response = await client.get(find_url, headers=headers)
             response.raise_for_status()
             docs = response.json().get("docs", [])
@@ -43,7 +43,17 @@ async def schema_resolver(
             if not docs:
                 return f"Error: Content type '{content_type_slug}' not found."
             
-            ct_id = docs[0]["id"]
+            matched_ct = docs[0]
+            ct_id = matched_ct["id"]
+            ct_tenant = matched_ct.get("tenant")
+            
+            # Critical Security Check: Ensure tenant-scoped sessions cannot modify global types.
+            # If the content type is global and does not belong to the current tenant, block the update.
+            if matched_ct.get("isGlobal") is True:
+                # Resolve tenant ID from object if populated
+                found_tenant_id = ct_tenant.get("id") if isinstance(ct_tenant, dict) else ct_tenant
+                if found_tenant_id != tenant_id:
+                    return f"Error: Content type '{content_type_slug}' is a global template and cannot be modified by a tenant session."
             
             # Now update it
             update_url = f"{cms_url}/api/content-types/{ct_id}"

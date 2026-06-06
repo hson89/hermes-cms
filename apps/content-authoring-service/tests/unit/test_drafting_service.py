@@ -209,6 +209,11 @@ async def test_generate_draft_stream_bootstrap_flow_with_matching(drafting_servi
             events.append(event)
 
     mock_ai_service.generate_schema.assert_not_called()
+    mock_client.get.assert_called_once()
+    called_url = mock_client.get.call_args[0][0]
+    assert "where[or][0][tenant][equals]=tenant-123" in called_url
+    assert "where[or][1][isGlobal][equals]=true" in called_url
+
     assert any("Reusing existing" in e.get("data", "") for e in events if e["event"] == "TEXT_DELTA")
     assert any(e["event"] == "SCHEMA_UPDATED" for e in events)
     schema_event = next(e for e in events if e["event"] == "SCHEMA_UPDATED")
