@@ -51,6 +51,8 @@ class Settings(BaseSettings):
     LANGFUSE_SECRET_KEY: str | None = None
     LANGFUSE_HOST: str = "https://cloud.langfuse.com"
     LANGFUSE_BASE_URL: str | None = None
+    LANGFUSE_TIMEOUT: int = 5
+
 
     # API Keys (optional at startup, validated by providers on use)
     OPENAI_API_KEY: str | None = None

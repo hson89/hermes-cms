@@ -84,7 +84,8 @@ class AIService:
                 self.__langfuse_client = Langfuse(
                     public_key=str(settings.LANGFUSE_PUBLIC_KEY),
                     secret_key=str(settings.LANGFUSE_SECRET_KEY),
-                    host=str(langfuse_host) if langfuse_host else None
+                    host=str(langfuse_host) if langfuse_host else None,
+                    timeout=settings.LANGFUSE_TIMEOUT,
                 )
             except Exception:
                 self.__langfuse_client = None
@@ -224,7 +225,11 @@ class AIService:
         }
 
         try:
-            result_state = await schema_graph.ainvoke(inputs, config=config)
+            import asyncio
+            result_state = await asyncio.wait_for(
+                schema_graph.ainvoke(inputs, config=config),
+                timeout=float(settings.SCHEMA_GENERATION_TIMEOUT),
+            )
             
             # Format and cache session for legacy test assertions
             compat_session = await self.get_session(session_id, schema_graph=schema_graph)

@@ -110,6 +110,7 @@ export const generateSchemaEndpoint: Endpoint = {
           // Internal service-to-service auth header
           'X-Internal-Secret': process.env.INTERNAL_SERVICE_SECRET ?? '',
         },
+        signal: AbortSignal.timeout(30000),
         body: JSON.stringify({
           prompt: prompt.trim(),
           tenant_id: tenantId,
@@ -228,6 +229,7 @@ export const getSessionStatusEndpoint: Endpoint = {
           'Content-Type': 'application/json',
           'X-Internal-Secret': process.env.INTERNAL_SERVICE_SECRET ?? '',
         },
+        signal: AbortSignal.timeout(10000),
       })
 
       if (!response.ok) {

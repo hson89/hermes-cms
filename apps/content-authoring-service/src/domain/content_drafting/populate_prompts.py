@@ -46,7 +46,8 @@ def populate():
     lf = Langfuse(
         public_key=settings.LANGFUSE_PUBLIC_KEY,
         secret_key=settings.LANGFUSE_SECRET_KEY,
-        host=langfuse_host
+        host=langfuse_host,
+        timeout=10,
     )
 
     prompts_to_create = {

@@ -56,6 +56,7 @@ export const copilotEditEndpoint: Endpoint = {
           'Content-Type': 'application/json',
           'X-Internal-Secret': internalSecret,
         },
+        signal: AbortSignal.timeout(30000),
         body: JSON.stringify({
           content_item_id: contentItemId,
           section_id: sectionId,
