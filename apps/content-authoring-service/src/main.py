@@ -152,6 +152,13 @@ class SessionMessageRequest(BaseModel):
     langfuse_trace_id: str | None = None
     tenant_id: str | None = None
 
+    @field_validator("tenant_id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v: Any) -> str | None:
+        if v is None:
+            return v
+        return str(v)
+
     @field_validator("prompt")
     @classmethod
     def prompt_must_not_be_empty(cls, v: str) -> str:

@@ -358,6 +358,35 @@ class TestSessionStreamingEndpoint:
         )
         assert response.status_code == 422
 
+    def test_session_message_accepts_numeric_tenant_id(
+        self,
+        client: TestClient,
+    ) -> None:
+        """Verify that numeric tenant_id is coerced to string in session message request."""
+        session_id = str(uuid4())
+
+        async def mock_generator(*args, **kwargs):
+            yield {"event": "STATUS_UPDATE", "data": "completed"}
+
+        with patch(
+            "src.application.ai_service.AIService.continue_generation_session_stream",
+            return_value=mock_generator(),
+        ) as mock_stream:
+            response = client.post(
+                f"/api/ai/sessions/{session_id}/message",
+                json={
+                    "prompt": "add price field",
+                    "tenant_id": 415,
+                },
+            )
+            assert response.status_code == 200
+            
+            # Verify the coerced tenant_id was passed/validated cleanly (no 422 error was thrown)
+            kwargs = mock_stream.call_args[1]
+            # Wait, the main handler function post_session_message verifies ownership but doesn't pass tenant_id
+            # to continue_generation_session_stream directly unless it matches.
+            # But the fact that status_code is 200 proves validation didn't fail on body.tenant_id.
+
 
 class TestRefineEndpoint:
     """Integration tests for POST /api/ai/refine."""
