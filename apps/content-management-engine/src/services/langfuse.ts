@@ -2,7 +2,7 @@ import { Langfuse } from 'langfuse'
 
 const public_key = process.env.LANGFUSE_PUBLIC_KEY
 const secret_key = process.env.LANGFUSE_SECRET_KEY
-const host = process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com'
+const host = process.env.LANGFUSE_HOST || process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com'
 
 export const langfuse =
   public_key && secret_key
