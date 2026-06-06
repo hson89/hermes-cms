@@ -169,8 +169,8 @@ export const CreateHostedSitePage: React.FC = () => {
       />
 
       {success && (
-        <div className="mb-8 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
-          <Icon name="check_circle" className="text-green-600" />
+        <div className="mb-8 p-4 bg-success/10 text-success rounded-xl flex items-center gap-3 border border-success/20 animate-fade-slide-up">
+          <Icon name="check_circle" className="text-success" />
           <span className="font-body text-sm font-semibold">{success}</span>
         </div>
       )}
@@ -264,7 +264,7 @@ export const CreateHostedSitePage: React.FC = () => {
                   id="siteTemplate"
                   selectProps={{
                     value: template,
-                    onChange: (e) => setTemplate((e.target as HTMLSelectElement).value as any)
+                    onChange: (e) => setTemplate((e.target as HTMLSelectElement).value as 'nextjs-blog' | 'astro-portfolio')
                   }}
                 >
                   <option value="nextjs-blog">Next.js Blog (Full Editorial Engine)</option>

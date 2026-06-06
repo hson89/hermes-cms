@@ -309,9 +309,9 @@ export const UserListPage: React.FC = () => {
                   type="button"
                   disabled={currentUser?.id === user.id}
                   onClick={(e) => triggerDelete(user, e)}
-                  className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-red-600 hover:bg-red-500/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                  className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-error hover:bg-error/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
                 >
-                  <Icon name="delete" size={14} className="text-red-500" />
+                  <Icon name="delete" size={14} className="text-error" />
                   Delete Account
                 </button>
               </div>
@@ -369,16 +369,16 @@ export const UserListPage: React.FC = () => {
 
       {/* Success Notification Banner */}
       {success && (
-        <div className="mt-6 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
-          <Icon name="check_circle" className="text-green-600" />
+        <div className="mt-6 p-4 bg-success/10 text-success rounded-xl flex items-center gap-3 border border-success/20 animate-fade-slide-up">
+          <Icon name="check_circle" className="text-success" />
           <span className="font-body text-sm font-semibold">{success}</span>
         </div>
       )}
 
       {/* Error Alert Banner */}
       {error && (
-        <div className="mt-6 p-4 bg-red-500/10 text-red-700 dark:text-red-400 rounded-xl flex items-center gap-3 border border-red-500/20 animate-fade-slide-up">
-          <Icon name="error" className="text-red-500" />
+        <div className="mt-6 p-4 bg-error/10 text-error rounded-xl flex items-center gap-3 border border-error/20 animate-fade-slide-up">
+          <Icon name="error" className="text-error" />
           <span className="font-body text-sm font-medium">{error}</span>
         </div>
       )}

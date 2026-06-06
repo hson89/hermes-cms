@@ -8,13 +8,7 @@ export const Header: React.FC = () => {
   const { stepNav } = useStepNav()
   const pathname = usePathname()
 
-  // Hide header on Page Template Library and Content Types Registry to avoid overlap with their custom headers
-  if (
-    pathname === '/admin/collections/page-templates' ||
-    pathname === '/admin/collections/content-types'
-  ) {
-    return null
-  }
+
 
   // Safely get the current title from stepNav or fallback to Dashboard
   let currentTitle: React.ReactNode = 'Dashboard'
@@ -26,7 +20,8 @@ export const Header: React.FC = () => {
       currentTitle = 'Dashboard' // Fallback for complex labels
     } else {
       // It might be a Record or StaticLabel, try to find a string
-      currentTitle = (lastStep.label as any)?.en || (lastStep.label as any)?.default || 'Dashboard'
+      const labelObj = lastStep.label as Record<string, unknown>
+      currentTitle = (labelObj?.en as React.ReactNode) || (labelObj?.default as React.ReactNode) || 'Dashboard'
     }
   }
 

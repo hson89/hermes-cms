@@ -267,8 +267,8 @@ export const GeneratorView: React.FC = () => {
 
       {/* Localized feedback notifications */}
       {successMsg && (
-        <div className="mb-6 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
-          <Icon name="check_circle" className="text-green-600" />
+        <div className="mb-6 p-4 bg-success/10 text-success rounded-xl flex items-center gap-3 border border-success/20 animate-fade-slide-up">
+          <Icon name="check_circle" className="text-success" />
           <span className="text-sm font-semibold">{successMsg}</span>
         </div>
       )}
@@ -512,7 +512,7 @@ export const GeneratorView: React.FC = () => {
                               <select
                                 id={`type-${idx}`}
                                 value={field.type}
-                                onChange={(e) => handleUpdateField(idx, { type: e.target.value as any })}
+                                onChange={(e) => handleUpdateField(idx, { type: e.target.value as FieldDefinition['type'] })}
                                 className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 outline-none p-3 font-body text-xs text-on-surface transition-all focus:border-primary/50"
                               >
                                 <option value="text">Text</option>

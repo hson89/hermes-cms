@@ -428,8 +428,8 @@ export const EditorView: React.FC = () => {
 
       {/* Dynamic Alerts */}
       {successMsg && (
-        <div className="mb-6 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
-          <Icon name="check_circle" className="text-green-600" />
+        <div className="mb-6 p-4 bg-success/10 text-success rounded-xl flex items-center gap-3 border border-success/20 animate-fade-slide-up">
+          <Icon name="check_circle" className="text-success" />
           <span className="text-sm font-semibold">{successMsg}</span>
         </div>
       )}
@@ -646,7 +646,7 @@ export const EditorView: React.FC = () => {
                               <select
                                 id={`type-${idx}`}
                                 value={field.type}
-                                onChange={(e) => handleUpdateField(idx, { type: e.target.value as any })}
+                                onChange={(e) => handleUpdateField(idx, { type: e.target.value as FieldDefinition['type'] })}
                                 className="w-full bg-surface-container-low rounded-xl border border-outline-variant/15 outline-none p-3 font-body text-xs text-on-surface transition-all focus:border-primary/50"
                               >
                                 <option value="text">Text</option>
@@ -762,9 +762,9 @@ export const EditorView: React.FC = () => {
 
           {/* Collapsible Audit Log for Removed AI-Suggested Fields */}
           {getDeletedAIFields().length > 0 && (
-            <div className="removed-ai-fields-panel mt-6 p-5 rounded-2xl border border-dashed border-red-500/20 bg-red-500/[0.02]">
+            <div className="removed-ai-fields-panel mt-6 p-5 rounded-2xl border border-dashed border-error/20 bg-error/[0.02]">
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <div className="flex items-center gap-2 text-error">
                   <Icon name="history_toggle_off" size={16} />
                   <span className="font-label text-xs font-bold uppercase tracking-widest">Removed AI Suggestions</span>
                 </div>
@@ -777,12 +777,12 @@ export const EditorView: React.FC = () => {
               </p>
               <div className="space-y-2">
                 {getDeletedAIFields().map((delField: any, delIdx: number) => (
-                  <div key={delIdx} className="flex justify-between items-center bg-red-500/[0.04] px-3.5 py-2 rounded-xl border border-red-500/10 font-mono text-[10px]">
+                  <div key={delIdx} className="flex justify-between items-center bg-error/[0.04] px-3.5 py-2 rounded-xl border border-error/10 font-mono text-[10px]">
                     <div className="space-y-0.5">
-                      <span className="font-semibold text-red-600 dark:text-red-400">{delField.label}</span>
+                      <span className="font-semibold text-error">{delField.label}</span>
                       <span className="block text-[8px] text-outline">({delField.name})</span>
                     </div>
-                    <span className="bg-red-500/10 text-red-700 dark:text-red-300 font-label font-bold text-[8px] uppercase tracking-widest px-2 py-0.5 rounded border border-red-500/10">
+                    <span className="bg-error/10 text-error font-label font-bold text-[8px] uppercase tracking-widest px-2 py-0.5 rounded border border-error/10">
                       {delField.type}
                     </span>
                   </div>

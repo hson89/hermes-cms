@@ -12,6 +12,7 @@ import { RegistryTable, TableColumn } from '@/components/ui/organisms/RegistryTa
 import { RegistryPagination } from '@/components/ui/molecules/RegistryPagination'
 import { ConfirmationModal } from '@/components/ui/organisms/ConfirmationModal'
 import { Badge } from '@/components/ui/atoms/Badge'
+import type { User } from '@/payload-types'
 
 interface ContentTypeField {
   name: string
@@ -197,7 +198,12 @@ export const ContentTypeListPage: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const activeTenantId = (currentUser as any)?.tenants?.[0]?.tenant?.id || (currentUser as any)?.tenants?.[0]?.tenant
+      const typedUser = currentUser as unknown as User
+      const firstTenantRelation = typedUser?.tenants?.[0]?.tenant
+      const activeTenantId =
+        firstTenantRelation && typeof firstTenantRelation === 'object'
+          ? firstTenantRelation.id
+          : firstTenantRelation
       if (!activeTenantId) {
         throw new Error('No active tenant associated with your user session.')
       }
@@ -368,7 +374,7 @@ export const ContentTypeListPage: React.FC = () => {
                 className="absolute right-6 top-12 bg-surface/90 backdrop-blur-md border border-outline-variant/15 rounded-xl modal-shadow w-48 py-1.5 z-40 animate-fade-slide-up text-left"
                 onClick={(e) => e.stopPropagation()}
               >
-                {(contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                {(contentType.isGlobal || (currentUser as unknown as User)?.role === 'super-admin') && (
                   <button
                     type="button"
                     onClick={(e) => handleClone(contentType, e)}
@@ -379,7 +385,7 @@ export const ContentTypeListPage: React.FC = () => {
                   </button>
                 )}
 
-                {(!contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                {(!contentType.isGlobal || (currentUser as unknown as User)?.role === 'super-admin') && (
                   <button
                     type="button"
                     onClick={() => router.push(`/admin/draft/${contentType.id}`)}
@@ -390,7 +396,7 @@ export const ContentTypeListPage: React.FC = () => {
                   </button>
                 )}
 
-                {(!contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                {(!contentType.isGlobal || (currentUser as unknown as User)?.role === 'super-admin') && (
                   <button
                     type="button"
                     onClick={() => router.push(`/admin/collections/content-types/${contentType.id}`)}
@@ -401,13 +407,13 @@ export const ContentTypeListPage: React.FC = () => {
                   </button>
                 )}
 
-                {(!contentType.isGlobal || (currentUser as any)?.role === 'super-admin') && (
+                {(!contentType.isGlobal || (currentUser as unknown as User)?.role === 'super-admin') && (
                   <button
                     type="button"
                     onClick={(e) => triggerDelete(contentType, e)}
-                    className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-red-600 hover:bg-red-500/10 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                    className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-error hover:bg-error/10 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
                   >
-                    <Icon name="delete" size={14} className="text-red-500" />
+                    <Icon name="delete" size={14} className="text-error" />
                     Delete Schema
                   </button>
                 )}
@@ -469,16 +475,16 @@ export const ContentTypeListPage: React.FC = () => {
 
       {/* Success Notification Banner */}
       {success && (
-        <div className="mt-6 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
-          <Icon name="check_circle" className="text-green-600" />
+        <div className="mt-6 p-4 bg-success/10 text-success rounded-xl flex items-center gap-3 border border-success/20 animate-fade-slide-up">
+          <Icon name="check_circle" className="text-success" />
           <span className="font-body text-sm font-semibold">{success}</span>
         </div>
       )}
 
       {/* Error Alert Banner */}
       {error && (
-        <div className="mt-6 p-4 bg-red-500/10 text-red-700 dark:text-red-400 rounded-xl flex items-center gap-3 border border-red-500/20 animate-fade-slide-up">
-          <Icon name="error" className="text-red-500" />
+        <div className="mt-6 p-4 bg-error/10 text-error rounded-xl flex items-center gap-3 border border-error/20 animate-fade-slide-up">
+          <Icon name="error" className="text-error" />
           <span className="font-body text-sm font-medium">{error}</span>
         </div>
       )}

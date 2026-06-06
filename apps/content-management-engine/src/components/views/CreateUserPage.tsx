@@ -228,8 +228,8 @@ export const CreateUserPage: React.FC = () => {
 
       {/* Success Notification Banner */}
       {success && (
-        <div className="mb-8 p-4 bg-green-500/10 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3 border border-green-500/20 animate-fade-slide-up">
-          <Icon name="check_circle" className="text-green-600" />
+        <div className="mb-8 p-4 bg-success/10 text-success rounded-xl flex items-center gap-3 border border-success/20 animate-fade-slide-up">
+          <Icon name="check_circle" className="text-success" />
           <span className="font-body text-sm font-semibold">{success}</span>
         </div>
       )}
@@ -340,7 +340,7 @@ export const CreateUserPage: React.FC = () => {
                 id="userRole"
                 selectProps={{
                   value: role,
-                  onChange: (e) => setRole((e.target as HTMLSelectElement).value as any)
+                  onChange: (e) => setRole((e.target as HTMLSelectElement).value as 'super-admin' | 'tenant-admin' | 'editor')
                 }}
               >
                 <option value="editor">Editor (Access specific tenant content pools only)</option>
