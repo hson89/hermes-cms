@@ -57,9 +57,11 @@ async def lifespan(app: FastAPI):  # noqa: ANN001
             # Compile graphs with checkpointer exactly once to prevent rebuild overhead
             from src.application.graphs.schema_graph import builder as schema_builder
             from src.application.graphs.drafting_graph import builder as drafting_builder
+            from src.application.graphs.template_builder_graph import builder as template_builder_builder
             
             app.state.schema_graph = schema_builder.compile(checkpointer=saver)
             app.state.drafting_graph = drafting_builder.compile(checkpointer=saver)
+            app.state.template_builder_graph = template_builder_builder.compile(checkpointer=saver)
             
             yield
     finally:
@@ -241,9 +243,13 @@ class RefineRequest(AIBaseRequest):
         return str(v)
 
 
+class GenerateTemplateRequest(AIBaseRequest):
+    """Payload for POST /api/ai/template-builder/generate."""
+    design_html: str
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+
 
 
 @app.get("/health", tags=["Meta"])
@@ -553,3 +559,36 @@ async def post_session_message(
             yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error: {exc}'})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+@app.post(
+    "/api/ai/template-builder/generate",
+    tags=["AI Template Builder"],
+    summary="Generate templates and schemas from HTML design",
+    dependencies=[Security(_require_internal_secret)],
+)
+async def generate_template(
+    body: GenerateTemplateRequest,
+    request: Request,
+) -> dict:
+    """
+    Analyzes an HTML design and registers corresponding Content Types and Page Templates.
+    """
+    from src.application.template_builder_service import TemplateBuilderService
+
+    service = TemplateBuilderService(request.app.state.ai_service)
+    result = await service.generate_template(
+        design_html=body.design_html,
+        tenant_id=body.tenant_id,
+        user_id=body.user_id,
+        template_builder_graph=request.app.state.template_builder_graph,
+        model_override=body.resolved_model_override(),
+        langfuse_trace_id=body.langfuse_trace_id,
+    )
+
+    if result["status"] == "failed":
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=result["errors"][0]
+        )
+
+    return result

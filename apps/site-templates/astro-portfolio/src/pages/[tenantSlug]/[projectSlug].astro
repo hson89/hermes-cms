@@ -69,7 +69,9 @@ if (templateHtml) {
 	if (project.fieldsData && typeof project.fieldsData === 'object') {
 		Object.entries(project.fieldsData).forEach(([key, val]) => {
 			const stringVal = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val ?? '');
-			const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+			// Escape regex special characters in the key
+			const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g');
 			compiledHtml = compiledHtml.replace(regex, stringVal);
 		});
 	}

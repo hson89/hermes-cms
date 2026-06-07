@@ -13,9 +13,9 @@
 
 **Purpose**: Project initialization and domain schema setup.
 
-- [ ] T001 Create domain folder `apps/content-authoring-service/src/domain/template_builder`
-- [ ] T002 Implement Pydantic structured output models (`TemplateBuilderOutput`, `FieldDefinition`, `BlockMapping`) in `apps/content-authoring-service/src/domain/template_builder/structures.py`
-- [ ] T003 Setup environment configuration for new template builder graph (recursion limits, timeouts) in `apps/content-authoring-service/src/infrastructure/config.py`
+- [x] T001 Create domain folder `apps/content-authoring-service/src/domain/template_builder`
+- [x] T002 Implement Pydantic structured output models (`TemplateBuilderOutput`, `FieldDefinition`, `BlockMapping`) in `apps/content-authoring-service/src/domain/template_builder/structures.py`
+- [x] T003 Setup environment configuration for new template builder graph (recursion limits, timeouts) in `apps/content-authoring-service/src/infrastructure/config.py`
 
 ---
 
@@ -25,8 +25,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Extend `CMSClient` in `apps/content-authoring-service/src/infrastructure/clients/cms_client.py` with ContentType query, create, and update REST methods.
-- [ ] T005 Extend `CMSClient` in `apps/content-authoring-service/src/infrastructure/clients/cms_client.py` with PageTemplate query, create, and update REST methods.
+- [x] T004 Extend `CMSClient` in `apps/content-authoring-service/src/infrastructure/clients/cms_client.py` with ContentType query, create, and update REST methods.
+- [x] T005 Extend `CMSClient` in `apps/content-authoring-service/src/infrastructure/clients/cms_client.py` with PageTemplate query, create, and update REST methods.
 - [ ] T006 Extend `CMSClient` in `apps/content-authoring-service/src/infrastructure/clients/cms_client.py` with BuildingBlock query/list methods.
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
@@ -43,14 +43,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T007 [P] [US1] Write unit tests for HTML layout parsing, field extraction, and Content Type registration in `apps/content-authoring-service/tests/application/graphs/test_template_builder.py`
+- [x] T007 [P] [US1] Write unit tests for HTML layout parsing, field extraction, and Content Type registration in `apps/content-authoring-service/tests/application/graphs/test_template_builder.py`
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Create the schema analysis and persistence nodes (`analyze_html_and_suggest_node`, `save_to_cms_node`) in `apps/content-authoring-service/src/application/nodes/template_builder_nodes.py`
-- [ ] T009 [US1] Build the LangGraph compiler and builder configuration in `apps/content-authoring-service/src/application/graphs/template_builder_graph.py`
-- [ ] T010 [US1] Create the orchestration service `apps/content-authoring-service/src/application/template_builder_service.py` to run the graph and parse results.
-- [ ] T011 [US1] Mount the endpoint `POST /api/ai/template-builder/generate` in `apps/content-authoring-service/src/main.py`
+- [x] T008 [US1] Create the schema analysis and persistence nodes (`analyze_html_and_suggest_node`, `save_to_cms_node`) in `apps/content-authoring-service/src/application/nodes/template_builder_nodes.py`
+- [x] T009 [US1] Build the LangGraph compiler and builder configuration in `apps/content-authoring-service/src/application/graphs/template_builder_graph.py`
+- [x] T010 [US1] Create the orchestration service `apps/content-authoring-service/src/application/template_builder_service.py` to run the graph and parse results.
+- [x] T011 [US1] Mount the endpoint `POST /api/ai/template-builder/generate` in `apps/content-authoring-service/src/main.py`
 
 **Checkpoint**: User Story 1 is fully functional - HTML layouts can be parsed and Content Types registered.
 
@@ -64,13 +64,13 @@
 
 ### Tests for User Story 2 (TDD) ⚠️
 
-- [ ] T012 [P] [US2] Write unit tests for Page Template parameterization and layout block mappings in `apps/content-authoring-service/tests/application/graphs/test_template_builder.py`
+- [x] T012 [P] [US2] Write unit tests for Page Template parameterization and layout block mappings in `apps/content-authoring-service/tests/application/graphs/test_template_builder.py`
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Extend template nodes in `apps/content-authoring-service/src/application/nodes/template_builder_nodes.py` to identify dynamic sections and substitute with placeholder tokens.
-- [ ] T014 [US2] Update `apps/content-authoring-service/src/application/graphs/template_builder_graph.py` to orchestrate PageTemplate creation and relate it 1-to-1 to the ContentType.
-- [ ] T015 [US2] Verify Page Template mapping resolution and registration in `apps/content-authoring-service/src/application/template_builder_service.py`.
+- [x] T013 [US2] Extend template nodes in `apps/content-authoring-service/src/application/nodes/template_builder_nodes.py` to identify dynamic sections and substitute with placeholder tokens.
+- [x] T014 [US2] Update `apps/content-authoring-service/src/application/graphs/template_builder_graph.py` to orchestrate PageTemplate creation and relate it 1-to-1 to the ContentType.
+- [x] T015 [US2] Verify Page Template mapping resolution and registration in `apps/content-authoring-service/src/application/template_builder_service.py`.
 
 **Checkpoint**: User Story 2 is functional - reusable page templates are successfully registered.
 
