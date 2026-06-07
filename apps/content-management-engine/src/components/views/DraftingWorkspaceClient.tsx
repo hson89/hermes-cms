@@ -56,13 +56,22 @@ export const DraftingWorkspaceClient: React.FC = () => {
   }, [contentTypeId, session?.contentType, recoveredSession?.contentType])
 
   const bestMatch = useMemo(() => {
-    if (!currentId || allContentTypes.length === 0) return null
-    return allContentTypes.find((c: any) => c.id && String(c.id) === String(currentId)) || null
-  }, [currentId, allContentTypes])
+    const fromList = allContentTypes.find((c: any) => c.id && String(c.id) === String(currentId))
+    if (fromList) return fromList
+    // Fallback to the specific contentType state if not found in the pre-fetched list
+    // (e.g., if pre-fetch failed or hasn't finished yet)
+    if (contentType && String(contentType.id) === String(currentId)) {
+      return contentType
+    }
+    return null
+  }, [currentId, allContentTypes, contentType])
 
   const alternatives = useMemo(() => {
+    // If allContentTypes hasn't loaded but we have the current contentType, 
+    // we still have 0 alternatives until the list loads.
     if (allContentTypes.length === 0) return []
-    if (!currentId) return allContentTypes
+    
+    // Filter out the current content type to show alternatives
     return allContentTypes.filter((c: any) => c.id && String(c.id) !== String(currentId))
   }, [currentId, allContentTypes])
 
@@ -92,6 +101,20 @@ export const DraftingWorkspaceClient: React.FC = () => {
           } catch (err) {
             console.error('Failed to fetch fallback tenant for super-admin:', err)
           }
+        }
+
+        // Pre-fetch all content types to populate alternatives, ensuring tenant isolation or global access
+        try {
+          const fetchTenantId = resolvedTenantId || activeTenantId
+          const ctsRes = await fetch(`/api/content-types?${getTenantAndGlobalContentTypesQuery(fetchTenantId)}`)
+          if (ctsRes.ok) {
+            const ctsData = await ctsRes.json()
+            if (ctsData?.docs) {
+              setAllContentTypes(ctsData.docs)
+            }
+          }
+        } catch (err) {
+          console.error('Failed to pre-fetch content types:', err)
         }
         
         if (isEditingItem) {
@@ -159,20 +182,6 @@ export const DraftingWorkspaceClient: React.FC = () => {
             setSession(newSession)
           }
         } else {
-          // Pre-fetch all content types BEFORE any early returns, so alternatives always populate
-          try {
-            const finalTenantId = resolvedTenantId || activeTenantId
-            const ctsRes = await fetch(`/api/content-types?${getTenantAndGlobalContentTypesQuery(finalTenantId)}`)
-            if (ctsRes.ok) {
-              const ctsData = await ctsRes.json()
-              if (ctsData?.docs) {
-                setAllContentTypes(ctsData.docs)
-              }
-            }
-          } catch (err) {
-            console.error('Failed to pre-fetch content types:', err)
-          }
-
           if (!resolvedTenantId) return
 
           // New draft bootstrapping logic
