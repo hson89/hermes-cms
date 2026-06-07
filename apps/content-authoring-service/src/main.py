@@ -301,7 +301,8 @@ async def generate_draft(
         except Exception as exc:
             import traceback
             traceback.print_exc()
-            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error during draft: {exc}'})}\n\n"
+            detail_msg = f'Internal server error during draft: {exc}' if settings.ENVIRONMENT == "development" else 'An internal error occurred during draft generation.'
+            yield f"event: ERROR\ndata: {json.dumps({'detail': detail_msg})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -348,7 +349,8 @@ async def refine_draft(
         except Exception as exc:
             import traceback
             traceback.print_exc()
-            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error during refinement: {exc}'})}\n\n"
+            detail_msg = f'Internal server error during refinement: {exc}' if settings.ENVIRONMENT == "development" else 'An internal error occurred during draft refinement.'
+            yield f"event: ERROR\ndata: {json.dumps({'detail': detail_msg})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -556,7 +558,8 @@ async def post_session_message(
             yield f"event: ERROR\ndata: {json.dumps({'detail': str(exc)})}\n\n"
         except Exception as exc:
             yield f"event: STATUS_UPDATE\ndata: \"failed\"\n\n"
-            yield f"event: ERROR\ndata: {json.dumps({'detail': f'Internal server error: {exc}'})}\n\n"
+            detail_msg = f'Internal server error: {exc}' if settings.ENVIRONMENT == "development" else 'An internal error occurred during session message processing.'
+            yield f"event: ERROR\ndata: {json.dumps({'detail': detail_msg})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -586,9 +589,10 @@ async def generate_template(
     )
 
     if result["status"] == "failed":
+        detail_msg = result["errors"][0] if settings.ENVIRONMENT == "development" else "An internal error occurred during template generation."
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=result["errors"][0]
+            detail=detail_msg
         )
 
     return result
