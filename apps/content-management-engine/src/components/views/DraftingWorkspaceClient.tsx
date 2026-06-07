@@ -48,7 +48,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
   const [allContentTypes, setAllContentTypes] = useState<any[]>([])
 
   const currentId = useMemo(() => {
-    const rawId = contentTypeId || session?.contentType || recoveredSession?.contentType
+    const isBootstrap = !contentTypeId || contentTypeId === 'new' || contentTypeId === 'undefined'
+    const rawId = (!isBootstrap ? contentTypeId : null) || session?.contentType || recoveredSession?.contentType
     if (rawId && typeof rawId === 'object') {
       return (rawId as any).id
     }
@@ -108,7 +109,10 @@ export const DraftingWorkspaceClient: React.FC = () => {
         // Pre-fetch all content types to populate alternatives, ensuring tenant isolation or global access
         try {
           const fetchTenantId = resolvedTenantId || activeTenantId
-          const ctsRes = await fetch(`/api/content-types?${getTenantAndGlobalContentTypesQuery(fetchTenantId)}`)
+          const query = user?.role === 'super-admin'
+            ? 'limit=100'
+            : getTenantAndGlobalContentTypesQuery(fetchTenantId)
+          const ctsRes = await fetch(`/api/content-types?${query}`)
           if (ctsRes.ok) {
             const ctsData = await ctsRes.json()
             if (ctsData?.docs) {
