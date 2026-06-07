@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     LANGFUSE_BASE_URL: str | None = None
     LANGFUSE_TIMEOUT: int = 5
 
+    # CMS API Configuration
+    CMS_FETCH_TIMEOUT: int = 5
+    CMS_FETCH_LIMIT: int = 100
 
     # API Keys (optional at startup, validated by providers on use)
     OPENAI_API_KEY: str | None = None

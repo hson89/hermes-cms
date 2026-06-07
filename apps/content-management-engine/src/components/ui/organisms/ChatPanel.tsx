@@ -43,6 +43,8 @@ export interface ChatPanelProps {
   bestMatch?: any
   alternatives?: any[]
   onSelectAlternative?: (ct: any) => void
+  schemaSwitched?: boolean
+  onSchemaSwitchedSent?: () => void
 }
 
 // Custom Markdown components to match Alexandria Design System within chat bubbles
@@ -483,6 +485,9 @@ const ThreadContainer: React.FC<{
   currentSchema?: any
   draftingFields?: Set<string>
   draftData?: any
+  historyLoaded?: boolean
+  schemaSwitched?: boolean
+  onSchemaSwitchedSent?: () => void
 }> = ({
   mode,
   isGenerating,
@@ -499,6 +504,9 @@ const ThreadContainer: React.FC<{
   currentSchema,
   draftingFields,
   draftData,
+  historyLoaded,
+  schemaSwitched,
+  onSchemaSwitchedSent,
 }) => {
   const messages = useThread((s) => s.messages)
   const isRunning = useThread((s) => s.isRunning)
@@ -532,6 +540,48 @@ const ThreadContainer: React.FC<{
       onInitialPromptSent?.()
     }
   }, [initialPrompt, isRunning, threadRuntime])
+
+  // Listen for background schema updates to automatically notify the AI agent and revise plan
+  const lastSchemaRef = useRef<any>(null)
+  useEffect(() => {
+    if (lastSchemaRef.current !== null && currentSchema) {
+      const oldFieldsStr = JSON.stringify(lastSchemaRef.current)
+      const newFieldsStr = JSON.stringify(currentSchema)
+      
+      if (oldFieldsStr !== newFieldsStr) {
+        console.log("ThreadContainer: schema change detected, appending system notification message.")
+        threadRuntime.append({
+          role: 'user',
+          content: [
+            {
+              type: 'text' as const,
+              text: 'The content type schema has been updated. Please revise the plan to match the new schema fields and update the draft accordingly.',
+            },
+          ],
+        })
+      }
+    }
+    if (currentSchema) {
+      lastSchemaRef.current = currentSchema
+    }
+  }, [currentSchema, threadRuntime])
+
+  // If schema was switched via query parameter, append a system/user instruction to revise plan once history is loaded
+  useEffect(() => {
+    if (schemaSwitched && historyLoaded && !isRunning && threadRuntime) {
+      console.log("ThreadContainer: schemaSwitched detected and history loaded, appending system notification message.")
+      threadRuntime.append({
+        role: 'user',
+        content: [
+          {
+            type: 'text' as const,
+            text: 'The content type schema has been updated. Please revise the plan to match the new schema fields and update the draft accordingly.',
+          },
+        ],
+      })
+      onSchemaSwitchedSent?.()
+    }
+  }, [schemaSwitched, historyLoaded, isRunning, threadRuntime, onSchemaSwitchedSent])
 
   // Custom styling welcome message if thread is empty
   const welcomeText = mode === 'schema'
@@ -856,6 +906,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   bestMatch,
   alternatives,
   onSelectAlternative,
+  schemaSwitched,
+  onSchemaSwitchedSent,
 }) => {
   // Controlled vs uncontrolled state for generating status text and state
   const [localIsGenerating, setLocalIsGenerating] = useState(false)
@@ -880,21 +932,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     })
   }, [])
 
-  // 2. Proactively update adapter config as props change
-  useEffect(() => {
-    customAdapter.updateConfig({
-      sessionId,
-      endpoint,
-      additionalBody,
-      isAiPaused,
-      mode,
-      onEvent,
-      onSchemaGenerated,
-      onSessionIdChange,
-      currentSchema,
-      setStatusText,
-    })
-  }, [
+  // 2. Proactively update adapter config synchronously on every render to ensure child effects always use the latest values
+  customAdapter.updateConfig({
     sessionId,
     endpoint,
     additionalBody,
@@ -904,13 +943,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     onSchemaGenerated,
     onSessionIdChange,
     currentSchema,
-    customAdapter,
-  ])
+    setStatusText,
+  })
 
   // 3. Initialize assistant-ui runtime using our customized adapter
   const runtime = useLocalRuntime(customAdapter)
 
   // 4. Fetch persistent chat history from the FastAPI service if sessionId is a valid UUID
+  const [historyLoaded, setHistoryLoaded] = useState(false)
   const lastLoadedSessionIdRef = useRef<string | null>(null)
   useEffect(() => {
     const sessionIdStr = sessionId ? String(sessionId) : ''
@@ -921,10 +961,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       if (isUuid && isGenerating && !lastLoadedSessionIdRef.current) {
         lastLoadedSessionIdRef.current = sessionIdStr
       }
+      setHistoryLoaded(true)
       return
     }
 
     async function loadHistory() {
+      setHistoryLoaded(false)
       try {
         lastLoadedSessionIdRef.current = sessionIdStr
         const res = await fetch(`/api/content-types/sessions/${sessionIdStr}`)
@@ -936,6 +978,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         }
       } catch (err) {
         console.error('Error loading chat history:', err)
+      } finally {
+        setHistoryLoaded(true)
       }
     }
 
@@ -976,6 +1020,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             currentSchema={currentSchema}
             draftingFields={draftingFields}
             draftData={draftData}
+            historyLoaded={historyLoaded}
+            schemaSwitched={schemaSwitched}
+            onSchemaSwitchedSent={onSchemaSwitchedSent}
           />
         </ThreadPrimitive.Root>
       </AssistantRuntimeProvider>

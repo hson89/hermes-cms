@@ -67,8 +67,8 @@ class DraftingService:
             
             existing_types = []
             try:
-                async with httpx.AsyncClient() as client:
-                    find_url = f"{cms_url}/api/content-types?where[or][0][tenant][equals]={tenant_id}&where[or][1][isGlobal][equals]=true&limit=100"
+                async with httpx.AsyncClient(timeout=settings.CMS_FETCH_TIMEOUT) as client:
+                    find_url = f"{cms_url}/api/content-types?where[or][0][tenant][equals]={tenant_id}&where[or][1][isGlobal][equals]=true&limit={settings.CMS_FETCH_LIMIT}"
                     response = await client.get(find_url, headers=headers)
                     if response.status_code == 200:
                         existing_types = response.json().get("docs", [])

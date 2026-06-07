@@ -21,7 +21,16 @@ export const DraftingWorkspaceClient: React.FC = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialPrompt = searchParams.get('prompt')
+  const schemaSwitched = searchParams.get('schemaSwitched') === 'true'
   const { user } = useAuth()
+
+  const handleSchemaSwitchedSent = useCallback(() => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('schemaSwitched')) {
+      url.searchParams.delete('schemaSwitched')
+      window.history.replaceState(null, '', url.pathname + url.search)
+    }
+  }, [])
   
   const activeTenantId = useMemo(() => {
     return (user as any)?.tenants?.[0]?.tenant?.id || (user as any)?.tenants?.[0]?.tenant
@@ -260,6 +269,36 @@ export const DraftingWorkspaceClient: React.FC = () => {
     initWorkspace()
   }, [user, contentTypeId, id, activeTenantId, router])
 
+  // 2.2. Poll for schema changes of the content type in the background
+  useEffect(() => {
+    if (!currentId || loading) return
+
+    const interval = setInterval(async () => {
+      try {
+        const ctRes = await fetch(`/api/content-types/${currentId}`)
+        if (ctRes.ok) {
+          const ctData = await ctRes.json()
+          const newFields = ctData.schema?.fields || ctData.fields || []
+          
+          if (schema !== null) {
+            const currentFieldsStr = JSON.stringify(schema)
+            const newFieldsStr = JSON.stringify(newFields)
+            
+            if (currentFieldsStr !== newFieldsStr) {
+              console.log('Schema change detected via polling. Updating state.')
+              setContentType(ctData)
+              setSchema(newFields)
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to poll content type for schema changes:', err)
+      }
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [currentId, schema, loading])
+
   // 2. Fetch Style Modifiers
   useEffect(() => {
     async function fetchStyles() {
@@ -468,6 +507,9 @@ export const DraftingWorkspaceClient: React.FC = () => {
     setLoading(true)
     try {
       const ctRes = await fetch(`/api/content-types/${selectedCT.id}`)
+      if (!ctRes.ok) {
+        throw new Error(`Failed to fetch content type details: ${ctRes.statusText}`)
+      }
       const ctData = await ctRes.json()
       
       setContentType(ctData)
@@ -477,32 +519,42 @@ export const DraftingWorkspaceClient: React.FC = () => {
         return exists ? prev : [ctData, ...prev]
       })
       
-      await fetch(`/api/ai-drafting/sessions/${session.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contentType: selectedCT.id, 
-          tenantId: effectiveTenantId,
-          draftData: {}
-        }),
-      })
+      // Check if there is already an active session for the target content type
+      const activeSessRes = await fetch(`/api/ai-drafting/sessions?contentType=${selectedCT.id}&tenantId=${effectiveTenantId}`)
+      if (!activeSessRes.ok) {
+        throw new Error(`Failed to check existing sessions: ${activeSessRes.statusText}`)
+      }
+      const activeSessData = await activeSessRes.json()
       
-      setSession((prev: any) => ({
-        ...prev,
-        contentType: selectedCT.id,
-        draftData: {}
-      }))
+      if (activeSessData.activeSession) {
+        console.log('[handleSelectAlternative] Active session already exists for target. Reusing it:', activeSessData.activeSession.id)
+        setSession(activeSessData.activeSession)
+      } else {
+        const patchRes = await fetch(`/api/ai-drafting/sessions/${session.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            contentType: selectedCT.id, 
+            tenantId: effectiveTenantId,
+            draftData: {}
+          }),
+        })
+        if (!patchRes.ok) {
+          const errData = await patchRes.json().catch(() => ({}))
+          throw new Error(errData.error || `Failed to update session: ${patchRes.statusText}`)
+        }
+        const updatedSession = await patchRes.json()
+        setSession(updatedSession)
+      }
 
       setVersions([])
       
-      const carryPrompt = initialPrompt || session?.draftData?.prompt || ''
-      const queryParam = carryPrompt ? `?prompt=${encodeURIComponent(carryPrompt)}` : ''
-      const targetUrl = `/admin/draft/${selectedCT.id}${queryParam}`
-      window.history.replaceState(null, '', targetUrl)
+      const targetUrl = `/admin/draft/${selectedCT.id}?schemaSwitched=true`
       
       router.push(targetUrl)
     } catch (err) {
       console.error('Failed to select alternative content type:', err)
+      alert(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
     }
@@ -593,6 +645,15 @@ export const DraftingWorkspaceClient: React.FC = () => {
       })
     }
   }, [router, effectiveTenantId, handleSave])
+
+  const handleInitialPromptSent = useCallback(() => {
+    setInitialPromptSent(true)
+    const url = new URL(window.location.href)
+    if (url.searchParams.has('prompt')) {
+      url.searchParams.delete('prompt')
+      window.history.replaceState(null, '', url.pathname + url.search)
+    }
+  }, [])
 
   const handleResume = async () => {
     if (!recoveredSession) return
@@ -812,7 +873,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
               }}
               onEvent={handleAIEvent} 
               initialPrompt={loading ? null : (initialPromptSent ? null : initialPrompt)}
-              onInitialPromptSent={() => setInitialPromptSent(true)}
+              onInitialPromptSent={handleInitialPromptSent}
               endpoint={
                 // If the URL had a ?prompt= and it hasn't been sent yet,
                 // always use the draft endpoint (creation) regardless of existing draftData.
@@ -833,6 +894,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
                 drafting_session_id: session?.id
               }}
               isAiPaused={isAiPaused}
+              schemaSwitched={schemaSwitched}
+              onSchemaSwitchedSent={handleSchemaSwitchedSent}
             />
           }
           editorPanel={

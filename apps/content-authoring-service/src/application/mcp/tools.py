@@ -22,7 +22,7 @@ def get_stdio_client() -> httpx.AsyncClient:
     global _stdio_client
     if _stdio_client is None:
         _stdio_client = httpx.AsyncClient(
-            timeout=5.0,
+            timeout=settings.CMS_FETCH_TIMEOUT,
             limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
         )
     return _stdio_client

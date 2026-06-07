@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, Any, Optional
 import httpx
+from src.infrastructure.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class CMSClient:
         client = self._client
         is_transient = False
         if client is None:
-            client = httpx.AsyncClient(timeout=5.0)
+            client = httpx.AsyncClient(timeout=settings.CMS_FETCH_TIMEOUT)
             is_transient = True
             
         try:

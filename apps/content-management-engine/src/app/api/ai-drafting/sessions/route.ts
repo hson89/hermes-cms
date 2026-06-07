@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { NextRequest, NextResponse } from 'next/server'
 import { isRateLimited } from '@/services/rate-limiter'
+import crypto from 'crypto'
 
 /**
  * GET /api/ai-drafting/sessions
@@ -87,6 +88,20 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  if (activeSession && !(activeSession as any).aiSessionId) {
+    const newAiSessionId = crypto.randomUUID()
+    const updated = await payload.update({
+      collection: 'drafting-sessions' as never,
+      id: activeSession.id,
+      data: {
+        aiSessionId: newAiSessionId,
+      } as never,
+      user,
+      overrideAccess: false,
+    })
+    activeSession = updated as any
+  }
+
   return NextResponse.json({
     activeSession,
   })
@@ -124,7 +139,7 @@ export async function POST(req: NextRequest) {
   // Create the session
   try {
     const session = await payload.create({
-      collection: 'drafting-sessions',
+      collection: 'drafting-sessions' as never,
       data: {
         user: user.id,
         tenant: tenantId,
@@ -133,7 +148,8 @@ export async function POST(req: NextRequest) {
         status: 'active',
         draftData: {},
         lastActivityAt: new Date().toISOString(),
-      },
+        aiSessionId: crypto.randomUUID(),
+      } as never,
       user,
       overrideAccess: false,
     })
