@@ -970,11 +970,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       try {
         lastLoadedSessionIdRef.current = sessionIdStr
         const res = await fetch(`/api/content-types/sessions/${sessionIdStr}`)
+        if (res.status === 404) {
+          runtime.thread.reset([])
+          return
+        }
         if (!res.ok) throw new Error('Failed to fetch session history')
         const data = await res.json()
         if (data.context && Array.isArray(data.context) && data.context.length > 0) {
           const mappedMessages = mapSessionHistoryToMessages(data.context, sessionIdStr)
           runtime.thread.reset(mappedMessages)
+        } else {
+          runtime.thread.reset([])
         }
       } catch (err) {
         console.error('Error loading chat history:', err)
