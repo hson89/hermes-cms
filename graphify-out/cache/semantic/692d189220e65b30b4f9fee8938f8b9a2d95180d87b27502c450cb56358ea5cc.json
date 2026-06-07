@@ -1,0 +1,1 @@
+{"nodes": [], "edges": [{"source": "scripts_seed_default_templates_seed", "target": "scripts_aurelian_thumbnail_image", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/content-management-engine/src/scripts/seed-default-templates.ts", "source_location": null, "weight": 1.0}], "hyperedges": []}

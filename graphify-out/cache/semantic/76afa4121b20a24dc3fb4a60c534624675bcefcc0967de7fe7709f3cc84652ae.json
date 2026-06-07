@@ -1,0 +1,1 @@
+{"nodes": [{"id": "claude_claude_config", "label": "CLAUDE Config", "file_type": "document", "source_file": ".claude/CLAUDE.md"}], "edges": [{"source": "claude_claude_config", "target": "graphify_skill_main", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": ".claude/CLAUDE.md", "weight": 1.0}], "hyperedges": []}
