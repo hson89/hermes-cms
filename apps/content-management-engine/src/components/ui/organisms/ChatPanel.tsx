@@ -257,11 +257,7 @@ const ParsedJsonBlock: React.FC<{ block: ParsedBlock }> = ({ block }) => {
 const MessageContentFormatter: React.FC<{
   textContent: string
   isUser: boolean
-  bestMatch?: any
-  alternatives?: any[]
-  onSelectAlternative?: (ct: any) => void
-}> = ({ textContent, isUser, bestMatch, alternatives, onSelectAlternative }) => {
-  const [showAlts, setShowAlts] = useState(false)
+}> = ({ textContent, isUser }) => {
   const blocks = useMemo(() => parseMessageContent(textContent), [textContent])
 
   if (isUser) {
@@ -270,63 +266,14 @@ const MessageContentFormatter: React.FC<{
 
   const isSchemaMatch = isSchemaReuseMessage(isUser ? 'user' : 'assistant', textContent)
 
-  if (isSchemaMatch && bestMatch) {
+  // When the bootstrap flow emits "Reusing existing content type:" inline in a message,
+  // render just the text (the persistent SchemaBanner above the thread handles the schema card).
+  if (isSchemaMatch) {
     return (
-      <div className="space-y-4 font-body animate-in fade-in duration-500">
+      <div className="space-y-2 font-body animate-in fade-in duration-500">
         <ReactMarkdown components={markdownComponents}>
           {textContent}
         </ReactMarkdown>
-
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/15">
-              <span className="material-symbols-outlined text-[10px] mr-1">check_circle</span>
-              Best Match
-            </span>
-          </div>
-
-          <div className="bg-surface-container-lowest border border-outline-variant/15 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-lg">schema</span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-on-surface">{bestMatch.name}</h3>
-                  <p className="text-xs text-outline">{bestMatch.description || 'Standard content schema'}</p>
-                </div>
-              </div>
-              
-              {alternatives && alternatives.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowAlts(!showAlts)}
-                  className="text-xs font-semibold text-primary hover:text-primary-container transition-colors cursor-pointer border-none bg-transparent"
-                >
-                  {showAlts ? 'Hide Alternatives' : 'Select Different'}
-                </button>
-              )}
-            </div>
-
-            {showAlts && alternatives && alternatives.length > 0 && (
-              <div className="space-y-3 pt-3 border-t border-outline-variant/15 animate-in slide-in-from-top-1 duration-200">
-                <p className="text-[10px] uppercase font-bold text-outline tracking-wider font-label">Alternatives</p>
-                <div className="flex flex-wrap gap-2">
-                  {alternatives.map((alt: any) => (
-                    <button
-                      key={alt.id}
-                      type="button"
-                      onClick={() => onSelectAlternative?.(alt)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/15 bg-surface-container hover:bg-surface-container-high hover:border-primary/30 text-xs font-medium text-on-surface-variant cursor-pointer transition-all active:scale-95"
-                    >
-                      {alt.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     )
   }
@@ -451,6 +398,74 @@ const DRAFT_PRESETS: PresetAction[] = [
   }
 ]
 
+// Persistent schema banner — always visible when a bestMatch content type is known
+const SchemaBanner: React.FC<{
+  bestMatch: any
+  alternatives?: any[]
+  onSelectAlternative?: (ct: any) => void
+}> = ({ bestMatch, alternatives, onSelectAlternative }) => {
+  const [showAlts, setShowAlts] = useState(false)
+
+  return (
+    <div className="mx-4 mt-3 mb-1 animate-in fade-in duration-400">
+      <div className="bg-surface-container-lowest border border-outline-variant/15 rounded-xl p-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/8 border border-primary/15 flex items-center justify-center text-primary flex-shrink-0">
+              <span className="material-symbols-outlined text-base">schema</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="inline-flex items-center gap-1 text-[9px] font-label font-bold uppercase tracking-widest text-primary">
+                  <span className="material-symbols-outlined text-[9px]">check_circle</span>
+                  Active Schema
+                </span>
+              </div>
+              <p className="text-xs font-bold text-on-surface leading-none">{bestMatch.name}</p>
+              {bestMatch.description && (
+                <p className="text-[10px] text-outline mt-0.5">{bestMatch.description}</p>
+              )}
+            </div>
+          </div>
+
+          {alternatives && alternatives.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAlts(!showAlts)}
+              className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer border border-primary/20 bg-primary/5 hover:bg-primary/10 rounded-lg px-2.5 py-1.5"
+            >
+              <span className="material-symbols-outlined text-[11px]">swap_horiz</span>
+              {showAlts ? 'Hide' : 'Change Schema'}
+            </button>
+          )}
+        </div>
+
+        {showAlts && alternatives && alternatives.length > 0 && (
+          <div className="space-y-2 pt-3 mt-3 border-t border-outline-variant/15 animate-in slide-in-from-top-1 duration-200">
+            <p className="text-[9px] uppercase font-bold text-outline tracking-wider font-label">Switch to a different schema</p>
+            <div className="flex flex-wrap gap-2">
+              {alternatives.map((alt: any) => (
+                <button
+                  key={alt.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectAlternative?.(alt)
+                    setShowAlts(false)
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/15 bg-surface-container hover:bg-surface-container-high hover:border-primary/30 text-xs font-medium text-on-surface-variant cursor-pointer transition-all active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[11px]">schema</span>
+                  {alt.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // Custom Inner Component to consume the assistant-ui thread context safely
 const ThreadContainer: React.FC<{
   mode: 'schema' | 'draft'
@@ -558,6 +573,15 @@ const ThreadContainer: React.FC<{
         )}
       </div>
 
+      {/* Persistent Schema Banner — shown whenever a bestMatch is known, regardless of bootstrap flow */}
+      {bestMatch && mode === 'draft' && (
+        <SchemaBanner
+          bestMatch={bestMatch}
+          alternatives={alternatives}
+          onSelectAlternative={onSelectAlternative}
+        />
+      )}
+
       {/* Bubble Message List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5 bg-surface-container-lowest/60 custom-scrollbar">
 
@@ -624,9 +648,6 @@ const ThreadContainer: React.FC<{
                   <MessageContentFormatter 
                     textContent={textContent} 
                     isUser={isUser} 
-                    bestMatch={bestMatch}
-                    alternatives={alternatives}
-                    onSelectAlternative={onSelectAlternative}
                   />
                 </div>
               )}

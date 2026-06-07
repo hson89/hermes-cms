@@ -7,7 +7,8 @@ import { ChatPanel } from '../ui/organisms/ChatPanel'
 import { EditorPanel } from '../ui/organisms/EditorPanel'
 import { DraftingTemplate } from '../ui/templates/DraftingTemplate'
 import { RecoveryDialog } from '../ui/organisms/RecoveryDialog'
-import { getTenantAndGlobalContentTypesQuery } from '../../utils/contentTypes'
+import { mergeContentTypes, getTenantAndGlobalContentTypesQuery } from '../../utils/contentTypes'
+
 
 /**
  * DraftingWorkspace Page Component.
@@ -44,9 +45,26 @@ export const DraftingWorkspaceClient: React.FC = () => {
   const [versions, setVersions] = useState<Array<{ timestamp: Date; label: string; data: any }>>([])
   const [showVersionsDropdown, setShowVersionsDropdown] = useState(false)
   const [showStyleHelp, setShowStyleHelp] = useState(false)
-  const [bestMatch, setBestMatch] = useState<any>(null)
-  const [alternatives, setAlternatives] = useState<any[]>([])
-  const [showAlternatives, setShowAlternatives] = useState(false)
+  const [allContentTypes, setAllContentTypes] = useState<any[]>([])
+
+  const currentId = useMemo(() => {
+    const rawId = contentTypeId || session?.contentType || recoveredSession?.contentType
+    if (rawId && typeof rawId === 'object') {
+      return (rawId as any).id
+    }
+    return rawId
+  }, [contentTypeId, session?.contentType, recoveredSession?.contentType])
+
+  const bestMatch = useMemo(() => {
+    if (!currentId || allContentTypes.length === 0) return null
+    return allContentTypes.find((c: any) => c.id && String(c.id) === String(currentId)) || null
+  }, [currentId, allContentTypes])
+
+  const alternatives = useMemo(() => {
+    if (allContentTypes.length === 0) return []
+    if (!currentId) return allContentTypes
+    return allContentTypes.filter((c: any) => c.id && String(c.id) !== String(currentId))
+  }, [currentId, allContentTypes])
 
   const effectiveTenantId = useMemo(() => {
     return session?.tenant?.id || session?.tenant || currentTenantId || activeTenantId
@@ -141,6 +159,20 @@ export const DraftingWorkspaceClient: React.FC = () => {
             setSession(newSession)
           }
         } else {
+          // Pre-fetch all content types BEFORE any early returns, so alternatives always populate
+          try {
+            const finalTenantId = resolvedTenantId || activeTenantId
+            const ctsRes = await fetch(`/api/content-types?${getTenantAndGlobalContentTypesQuery(finalTenantId)}`)
+            if (ctsRes.ok) {
+              const ctsData = await ctsRes.json()
+              if (ctsData?.docs) {
+                setAllContentTypes(ctsData.docs)
+              }
+            }
+          } catch (err) {
+            console.error('Failed to pre-fetch content types:', err)
+          }
+
           if (!resolvedTenantId) return
 
           // New draft bootstrapping logic
@@ -201,29 +233,6 @@ export const DraftingWorkspaceClient: React.FC = () => {
             })
             const newSession = await createRes.json()
             setSession(newSession)
-          }
-        }
-        
-        // Pre-fetch all other existing content types as alternatives
-        const finalTenantId = resolvedTenantId || activeTenantId
-        if (finalTenantId) {
-          try {
-            const ctsRes = await fetch(`/api/content-types?${getTenantAndGlobalContentTypesQuery(finalTenantId)}`)
-            if (ctsRes.ok) {
-              const ctsData = await ctsRes.json()
-              if (ctsData?.docs) {
-                const currentId = contentTypeId || session?.contentType || (recoveredSession?.contentType)
-                const alts = ctsData.docs.filter((c: any) => c.id !== currentId)
-                setAlternatives(alts)
-                
-                const currentCt = ctsData.docs.find((c: any) => c.id === currentId)
-                if (currentCt) {
-                  setBestMatch(currentCt)
-                }
-              }
-            }
-          } catch (err) {
-            console.error('Failed to pre-fetch content types:', err)
           }
         }
       } catch (err) {
@@ -448,7 +457,10 @@ export const DraftingWorkspaceClient: React.FC = () => {
       
       setContentType(ctData)
       setSchema(ctData.schema?.fields || ctData.fields || [])
-      setBestMatch(ctData)
+      setAllContentTypes(prev => {
+        const exists = prev.some(c => String(c.id) === String(ctData.id))
+        return exists ? prev : [ctData, ...prev]
+      })
       
       await fetch(`/api/ai-drafting/sessions/${session.id}`, {
         method: 'PATCH',
@@ -479,7 +491,7 @@ export const DraftingWorkspaceClient: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [session, effectiveTenantId, initialPrompt])
+  }, [session, effectiveTenantId, initialPrompt, router])
 
   // 3. Handle AI Events
   const handleAIEvent = useCallback(async (event: any) => {
@@ -487,9 +499,8 @@ export const DraftingWorkspaceClient: React.FC = () => {
 
     if (eventType === 'SCHEMA_UPDATED') {
       const { contentType: newCT, prompt: carryPrompt, sessionId: newAiSessionId, alternatives: altList } = data
-      setBestMatch(newCT)
-      if (altList) {
-        setAlternatives(altList)
+      if (newCT) {
+        setAllContentTypes(prev => mergeContentTypes(prev, newCT, altList))
       }
       setContentType(newCT)
       setSchema(newCT.fields || [])
