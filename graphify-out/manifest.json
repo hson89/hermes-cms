@@ -1,11 +1,11 @@
 {
   ".agents/agents/template-builder/agent.json": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2476783,
     "ast_hash": "ec695a045fce6aac5fd3d9cf80311e14",
     "semantic_hash": ""
   },
   ".agents/agents/template_builder/agent.json": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "ec695a045fce6aac5fd3d9cf80311e14",
     "semantic_hash": ""
   },
@@ -655,12 +655,12 @@
     "semantic_hash": "d845a6acc0c9c1f38c93745062ddfb2b"
   },
   "apps/content-authoring-service/src/infrastructure/clients/cms_client.py": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "c5b93f9a79b16e0ae59a836494f428ba",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/infrastructure/config.py": {
-    "mtime": 1780840036.7652707,
+    "mtime": 1780844587.9817693,
     "ast_hash": "79a31233759250e19a272995cf777a5e",
     "semantic_hash": ""
   },
@@ -700,7 +700,7 @@
     "semantic_hash": "e35b90115ea4fdb906c355e362b50fc3"
   },
   "apps/content-authoring-service/src/main.py": {
-    "mtime": 1780840097.7140732,
+    "mtime": 1780844587.9817693,
     "ast_hash": "8ebe039edaeaabd2e1068ef8ad4888b0",
     "semantic_hash": ""
   },
@@ -790,7 +790,7 @@
     "semantic_hash": "214ba99fa09df1abf0b8443cd68512c0"
   },
   "apps/content-authoring-service/tests/unit/test_config.py": {
-    "mtime": 1780840030.3856332,
+    "mtime": 1780844587.9817693,
     "ast_hash": "17d59e5a1ee3b5bf5ce1880812d70b46",
     "semantic_hash": ""
   },
@@ -1030,12 +1030,12 @@
     "semantic_hash": "0b14eb3edbc3a02ec98dd0136b2c6649"
   },
   "apps/content-management-engine/src/collections/BuildingBlocks/index.ts": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "a67b7cd68330a2e6ed94214a24e39c9d",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/ContentItems/access.ts": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "43c52dbc5d5ff8f43201dadbee1a85fe",
     "semantic_hash": ""
   },
@@ -1090,7 +1090,7 @@
     "semantic_hash": "eb711adfceba17aff4844539d4ebf33d"
   },
   "apps/content-management-engine/src/collections/HostedSites/index.ts": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "6dcb8efe8abc306f90341a97672894d4",
     "semantic_hash": ""
   },
@@ -1110,7 +1110,7 @@
     "semantic_hash": "4863caa132ded7b891cc53a2683ade22"
   },
   "apps/content-management-engine/src/collections/PageTemplates/index.ts": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "bc7966d3a0bd2dcb50d5899bdcd1c792",
     "semantic_hash": ""
   },
@@ -1120,7 +1120,7 @@
     "semantic_hash": "3d6ea598a81a77515db9575a85cf31d5"
   },
   "apps/content-management-engine/src/collections/TemplateDeployments/index.ts": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "97f44bd13d3cd04abbebcd8d5ba578d3",
     "semantic_hash": ""
   },
@@ -1130,7 +1130,7 @@
     "semantic_hash": "1cce363fb35ff45d66157d1783f69ed4"
   },
   "apps/content-management-engine/src/collections/Tenants/index.ts": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "c9e11759a8d9c56440fc0758b6bf557b",
     "semantic_hash": ""
   },
@@ -1160,7 +1160,7 @@
     "semantic_hash": "dfbb58b514cad26b2d4f5be7c3c54c24"
   },
   "apps/content-management-engine/src/collections/access/tenantAccess.ts": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "f9128051e4ad135fc47c008573b507b5",
     "semantic_hash": ""
   },
@@ -1615,8 +1615,8 @@
     "semantic_hash": "25e807a1cc1df4521e1876898ad0da70"
   },
   "apps/content-management-engine/src/scripts/seed-default-templates.ts": {
-    "mtime": 1780839778.7308726,
-    "ast_hash": "7a816128090d9ec7228dae123f12e7d5",
+    "mtime": 1780847816.0951939,
+    "ast_hash": "9e258246cb13e793613cd89c070368da",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/scripts/seed-frontend-test.ts": {
@@ -1790,9 +1790,9 @@
     "semantic_hash": "85991332e9c8ed159a2a8d868e5c637d"
   },
   "apps/content-management-engine/tests/collections/PageTemplates/config.test.ts": {
-    "mtime": 1780810334.351301,
-    "ast_hash": "6d14cc6d3ee0a93cf973fc4feab32250",
-    "semantic_hash": "6d14cc6d3ee0a93cf973fc4feab32250"
+    "mtime": 1780846441.09561,
+    "ast_hash": "c1c6dfd7943ad85216ae9dd40e774987",
+    "semantic_hash": ""
   },
   "apps/content-management-engine/tests/collections/PageTemplates/hooks.test.ts": {
     "mtime": 1780351882.5190127,
@@ -1980,9 +1980,9 @@
     "semantic_hash": "b151849cfdd24b0ce0750e8caa611a6e"
   },
   "apps/content-management-engine/tests/seed-default-templates.test.ts": {
-    "mtime": 1780440292.8316507,
-    "ast_hash": "5fd00c3860da42ec77c5d3bdae410745",
-    "semantic_hash": "5fd00c3860da42ec77c5d3bdae410745"
+    "mtime": 1780847819.886856,
+    "ast_hash": "688d337ccd37f8fd0351b16e61520c05",
+    "semantic_hash": ""
   },
   "apps/content-management-engine/tests/utils.ts": {
     "mtime": 1779112996.4979668,
@@ -2020,8 +2020,8 @@
     "semantic_hash": "5174c8bc533dfc68f0bcf411aaedf9ba"
   },
   "apps/site-templates/astro-portfolio/.astro/types.d.ts": {
-    "mtime": 1780839778.7349074,
-    "ast_hash": "f3d48b2aa569815a445d3509aa161559",
+    "mtime": 1780844636.7479446,
+    "ast_hash": "72c584e3bd8b5f007b2beb870517b437",
     "semantic_hash": ""
   },
   "apps/site-templates/astro-portfolio/astro.config.mjs": {
@@ -2040,13 +2040,13 @@
     "semantic_hash": "c2880402468d892d17e18e24442c0b20"
   },
   "apps/site-templates/astro-portfolio/src/lib/cms.ts": {
-    "mtime": 1780839778.7349074,
+    "mtime": 1780842056.2597725,
     "ast_hash": "5d66787bb103d645fc28b31986b7da0c",
     "semantic_hash": ""
   },
   "apps/site-templates/astro-portfolio/src/pages/[tenantSlug]/[projectSlug].astro": {
-    "mtime": 1780839778.7349074,
-    "ast_hash": "d25b3d7868e432c45fe09d42b8434959",
+    "mtime": 1780847575.549873,
+    "ast_hash": "12ea8015aa644aa495ff509d0a095a02",
     "semantic_hash": ""
   },
   "apps/site-templates/astro-portfolio/src/pages/[tenantSlug]/index.astro": {
@@ -2065,8 +2065,8 @@
     "semantic_hash": "a9b0754fd38eb1563825626bf442ce55"
   },
   "apps/site-templates/nextjs-blog/next-env.d.ts": {
-    "mtime": 1780839778.7349074,
-    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
+    "mtime": 1780844636.5501595,
+    "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
     "semantic_hash": ""
   },
   "apps/site-templates/nextjs-blog/next.config.mjs": {
@@ -2080,8 +2080,8 @@
     "semantic_hash": "32e46801cb4edf26d4db29983d9e53bc"
   },
   "apps/site-templates/nextjs-blog/src/app/[tenantSlug]/[articleSlug]/page.tsx": {
-    "mtime": 1780839778.7349074,
-    "ast_hash": "d81dfeb5b3b7ec1f3f60681c642a5989",
+    "mtime": 1780847573.8116724,
+    "ast_hash": "cf724f976ef3a5a4cc5243111fe45f70",
     "semantic_hash": ""
   },
   "apps/site-templates/nextjs-blog/src/app/[tenantSlug]/page.tsx": {
@@ -2095,7 +2095,7 @@
     "semantic_hash": "d368db4074442d01307224834a80e590"
   },
   "apps/site-templates/nextjs-blog/src/app/layout.tsx": {
-    "mtime": 1780839778.7349074,
+    "mtime": 1780842056.2597725,
     "ast_hash": "ca17a14aba9b980be4c296db52bc6d2b",
     "semantic_hash": ""
   },
@@ -2105,7 +2105,7 @@
     "semantic_hash": "d3b0e33b1e9bd9b227ad0801dece78bd"
   },
   "apps/site-templates/nextjs-blog/src/lib/cms.ts": {
-    "mtime": 1780839778.7349074,
+    "mtime": 1780842056.2597725,
     "ast_hash": "a0567c0f1735c07deeed44edbdc4ec80",
     "semantic_hash": ""
   },
@@ -2335,7 +2335,7 @@
     "semantic_hash": "1a20b80456a42f8525baa9f5a1dacb18"
   },
   ".agents/skills/payload/SKILL.md": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "f363365430b4d6325931d7dafdd249e0",
     "semantic_hash": ""
   },
@@ -2620,7 +2620,7 @@
     "semantic_hash": "f2ac035c7d23d79221c84e745d4a9380"
   },
   "AGENTS.md": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "b7ecf0db9c7e13156af310385d8f11f8",
     "semantic_hash": ""
   },
@@ -2640,7 +2640,7 @@
     "semantic_hash": "e3dcdbcbc3ed5445a60cdf06c199f237"
   },
   "GEMINI.md": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "06c542ddb078215f5ba6591b58cc1352",
     "semantic_hash": ""
   },
@@ -3045,7 +3045,7 @@
     "semantic_hash": "dd1148243e66430df6ee7dde1b7b57f9"
   },
   "specs/008-template-builder-agent/tasks.md": {
-    "mtime": 1780839778.7712212,
+    "mtime": 1780842056.3363702,
     "ast_hash": "ce6c0bf9a3c2f6830e7c0d2bc2787363",
     "semantic_hash": ""
   },
@@ -3120,37 +3120,37 @@
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/application/graphs/template_builder_graph.py": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "6ec60d379df55e2a162c2d29af9f0c2e",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/application/nodes/template_builder_nodes.py": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "4ba3024d8601c975c79c68800a84f6ef",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/application/template_builder_service.py": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "a81590afc92b747331c5bb687ab0e5a8",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/domain/template_builder/__init__.py": {
-    "mtime": 1780839778.7268376,
+    "mtime": 1780842056.2517097,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/domain/template_builder/structures.py": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "5e42d2fc83bbf3e86d767b5402f58a8c",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/tests/application/graphs/test_template_builder.py": {
-    "mtime": 1780839778.7308726,
+    "mtime": 1780842056.2517097,
     "ast_hash": "bf484c68b51cdf1ccd14c30de1b3fc80",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/tests/integration/test_error_exposure.py": {
-    "mtime": 1780840082.4347012,
+    "mtime": 1780844587.9817693,
     "ast_hash": "c30295da39c64d2529c263e5717d4669",
     "semantic_hash": ""
   }

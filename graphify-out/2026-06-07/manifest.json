@@ -3153,10 +3153,5 @@
     "mtime": 1780840082.4347012,
     "ast_hash": "c30295da39c64d2529c263e5717d4669",
     "semantic_hash": ""
-  },
-  "apps/content-authoring-service/tests/integration/test_template_builder_endpoint.py": {
-    "mtime": 1780840021.710023,
-    "ast_hash": "7aeac6698a91a264efd5874c0075b99c",
-    "semantic_hash": ""
   }
 }

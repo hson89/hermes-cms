@@ -479,7 +479,7 @@ const AURELIAN_DISCOVERY_HTML = `<!DOCTYPE html>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>{{ title }} - Aurelian Automotive</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.tailwindcss.com?plugins=typography,forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=Noto+Serif:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -638,19 +638,15 @@ const AURELIAN_DISCOVERY_HTML = `<!DOCTYPE html>
 </div>
 <!-- Category Filters -->
 <div class="flex flex-wrap justify-center gap-4 mb-16 border-b border-outline-variant hairline pb-6">
-<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-on-surface text-surface hover:bg-primary transition-colors">All Stories</button>
-<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Editorial</button>
-<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Engineering</button>
-<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Bespoke</button>
-<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Heritage</button>
+{{ tags }}
 </div>
 <!-- Hero Article -->
 <article class="mb-section-gap group cursor-pointer">
 <div class="w-full aspect-[16/9] mb-8 overflow-hidden bg-surface-container">
-<img alt="Sculpted in Motion - Aurelian Automotive Hero Article" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8TFItxn5bgAyRZuJFDyCJGo1f45JYN2uTtJIY9hHlpDqA3ItX9VqhvUf0dud24FTjuzv2XLn4Jutr0wnQ1fR5LVdhQOKbC1x53mOeDihcY3JqH3S4TQGYu-s0l0NQbdLQW37jcBmEjGmuovPZeXzeva1ycMp2tOOZshmx9xSq60H_9jgxPqCAeVfPtmmaxzAvk8HhYW3zrKp4z2dmJPJeOjnde6RISD2Zy1rn2qZbzhcpM2xTLFd00_HzPgCd60-gHlFepCjIwlnA"/>
+<img alt="{{ title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="{{ featuredImage }}"/>
 </div>
 <div class="max-w-4xl mx-auto text-center">
-<div class="font-label-md text-label-md text-primary tracking-widest uppercase mb-4">Article — {{ date }}</div>
+<div class="font-label-md text-label-md text-primary tracking-widest uppercase mb-4">Article — {{ date }} by {{ author }}</div>
 <h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-6 group-hover:text-primary transition-colors">{{ title }}</h2>
 <p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-2xl mx-auto mb-12">{{ excerpt }}</p>
 <div class="prose prose-lg max-w-none text-on-surface text-left space-y-6 max-w-3xl mx-auto my-12">{{ content }}</div>
@@ -714,7 +710,7 @@ const AURELIAN_DISCOVERY_HTML = `<!DOCTYPE html>
 </footer>
 </body></html>`
 
-async function seed() {
+export async function seed() {
   console.log('Initializing Payload...')
   const payload = await getPayload({ config: await config })
   console.log('Payload initialized.')
@@ -1062,11 +1058,20 @@ async function seed() {
   }
 }
 
-seed()
-  .then(() => {
-    process.exit(0)
-  })
-  .catch((err) => {
-    console.error('Fatal execution error:', err)
-    process.exit(1)
-  })
+// Only execute if run directly
+const isMain = process.argv[1] && (
+  process.argv[1].endsWith('seed-default-templates.ts') || 
+  process.argv[1].endsWith('seed-default-templates.js') ||
+  process.argv[1].endsWith('seed-default-templates')
+)
+
+if (isMain) {
+  seed()
+    .then(() => {
+      process.exit(0)
+    })
+    .catch((err) => {
+      console.error('Fatal execution error:', err)
+      process.exit(1)
+    })
+}

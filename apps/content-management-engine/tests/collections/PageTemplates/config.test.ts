@@ -15,6 +15,7 @@ describe('PageTemplates Collection Access Control and Config', () => {
         user: {
           id: 'user-admin',
           role: 'super-admin',
+          collection: 'users',
         },
       }
       const result = await pageTemplateAccess.read({ req: mockReq } as any)
@@ -38,6 +39,7 @@ describe('PageTemplates Collection Access Control and Config', () => {
         user: {
           id: 'user-123',
           role: 'tenant-admin',
+          collection: 'users',
           tenants: [],
         },
       }
@@ -54,6 +56,7 @@ describe('PageTemplates Collection Access Control and Config', () => {
         user: {
           id: 'user-123',
           role: 'tenant-admin',
+          collection: 'users',
           tenants: [
             {
               tenant: 384,

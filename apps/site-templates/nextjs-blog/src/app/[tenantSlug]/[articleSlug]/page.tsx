@@ -119,16 +119,76 @@ export default async function ArticlePage({ params }: Args) {
 
     // Interpolate placeholders in the HTML template
     let compiledHtml = templateHtml
+
+    // Resolve custom fields for rendering
+    let featuredImageUrl = ''
+    if (article.fieldsData && article.fieldsData.featuredImage) {
+      const img = article.fieldsData.featuredImage
+      if (typeof img === 'object' && img !== null) {
+        featuredImageUrl = img.url || ''
+      } else {
+        featuredImageUrl = String(img)
+      }
+    }
+    if (!featuredImageUrl) {
+      featuredImageUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuA8TFItxn5bgAyRZuJFDyCJGo1f45JYN2uTtJIY9hHlpDqA3ItX9VqhvUf0dud24FTjuzv2XLn4Jutr0wnQ1fR5LVdhQOKbC1x53mOeDihcY3JqH3S4TQGYu-s0l0NQbdLQW37jcBmEjGmuovPZeXzeva1ycMp2tOOZshmx9xSq60H_9jgxPqCAeVfPtmmaxzAvk8HhYW3zrKp4z2dmJPJeOjnde6RISD2Zy1rn2qZbzhcpM2xTLFd00_HzPgCd60-gHlFepCjIwlnA'
+    }
+
+    let authorName = 'Aurelian Automotive'
+    const author = article.fieldsData?.author
+    if (author) {
+      if (typeof author === 'object' && author !== null) {
+        authorName = author.name || author.email || 'Aurelian Automotive'
+      } else {
+        const PAYLOAD_URL = process.env.PAYLOAD_URL || 'http://localhost:3000'
+        const API_KEY = process.env.PAYLOAD_API_KEY
+        if (API_KEY) {
+          try {
+            const userRes = await fetch(`${PAYLOAD_URL}/api/users/${author}`, {
+              headers: {
+                'Authorization': `API-Key ${API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              next: { revalidate: 300 },
+            })
+            if (userRes.ok) {
+              const userData = await userRes.json()
+              authorName = userData.name || userData.email || 'Aurelian Automotive'
+            } else {
+              console.error(`Error fetching author details: status ${userRes.status} ${userRes.statusText}`)
+            }
+          } catch (e) {
+            console.error('Error fetching author details:', e)
+          }
+        }
+      }
+    }
+
+    let tagsHtml = ''
+    if (Array.isArray(article.fieldsData?.tags)) {
+      tagsHtml = article.fieldsData.tags
+        .map((t: any) => {
+          const name = typeof t === 'object' && t !== null ? t.name : String(t)
+          return `<span class="bg-surface-container hover:bg-surface-variant text-on-surface px-4 py-2 rounded-full text-xs font-label-md transition-colors duration-300 border border-outline-variant/10">${name}</span>`
+        })
+        .join('\n')
+    }
     
     // Replace standard placeholders
     compiledHtml = compiledHtml.replace(/\{\{\s*title\s*\}\}/g, article.title || '')
     compiledHtml = compiledHtml.replace(/\{\{\s*excerpt\s*\}\}/g, article.excerpt || '')
     compiledHtml = compiledHtml.replace(/\{\{\s*date\s*\}\}/g, formattedDate)
     compiledHtml = compiledHtml.replace(/\{\{\s*content\s*\}\}/g, contentHtml)
+    compiledHtml = compiledHtml.replace(/\{\{\s*featuredImage\s*\}\}/g, featuredImageUrl)
+    compiledHtml = compiledHtml.replace(/\{\{\s*author\s*\}\}/g, authorName)
+    compiledHtml = compiledHtml.replace(/\{\{\s*tags\s*\}\}/g, tagsHtml)
 
     // Dynamic replacement for custom fields (e.g. model, engine, horsepower, topSpeed, price, etc.)
     if (article.fieldsData && typeof article.fieldsData === 'object') {
       Object.entries(article.fieldsData).forEach(([key, val]) => {
+        // Skip keys that we manually resolved to prevent overriding with raw IDs/JSON
+        if (['featuredImage', 'author', 'tags'].includes(key)) return
+
         const stringVal = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val ?? '')
         const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
         const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g')
