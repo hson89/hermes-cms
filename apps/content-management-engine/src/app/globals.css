@@ -468,13 +468,18 @@ div:has(> [class*="custom-"][class*="-view"]) > [class*="collection-list"] {
 .template-default:has(.custom-editor-view),
 .template-default__wrap:has(.custom-editor-view),
 body:has(.custom-editor-view),
-html:has(.custom-editor-view) {
+html:has(.custom-editor-view),
+.template-default:has(.custom-deployment-view),
+.template-default__wrap:has(.custom-deployment-view),
+body:has(.custom-deployment-view),
+html:has(.custom-deployment-view) {
   height: 100vh !important;
   max-height: 100vh !important;
   overflow: hidden !important;
 }
 
-.custom-editor-view {
+.custom-editor-view,
+.custom-deployment-view {
   padding: 0 !important;
   margin-top: 5rem !important;
   height: calc(100vh - 5rem) !important;

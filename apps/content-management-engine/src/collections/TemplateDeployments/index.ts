@@ -7,6 +7,15 @@ export const TemplateDeployments: CollectionConfig = {
     useAsTitle: 'id',
     group: 'Templates',
     defaultColumns: ['template', 'site', 'status', 'createdAt', 'tenant'],
+    components: {
+      views: {
+        edit: {
+          default: {
+            Component: '/src/components/views/TemplateDeploymentEditPage#TemplateDeploymentEditPage',
+          },
+        },
+      },
+    },
   },
   access: {
     read: tenantAccess,

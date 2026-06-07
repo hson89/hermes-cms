@@ -38,6 +38,7 @@ import { BuildingBlockWorkspace as BuildingBlockWorkspace_d5aafe07b62b520c0838db
 import { BuildingBlockLibrary as BuildingBlockLibrary_7c1cf8177a7123dcfaa28c48b6982e27 } from '../../../../src/components/views/BuildingBlockLibrary'
 import { TemplateWorkspace as TemplateWorkspace_a30e7768bf2fac6fee5dc838a1243c30 } from '../../../../src/components/views/TemplateWorkspace'
 import { TemplateLibrary as TemplateLibrary_e03cd1b949aca83bd56425420886e48f } from '../../../../src/components/views/TemplateLibrary'
+import { TemplateDeploymentEditPage as TemplateDeploymentEditPage_b6ebf30acbb6cacee96d3b9a81096ca1 } from '../../../../src/components/views/TemplateDeploymentEditPage'
 import { CreateAPIKeyPage as CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d } from '../../../../src/components/views/CreateAPIKeyPage'
 import { APIKeyListPage as APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f } from '../../../../src/components/views/APIKeyListPage'
 import { TenantField as TenantField_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
@@ -98,6 +99,7 @@ export const importMap = {
   "/src/components/views/BuildingBlockLibrary#BuildingBlockLibrary": BuildingBlockLibrary_7c1cf8177a7123dcfaa28c48b6982e27,
   "/src/components/views/TemplateWorkspace#TemplateWorkspace": TemplateWorkspace_a30e7768bf2fac6fee5dc838a1243c30,
   "/src/components/views/TemplateLibrary#TemplateLibrary": TemplateLibrary_e03cd1b949aca83bd56425420886e48f,
+  "/src/components/views/TemplateDeploymentEditPage#TemplateDeploymentEditPage": TemplateDeploymentEditPage_b6ebf30acbb6cacee96d3b9a81096ca1,
   "/src/components/views/CreateAPIKeyPage#CreateAPIKeyPage": CreateAPIKeyPage_1e18dc713c55da3aa302ac1b535beb6d,
   "/src/components/views/APIKeyListPage#APIKeyListPage": APIKeyListPage_22c96011ddf48e1ff26e54e7edf6829f,
   "@payloadcms/plugin-multi-tenant/client#TenantField": TenantField_1d0591e3cf4f332c83a86da13a0de59a,
