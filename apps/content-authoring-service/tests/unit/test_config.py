@@ -29,6 +29,16 @@ def test_settings_default_values():
         assert settings.LANGCHAIN_MODEL_PROVIDER == "openai"
         assert settings.LANGCHAIN_MODEL == "gpt-4o-mini"
         assert settings.INTERNAL_SERVICE_SECRET == ""
+        assert settings.ENVIRONMENT == "development"
+
+
+def test_settings_load_environment():
+    """Verify that ENVIRONMENT can be loaded from the environment."""
+    with patch.dict(os.environ, {
+        "ENVIRONMENT": "production"
+    }):
+        settings = Settings()
+        assert settings.ENVIRONMENT == "production"
 
 
 def test_settings_load_endpoint_url():

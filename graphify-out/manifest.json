@@ -1,11 +1,11 @@
 {
   ".agents/agents/template-builder/agent.json": {
-    "mtime": 1780834114.043558,
+    "mtime": 1780839778.7268376,
     "ast_hash": "ec695a045fce6aac5fd3d9cf80311e14",
     "semantic_hash": ""
   },
   ".agents/agents/template_builder/agent.json": {
-    "mtime": 1780834115.8997376,
+    "mtime": 1780839778.7268376,
     "ast_hash": "ec695a045fce6aac5fd3d9cf80311e14",
     "semantic_hash": ""
   },
@@ -655,14 +655,14 @@
     "semantic_hash": "d845a6acc0c9c1f38c93745062ddfb2b"
   },
   "apps/content-authoring-service/src/infrastructure/clients/cms_client.py": {
-    "mtime": 1780839591.7711241,
+    "mtime": 1780839778.7308726,
     "ast_hash": "c5b93f9a79b16e0ae59a836494f428ba",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/infrastructure/config.py": {
-    "mtime": 1780800129.4752269,
-    "ast_hash": "d6bb1c7f854f9032df361dc9bdb070a5",
-    "semantic_hash": "d6bb1c7f854f9032df361dc9bdb070a5"
+    "mtime": 1780840036.7652707,
+    "ast_hash": "79a31233759250e19a272995cf777a5e",
+    "semantic_hash": ""
   },
   "apps/content-authoring-service/src/infrastructure/database.py": {
     "mtime": 1779549969.1725984,
@@ -700,8 +700,8 @@
     "semantic_hash": "e35b90115ea4fdb906c355e362b50fc3"
   },
   "apps/content-authoring-service/src/main.py": {
-    "mtime": 1780839531.7143786,
-    "ast_hash": "f20a2d68e948a7a19035957df51cd911",
+    "mtime": 1780840097.7140732,
+    "ast_hash": "8ebe039edaeaabd2e1068ef8ad4888b0",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/tests/__init__.py": {
@@ -790,9 +790,9 @@
     "semantic_hash": "214ba99fa09df1abf0b8443cd68512c0"
   },
   "apps/content-authoring-service/tests/unit/test_config.py": {
-    "mtime": 1779549969.1725984,
-    "ast_hash": "cfeb9702e48d6f80562eb148655df6eb",
-    "semantic_hash": "cfeb9702e48d6f80562eb148655df6eb"
+    "mtime": 1780840030.3856332,
+    "ast_hash": "17d59e5a1ee3b5bf5ce1880812d70b46",
+    "semantic_hash": ""
   },
   "apps/content-authoring-service/tests/unit/test_copilot_service.py": {
     "mtime": 1780267526.7357855,
@@ -1030,12 +1030,12 @@
     "semantic_hash": "0b14eb3edbc3a02ec98dd0136b2c6649"
   },
   "apps/content-management-engine/src/collections/BuildingBlocks/index.ts": {
-    "mtime": 1780834321.1746643,
+    "mtime": 1780839778.7308726,
     "ast_hash": "a67b7cd68330a2e6ed94214a24e39c9d",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/ContentItems/access.ts": {
-    "mtime": 1780835066.6592095,
+    "mtime": 1780839778.7308726,
     "ast_hash": "43c52dbc5d5ff8f43201dadbee1a85fe",
     "semantic_hash": ""
   },
@@ -1090,7 +1090,7 @@
     "semantic_hash": "eb711adfceba17aff4844539d4ebf33d"
   },
   "apps/content-management-engine/src/collections/HostedSites/index.ts": {
-    "mtime": 1780834950.1816995,
+    "mtime": 1780839778.7308726,
     "ast_hash": "6dcb8efe8abc306f90341a97672894d4",
     "semantic_hash": ""
   },
@@ -1110,7 +1110,7 @@
     "semantic_hash": "4863caa132ded7b891cc53a2683ade22"
   },
   "apps/content-management-engine/src/collections/PageTemplates/index.ts": {
-    "mtime": 1780835069.7966778,
+    "mtime": 1780839778.7308726,
     "ast_hash": "bc7966d3a0bd2dcb50d5899bdcd1c792",
     "semantic_hash": ""
   },
@@ -1120,7 +1120,7 @@
     "semantic_hash": "3d6ea598a81a77515db9575a85cf31d5"
   },
   "apps/content-management-engine/src/collections/TemplateDeployments/index.ts": {
-    "mtime": 1780834319.4967303,
+    "mtime": 1780839778.7308726,
     "ast_hash": "97f44bd13d3cd04abbebcd8d5ba578d3",
     "semantic_hash": ""
   },
@@ -1130,7 +1130,7 @@
     "semantic_hash": "1cce363fb35ff45d66157d1783f69ed4"
   },
   "apps/content-management-engine/src/collections/Tenants/index.ts": {
-    "mtime": 1780834994.2129464,
+    "mtime": 1780839778.7308726,
     "ast_hash": "c9e11759a8d9c56440fc0758b6bf557b",
     "semantic_hash": ""
   },
@@ -1160,7 +1160,7 @@
     "semantic_hash": "dfbb58b514cad26b2d4f5be7c3c54c24"
   },
   "apps/content-management-engine/src/collections/access/tenantAccess.ts": {
-    "mtime": 1780835057.4708006,
+    "mtime": 1780839778.7308726,
     "ast_hash": "f9128051e4ad135fc47c008573b507b5",
     "semantic_hash": ""
   },
@@ -1615,7 +1615,7 @@
     "semantic_hash": "25e807a1cc1df4521e1876898ad0da70"
   },
   "apps/content-management-engine/src/scripts/seed-default-templates.ts": {
-    "mtime": 1780834057.1528077,
+    "mtime": 1780839778.7308726,
     "ast_hash": "7a816128090d9ec7228dae123f12e7d5",
     "semantic_hash": ""
   },
@@ -2020,7 +2020,7 @@
     "semantic_hash": "5174c8bc533dfc68f0bcf411aaedf9ba"
   },
   "apps/site-templates/astro-portfolio/.astro/types.d.ts": {
-    "mtime": 1780834119.0228057,
+    "mtime": 1780839778.7349074,
     "ast_hash": "f3d48b2aa569815a445d3509aa161559",
     "semantic_hash": ""
   },
@@ -2040,12 +2040,12 @@
     "semantic_hash": "c2880402468d892d17e18e24442c0b20"
   },
   "apps/site-templates/astro-portfolio/src/lib/cms.ts": {
-    "mtime": 1780834080.720054,
+    "mtime": 1780839778.7349074,
     "ast_hash": "5d66787bb103d645fc28b31986b7da0c",
     "semantic_hash": ""
   },
   "apps/site-templates/astro-portfolio/src/pages/[tenantSlug]/[projectSlug].astro": {
-    "mtime": 1780839553.113956,
+    "mtime": 1780839778.7349074,
     "ast_hash": "d25b3d7868e432c45fe09d42b8434959",
     "semantic_hash": ""
   },
@@ -2065,7 +2065,7 @@
     "semantic_hash": "a9b0754fd38eb1563825626bf442ce55"
   },
   "apps/site-templates/nextjs-blog/next-env.d.ts": {
-    "mtime": 1780833964.3946085,
+    "mtime": 1780839778.7349074,
     "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
     "semantic_hash": ""
   },
@@ -2080,7 +2080,7 @@
     "semantic_hash": "32e46801cb4edf26d4db29983d9e53bc"
   },
   "apps/site-templates/nextjs-blog/src/app/[tenantSlug]/[articleSlug]/page.tsx": {
-    "mtime": 1780839565.9000702,
+    "mtime": 1780839778.7349074,
     "ast_hash": "d81dfeb5b3b7ec1f3f60681c642a5989",
     "semantic_hash": ""
   },
@@ -2095,7 +2095,7 @@
     "semantic_hash": "d368db4074442d01307224834a80e590"
   },
   "apps/site-templates/nextjs-blog/src/app/layout.tsx": {
-    "mtime": 1780834673.647617,
+    "mtime": 1780839778.7349074,
     "ast_hash": "ca17a14aba9b980be4c296db52bc6d2b",
     "semantic_hash": ""
   },
@@ -2105,7 +2105,7 @@
     "semantic_hash": "d3b0e33b1e9bd9b227ad0801dece78bd"
   },
   "apps/site-templates/nextjs-blog/src/lib/cms.ts": {
-    "mtime": 1780834072.9783626,
+    "mtime": 1780839778.7349074,
     "ast_hash": "a0567c0f1735c07deeed44edbdc4ec80",
     "semantic_hash": ""
   },
@@ -2335,7 +2335,7 @@
     "semantic_hash": "1a20b80456a42f8525baa9f5a1dacb18"
   },
   ".agents/skills/payload/SKILL.md": {
-    "mtime": 1780834103.1599221,
+    "mtime": 1780839778.7268376,
     "ast_hash": "f363365430b4d6325931d7dafdd249e0",
     "semantic_hash": ""
   },
@@ -2620,7 +2620,7 @@
     "semantic_hash": "f2ac035c7d23d79221c84e745d4a9380"
   },
   "AGENTS.md": {
-    "mtime": 1780834107.1678107,
+    "mtime": 1780839778.7268376,
     "ast_hash": "b7ecf0db9c7e13156af310385d8f11f8",
     "semantic_hash": ""
   },
@@ -2640,7 +2640,7 @@
     "semantic_hash": "e3dcdbcbc3ed5445a60cdf06c199f237"
   },
   "GEMINI.md": {
-    "mtime": 1780834111.466116,
+    "mtime": 1780839778.7268376,
     "ast_hash": "06c542ddb078215f5ba6591b58cc1352",
     "semantic_hash": ""
   },
@@ -3045,7 +3045,7 @@
     "semantic_hash": "dd1148243e66430df6ee7dde1b7b57f9"
   },
   "specs/008-template-builder-agent/tasks.md": {
-    "mtime": 1780839632.6100795,
+    "mtime": 1780839778.7712212,
     "ast_hash": "ce6c0bf9a3c2f6830e7c0d2bc2787363",
     "semantic_hash": ""
   },
@@ -3120,33 +3120,43 @@
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/application/graphs/template_builder_graph.py": {
-    "mtime": 1780839487.1984127,
+    "mtime": 1780839778.7268376,
     "ast_hash": "6ec60d379df55e2a162c2d29af9f0c2e",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/application/nodes/template_builder_nodes.py": {
-    "mtime": 1780839502.0331,
+    "mtime": 1780839778.7268376,
     "ast_hash": "4ba3024d8601c975c79c68800a84f6ef",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/application/template_builder_service.py": {
-    "mtime": 1780839508.5375597,
+    "mtime": 1780839778.7268376,
     "ast_hash": "a81590afc92b747331c5bb687ab0e5a8",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/domain/template_builder/__init__.py": {
-    "mtime": 1780839457.1214445,
+    "mtime": 1780839778.7268376,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/src/domain/template_builder/structures.py": {
-    "mtime": 1780839462.769637,
+    "mtime": 1780839778.7308726,
     "ast_hash": "5e42d2fc83bbf3e86d767b5402f58a8c",
     "semantic_hash": ""
   },
   "apps/content-authoring-service/tests/application/graphs/test_template_builder.py": {
-    "mtime": 1780839605.2448118,
+    "mtime": 1780839778.7308726,
     "ast_hash": "bf484c68b51cdf1ccd14c30de1b3fc80",
+    "semantic_hash": ""
+  },
+  "apps/content-authoring-service/tests/integration/test_error_exposure.py": {
+    "mtime": 1780840082.4347012,
+    "ast_hash": "c30295da39c64d2529c263e5717d4669",
+    "semantic_hash": ""
+  },
+  "apps/content-authoring-service/tests/integration/test_template_builder_endpoint.py": {
+    "mtime": 1780840021.710023,
+    "ast_hash": "7aeac6698a91a264efd5874c0075b99c",
     "semantic_hash": ""
   }
 }

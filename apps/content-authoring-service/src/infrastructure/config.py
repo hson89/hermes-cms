@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     Application settings.
     """
 
+    # Environment
+    ENVIRONMENT: str = "development"
+
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/hermes_authoring"
 
