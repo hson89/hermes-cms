@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import type { User } from '../../payload-types'
 
 /**
  * Tenants collection.
@@ -33,14 +34,27 @@ export const Tenants: CollectionConfig = {
     // Super-admins and Global API keys can see all via userHasAccessToAllTenants hook in config.
     read: ({ req }) => {
       const authHeader = req.headers?.get?.('authorization')
-      if (authHeader?.includes('demo-api-key-123456789')) return true
+      const bypassKey = process.env.DEMO_BYPASS_KEY
+      if (bypassKey && authHeader?.includes(bypassKey)) return true
       return Boolean(req.user)
     },
     admin: ({ req: { user } }) => !!user,
     // Mutation: Super Admin only
-    create: ({ req: { user } }) => (user as any)?.role === 'super-admin',
-    update: ({ req: { user } }) => (user as any)?.role === 'super-admin',
-    delete: ({ req: { user } }) => (user as any)?.role === 'super-admin',
+    create: ({ req: { user } }) => {
+      if (!user) return false
+      const u = user as User
+      return u.role === 'super-admin'
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      const u = user as User
+      return u.role === 'super-admin'
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      const u = user as User
+      return u.role === 'super-admin'
+    },
   },
   fields: [
     {
