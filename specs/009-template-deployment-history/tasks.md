@@ -18,8 +18,8 @@
 
 **Purpose**: Initial wiring and navigation setup.
 
-- [ ] T001 Register custom view `TemplateHistoryPage` in `apps/content-management-engine/src/payload.config.ts` mapping to `/templates/history`
-- [ ] T002 Verify Deployment History link in `apps/content-management-engine/src/constants/navigation.ts` correctly points to the new route
+- [X] T001 Register custom view `TemplateHistoryPage` in `apps/content-management-engine/src/payload.config.ts` mapping to `/templates/history`
+- [X] T002 Verify Deployment History link in `apps/content-management-engine/src/constants/navigation.ts` correctly points to the new route
 
 ---
 
@@ -27,8 +27,8 @@
 
 **Purpose**: Establish test foundation and verify API connectivity.
 
-- [ ] T003 Create integration test for tenant-scoped API access in `apps/content-management-engine/tests/integration/template-deployments-api.test.ts`
-- [ ] T004 [P] Create E2E test skeleton in `apps/content-management-engine/tests/e2e/template-history.spec.ts` that navigates to the page and checks for the header
+- [X] T003 Create integration test for tenant-scoped API access in `apps/content-management-engine/tests/integration/template-deployments-api.test.ts`
+- [X] T004 [P] Create E2E test skeleton in `apps/content-management-engine/tests/e2e/template-history.spec.ts` that navigates to the page and checks for the header
 
 ---
 
@@ -40,15 +40,15 @@
 
 ### Tests for User Story 1 (TDD) ⚠️
 
-- [ ] T005 [P] [US1] Add E2E test case to `apps/content-management-engine/tests/e2e/template-history.spec.ts` to verify table rendering with mock data
-- [ ] T006 [P] [US1] Add unit tests for status badge color mapping and date formatting in `apps/content-management-engine/src/components/views/__tests__/TemplateHistoryPage.test.tsx`
+- [X] T005 [P] [US1] Add E2E test case to `apps/content-management-engine/tests/e2e/template-history.spec.ts` to verify table rendering with mock data
+- [X] T006 [P] [US1] Add unit tests for status badge color mapping and date formatting in `apps/content-management-engine/tests/unit/status-mapping.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Scaffold `TemplateHistoryPage.tsx` in `apps/content-management-engine/src/components/views/` with `AdminView` and `RegistryHeader`
-- [ ] T008 [US1] Implement `fetchDeployments` effect using `fetch` to `/api/template-deployments?limit=10&depth=1`
-- [ ] T009 [US1] Integrate `RegistryTable` with columns for Template (Avatar), Site, Status, and Date
-- [ ] T010 [US1] Implement column rendering helpers for `status` (Alexandria Badge colors) and `createdAt` (Relative time)
+- [X] T007 [US1] Scaffold `TemplateHistoryPage.tsx` in `apps/content-management-engine/src/components/views/` with `AdminView` and `RegistryHeader`
+- [X] T008 [US1] Implement `fetchDeployments` effect using `fetch` to `/api/template-deployments?limit=10&depth=1`
+- [X] T009 [US1] Integrate `RegistryTable` with columns for Template (Avatar), Site, Status, and Date
+- [X] T010 [US1] Implement column rendering helpers for `status` (Alexandria Badge colors) and `createdAt` (Relative time)
 
 **Checkpoint**: User Story 1 complete. Basic history list is functional and tested.
 
@@ -62,13 +62,13 @@
 
 ### Tests for User Story 2 (TDD) ⚠️
 
-- [ ] T011 [P] [US2] Add E2E test case in `apps/content-management-engine/tests/e2e/template-history.spec.ts` for search and filter interaction
+- [X] T011 [P] [US2] Add E2E test case in `apps/content-management-engine/tests/e2e/template-history.spec.ts` for search and filter interaction
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Integrate `SearchInput` component and manage `search` state with `useDebounce`
-- [ ] T013 [US2] Integrate `FilterChips` component and manage `statusFilter` state ('all' | 'success' | 'failed')
-- [ ] T014 [US2] Update `fetchDeployments` to include `where` query parameters for search (template.name) and status
+- [X] T012 [US2] Integrate `SearchInput` component and manage `search` state with `useDebounce`
+- [X] T013 [US2] Integrate `FilterChips` component and manage `statusFilter` state ('all' | 'pending' | 'success' | 'failed')
+- [X] T014 [US2] Update `fetchDeployments` to include `where` query parameters for search (template.name) and status
 
 **Checkpoint**: User Story 2 complete. Troubleshooting tools (search/filter) are functional and tested.
 
@@ -82,12 +82,12 @@
 
 ### Tests for User Story 3 (TDD) ⚠️
 
-- [ ] T015 [P] [US3] Add E2E test case in `apps/content-management-engine/tests/e2e/template-history.spec.ts` for pagination controls
+- [X] T015 [P] [US3] Add E2E test case in `apps/content-management-engine/tests/e2e/template-history.spec.ts` for pagination controls
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Integrate `RegistryPagination` component and manage `page` state
-- [ ] T017 [US3] Update `fetchDeployments` to use current `page` and update `totalPages`/`totalDocs` states
+- [X] T016 [US3] Integrate `RegistryPagination` component and manage `page` state
+- [X] T017 [US3] Update `fetchDeployments` to use current `page` and update `totalPages`/`totalDocs` states
 
 **Checkpoint**: All user stories complete. System is scalable and functional.
 
@@ -97,9 +97,9 @@
 
 **Purpose**: Visual refinements and layout safety.
 
-- [ ] T018 Add isolation class `custom-history-view` to wrapper and verify Alexandria layout offsets (18rem sidebar)
-- [ ] T019 [P] Add deep-ancestor layout reset for the history view in `apps/content-management-engine/src/app/(payload)/admin/globals.css`
-- [ ] T020 Run full test suite (`pnpm test` and Playwright) to ensure no regressions
+- [X] T018 Add isolation class `custom-history-view` to wrapper and verify Alexandria layout offsets (18rem sidebar)
+- [X] T019 [P] Add deep-ancestor layout reset for the history view in `apps/content-management-engine/src/app/globals.css`
+- [X] T020 Run full test suite (`pnpm test` and Playwright) to ensure no regressions
 
 ---
 
