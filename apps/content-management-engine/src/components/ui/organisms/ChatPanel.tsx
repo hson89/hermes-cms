@@ -480,9 +480,6 @@ const ThreadContainer: React.FC<{
   initialPrompt?: string | null
   onInitialPromptSent?: () => void
   onEvent?: (event: any) => void
-  bestMatch?: any
-  alternatives?: any[]
-  onSelectAlternative?: (ct: any) => void
   currentSchema?: any
   draftingFields?: Set<string>
   draftData?: any
@@ -499,9 +496,6 @@ const ThreadContainer: React.FC<{
   initialPrompt,
   onInitialPromptSent,
   onEvent,
-  bestMatch,
-  alternatives,
-  onSelectAlternative,
   currentSchema,
   draftingFields,
   draftData,
@@ -572,15 +566,6 @@ const ThreadContainer: React.FC<{
           </span>
         )}
       </div>
-
-      {/* Persistent Schema Banner — shown whenever a bestMatch is known, regardless of bootstrap flow */}
-      {bestMatch && mode === 'draft' && (
-        <SchemaBanner
-          bestMatch={bestMatch}
-          alternatives={alternatives}
-          onSelectAlternative={onSelectAlternative}
-        />
-      )}
 
       {/* Bubble Message List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5 bg-surface-container-lowest/60 custom-scrollbar">
@@ -963,30 +948,38 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const activeSubtitle = mode === 'schema' ? 'Hermes AI Co-Creation' : 'Content Strategist & Drafter'
 
   const innerContent = (
-    <AssistantRuntimeProvider runtime={runtime}>
-      <ThreadPrimitive.Root asChild>
-        <ThreadContainer
-          mode={mode}
-          isGenerating={isGenerating}
-          setIsGenerating={setIsGenerating}
-          statusText={statusText}
-          isAiPaused={!!isAiPaused}
-          presets={presets}
-          activeIcon={activeIcon}
-          activeTitle={activeTitle}
-          activeSubtitle={activeSubtitle}
-          initialPrompt={initialPrompt}
-          onInitialPromptSent={onInitialPromptSent}
-          onEvent={onEvent}
+    <>
+      {/* Persistent Schema Banner — shown whenever a bestMatch is known in draft mode */}
+      {bestMatch && mode === 'draft' && (
+        <SchemaBanner
           bestMatch={bestMatch}
           alternatives={alternatives}
           onSelectAlternative={onSelectAlternative}
-          currentSchema={currentSchema}
-          draftingFields={draftingFields}
-          draftData={draftData}
         />
-      </ThreadPrimitive.Root>
-    </AssistantRuntimeProvider>
+      )}
+
+      <AssistantRuntimeProvider runtime={runtime}>
+        <ThreadPrimitive.Root asChild>
+          <ThreadContainer
+            mode={mode}
+            isGenerating={isGenerating}
+            setIsGenerating={setIsGenerating}
+            statusText={statusText}
+            isAiPaused={!!isAiPaused}
+            presets={presets}
+            activeIcon={activeIcon}
+            activeTitle={activeTitle}
+            activeSubtitle={activeSubtitle}
+            initialPrompt={initialPrompt}
+            onInitialPromptSent={onInitialPromptSent}
+            onEvent={onEvent}
+            currentSchema={currentSchema}
+            draftingFields={draftingFields}
+            draftData={draftData}
+          />
+        </ThreadPrimitive.Root>
+      </AssistantRuntimeProvider>
+    </>
   )
 
   if (isCard) {

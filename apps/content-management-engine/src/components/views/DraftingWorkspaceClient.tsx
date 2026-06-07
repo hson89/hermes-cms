@@ -56,10 +56,10 @@ export const DraftingWorkspaceClient: React.FC = () => {
   }, [contentTypeId, session?.contentType, recoveredSession?.contentType])
 
   const bestMatch = useMemo(() => {
+    if (!currentId) return null
     const fromList = allContentTypes.find((c: any) => c.id && String(c.id) === String(currentId))
     if (fromList) return fromList
     // Fallback to the specific contentType state if not found in the pre-fetched list
-    // (e.g., if pre-fetch failed or hasn't finished yet)
     if (contentType && String(contentType.id) === String(currentId)) {
       return contentType
     }
@@ -67,12 +67,14 @@ export const DraftingWorkspaceClient: React.FC = () => {
   }, [currentId, allContentTypes, contentType])
 
   const alternatives = useMemo(() => {
-    // If allContentTypes hasn't loaded but we have the current contentType, 
-    // we still have 0 alternatives until the list loads.
-    if (allContentTypes.length === 0) return []
+    if (!currentId) return allContentTypes
     
     // Filter out the current content type to show alternatives
-    return allContentTypes.filter((c: any) => c.id && String(c.id) !== String(currentId))
+    const filtered = allContentTypes.filter((c: any) => c.id && String(c.id) !== String(currentId))
+    
+    // Ensure that if we have a current content type but it's not in the list yet, 
+    // we don't accidentally hide alternatives
+    return filtered
   }, [currentId, allContentTypes])
 
   const effectiveTenantId = useMemo(() => {
