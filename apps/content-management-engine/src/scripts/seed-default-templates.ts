@@ -297,9 +297,9 @@ const AURELIAN_HTML = `<!DOCTYPE html>
 <img class="w-full h-full object-cover opacity-70 hero-img-zoom" data-alt="A cinematic, high-fashion style photograph of a sleek, modern luxury vehicle parked in a vast, minimalist concrete architectural space. The lighting is soft and diffused, emphasizing the pristine white and deep black contrasts of the Premium Minimalism aesthetic. The mood is serene, authoritative, and evocative of a high-end editorial spread." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8TFItxn5bgAyRZuJFDyCJGo1f45JYN2uTtJIY9hHlpDqA3ItX9VqhvUf0dud24FTjuzv2XLn4Jutr0wnQ1fR5LVdhQOKbC1x53mOeDihcY3JqH3S4TQGYu-s0l0NQbdLQW37jcBmEjGmuovPZeXzeva1ycMp2tOOZshmx9xSq60H_9jgxPqCAeVfPtmmaxzAvk8HhYW3zrKp4z2dmJPJeOjnde6RISD2Zy1rn2qZbzhcpM2xTLFd00_HzPgCd60-gHlFepCjIwlnA"/>
 </div>
 <div class="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
-<span class="font-label-md text-label-md text-surface-container-high mb-6 tracking-[0.3em] uppercase hero-headline-enter">The Pursuit of Purity</span>
-<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-surface mb-8 drop-shadow-lg hero-headline-enter" style="animation-delay: 0.1s;">SCULPTED IN MOTION</h1>
-<p class="font-body-lg text-body-lg text-surface-container-highest max-w-2xl drop-shadow-md opacity-90 hero-sub-enter">An uncompromising vision of automotive architecture. Discover the intersection of raw performance and curated silence.</p>
+<span class="font-label-md text-label-md text-surface-container-high mb-6 tracking-[0.3em] uppercase hero-headline-enter">Aurelian Automotive Showcase</span>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-surface mb-8 drop-shadow-lg hero-headline-enter" style="animation-delay: 0.1s;">{{ title }}</h1>
+<p class="font-body-lg text-body-lg text-surface-container-highest max-w-2xl drop-shadow-md opacity-90 hero-sub-enter">{{ description }}</p>
 </div>
 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center animate-bounce hero-sub-enter" style="animation-delay: 0.8s;">
 <span class="font-label-md text-label-md text-surface uppercase tracking-widest text-[10px] mb-2 opacity-70">Scroll to Explore</span>
@@ -329,8 +329,15 @@ const AURELIAN_HTML = `<!DOCTYPE html>
 </div>
 <div class="flex flex-col md:flex-row justify-between items-start gap-4">
 <div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-3 group-hover:text-primary transition-colors">Aurelian Spectre V12</h3>
-<p class="font-body-md text-body-md text-secondary max-w-lg">The absolute pinnacle of grand touring. A masterclass in aerodynamic efficiency wrapped in an unmistakable silhouette.</p>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3 group-hover:text-primary transition-colors">{{ brand }} {{ model }}</h3>
+<p class="font-body-md text-body-md text-secondary max-w-lg mb-4">{{ description }}</p>
+<div class="grid grid-cols-2 gap-y-2 gap-x-4 text-xs font-mono text-secondary border-t border-outline-variant/15 pt-4">
+  <div>Engine: <span class="text-on-surface">{{ engine }}</span></div>
+  <div>Horsepower: <span class="text-on-surface">{{ horsepower }} HP</span></div>
+  <div>Acceleration: <span class="text-on-surface">{{ acceleration }}</span></div>
+  <div>Top Speed: <span class="text-on-surface">{{ topSpeed }} mph</span></div>
+  <div>Starting Price: <span class="text-on-surface">\${{ price }}</span></div>
+</div>
 </div>
 <span class="font-headline-md text-headline-md text-outline font-light">01</span>
 </div>
@@ -471,7 +478,7 @@ const AURELIAN_DISCOVERY_HTML = `<!DOCTYPE html>
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Discovery - Aurelian Automotive</title>
+<title>{{ title }} - Aurelian Automotive</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=Noto+Serif:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -643,12 +650,10 @@ const AURELIAN_DISCOVERY_HTML = `<!DOCTYPE html>
 <img alt="Sculpted in Motion - Aurelian Automotive Hero Article" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8TFItxn5bgAyRZuJFDyCJGo1f45JYN2uTtJIY9hHlpDqA3ItX9VqhvUf0dud24FTjuzv2XLn4Jutr0wnQ1fR5LVdhQOKbC1x53mOeDihcY3JqH3S4TQGYu-s0l0NQbdLQW37jcBmEjGmuovPZeXzeva1ycMp2tOOZshmx9xSq60H_9jgxPqCAeVfPtmmaxzAvk8HhYW3zrKp4z2dmJPJeOjnde6RISD2Zy1rn2qZbzhcpM2xTLFd00_HzPgCd60-gHlFepCjIwlnA"/>
 </div>
 <div class="max-w-4xl mx-auto text-center">
-<div class="font-label-md text-label-md text-primary tracking-widest uppercase mb-4">Editorial — October 12, 2024</div>
-<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-6 group-hover:text-primary transition-colors">Sculpted in Motion: The Philosophy of Form</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-2xl mx-auto">Explore how Aurelian’s designers blend aerodynamics with classical sculptural principles to create silhouettes that look fast even while standing still. A deep dive into the clay modeling process.</p>
-<span class="inline-flex items-center gap-2 font-label-md text-label-md text-primary uppercase tracking-wider group-hover:translate-x-2 transition-transform">
-                    Read Story <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-</span>
+<div class="font-label-md text-label-md text-primary tracking-widest uppercase mb-4">Article — {{ date }}</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-6 group-hover:text-primary transition-colors">{{ title }}</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-2xl mx-auto mb-12">{{ excerpt }}</p>
+<div class="prose prose-lg max-w-none text-on-surface text-left space-y-6 max-w-3xl mx-auto my-12">{{ content }}</div>
 </div>
 </article>
 <!-- Featured Stories Grid -->
@@ -715,25 +720,8 @@ async function seed() {
   console.log('Payload initialized.')
 
   try {
-    // Check if the default templates already exist
-    console.log('Checking if default templates are already seeded...')
-    const templateCheck = await payload.find({
-      collection: 'page-templates' as any,
-      where: {
-        slug: {
-          in: ['aurelian-spectre-v12', 'aurelian-discovery'],
-        },
-        isGlobal: {
-          equals: true,
-        },
-      },
-      limit: 2,
-    } as any)
-
-    if (templateCheck.docs && templateCheck.docs.length >= 2) {
-      console.log('Default templates already exist. Seeding skipped.')
-      return
-    }
+    // We always run updates to templates to ensure changes to HTML layouts are seeded
+    console.log('Checking if default templates exist and updating them...')
 
     // 1. Resolve or Create Super Admin user
     console.log('Checking for Super Admin user...')

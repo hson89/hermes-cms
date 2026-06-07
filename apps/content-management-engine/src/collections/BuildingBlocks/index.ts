@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { tenantAccess } from '../access/tenantAccess'
+import { tenantAccess, tenantReadAccess } from '../access/tenantAccess'
 
 export const BuildingBlocks: CollectionConfig = {
   slug: 'building-blocks',
@@ -21,7 +21,7 @@ export const BuildingBlocks: CollectionConfig = {
     },
   },
   access: {
-    read: tenantAccess,
+    read: tenantReadAccess,
     create: tenantAccess,
     update: tenantAccess,
     delete: tenantAccess,

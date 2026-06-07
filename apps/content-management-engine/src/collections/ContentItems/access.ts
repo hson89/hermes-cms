@@ -1,4 +1,6 @@
 import type { Access } from 'payload'
+import { getTenantIds } from '../Users/utils'
+import type { User, ApiKey } from '../../payload-types'
 
 /**
  * Tenant-scoped read access for content delivery endpoints.
@@ -12,26 +14,28 @@ import type { Access } from 'payload'
  * T027 - Implement Tenant isolation checks on delivery endpoints
  * T028 - Add APIKey authentication middleware for delivery endpoints
  */
-import { getTenantIds } from '../Users/utils'
-
 export const tenantDeliveryAccess: Access = ({ req }) => {
   const user = req.user
   const authHeader = req.headers.get('authorization')
   
-  // Temporary fallback for Global API Key while investigating auth strategy population in req.user
-  if (authHeader?.includes('demo-api-key-123456789')) {
-    return true
-  }
+  // Security: Check for demo bypass key via environment variable ONLY
+  const bypassKey = process.env.DEMO_BYPASS_KEY
+  if (bypassKey && authHeader?.includes(bypassKey)) return true
 
   if (!user) {
     return false
   }
 
-  if ((user as any).role === 'super-admin') return true
-
-  // Allow Global Frontend API Keys to read across all tenants
-  if ((user as any).collection === 'api-keys' && (user as any).globalAccess) {
-    return true
+  // Handle different user types (User vs ApiKey)
+  if (user.collection === 'users') {
+    const u = user as User
+    if (u.role === 'super-admin') return true
+  }
+  
+  if (user.collection === 'api-keys') {
+    // Escape hatch for out-of-sync ApiKey type
+    const ak = user as unknown as { globalAccess?: boolean }
+    if (ak.globalAccess) return true
   }
 
   const tenantIds = getTenantIds(user)

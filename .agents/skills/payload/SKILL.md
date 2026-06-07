@@ -493,6 +493,8 @@ Before completing any Payload UI modification task:
 - **Relational Null Querying (PostgreSQL)**: To filter for null relationships (such as checking `tenant: null` in access control), PostgreSQL adapter does not support `{ tenant: { exists: false } }`. Always use `{ tenant: { equals: null } }` to check for empty relations.
 - **Visual Context Review**: Check source image hashes or filenames before downloading or linking to ensure two templates do not map to duplicates of the same visual content.
 - **Pool Connection Management**: Seeding scripts must explicitly call database pool destruction or `process.exit(0)` to prevent task hangs in background terminal runners.
+- **Parameterize Seeding Templates & Dynamic Render**: When seeding HTML page templates, do not use hardcoded strings for content fields. Always use double-curly-brace placeholders (e.g. `{{ title }}`) and escape dollar signs (e.g. `\${{ price }}`) inside JavaScript/TypeScript template literals. Ensure site templates (Next.js/Astro) query the active template dynamically (e.g. via `fetchActiveTemplateForSite`) and interpolate all placeholders (including custom `fieldsData` properties) at render time.
+
 
 ## Reference Documentation
 

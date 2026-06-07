@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { getTenantIds } from '../Users/utils'
+import { tenantReadAccess } from '../access/tenantAccess'
+import type { User } from '../../payload-types'
 
 /**
  * HostedSites collection.
@@ -26,30 +28,24 @@ export const HostedSites: CollectionConfig = {
     },
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      if ((user as any).role === 'super-admin') return true
-      const tenantIds = getTenantIds(user)
-      if (tenantIds.length === 0) return false
-      return {
-        tenant: {
-          in: tenantIds,
-        },
-      }
-    },
+    read: tenantReadAccess,
     admin: ({ req: { user } }) => {
       if (!user) return false
+      const u = user as User
       return (
-        (user as any).role === 'super-admin' ||
-        (user as any).role === 'tenant-admin'
+        u.role === 'super-admin' ||
+        u.role === 'tenant-admin'
       )
     },
-    create: ({ req: { user } }) =>
-      Boolean(user) &&
-      ((user as any).role === 'super-admin' || (user as any).role === 'tenant-admin'),
+    create: ({ req: { user } }) => {
+      if (!user) return false
+      const u = user as User
+      return u.role === 'super-admin' || u.role === 'tenant-admin'
+    },
     update: ({ req: { user } }) => {
       if (!user) return false
-      if ((user as any).role === 'super-admin') return true
+      const u = user as User
+      if (u.role === 'super-admin') return true
       const tenantIds = getTenantIds(user)
       if (tenantIds.length === 0) return false
       return {
@@ -60,7 +56,8 @@ export const HostedSites: CollectionConfig = {
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      if ((user as any).role === 'super-admin') return true
+      const u = user as User
+      if (u.role === 'super-admin') return true
       const tenantIds = getTenantIds(user)
       if (tenantIds.length === 0) return false
       return {

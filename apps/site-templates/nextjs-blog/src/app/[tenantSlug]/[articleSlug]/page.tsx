@@ -1,13 +1,74 @@
 import React from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getTenantBySlug, fetchArticleBySlug } from '../../../lib/cms'
+import { Metadata } from 'next'
+import { getTenantBySlug, fetchArticleBySlug, fetchActiveTemplateForSite } from '../../../lib/cms'
 
 type Args = {
   params: Promise<{
     tenantSlug: string
     articleSlug: string
   }>
+}
+
+export async function generateMetadata({ params }: Args): Promise<Metadata> {
+  const { tenantSlug, articleSlug } = await params
+  const tenant = await getTenantBySlug(tenantSlug)
+  if (!tenant) return {}
+  const article = await fetchArticleBySlug(tenant.id, articleSlug)
+  if (!article) return {}
+
+  const contentTypeInput = typeof article.contentType === 'object' && article.contentType !== null
+    ? (article.contentType.slug || article.contentType.id)
+    : article.contentType
+  const templateHtml = await fetchActiveTemplateForSite(tenant.id, contentTypeInput || 'blogpost')
+
+  if (templateHtml) {
+    const titleMatch = templateHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
+    if (titleMatch) {
+      let title = titleMatch[1]
+      title = title.replace(/\{\{\s*title\s*\}\}/g, article.title || '')
+      return {
+        title,
+      }
+    }
+  }
+
+  return {
+    title: article.title,
+    description: article.excerpt || '',
+  }
+}
+
+function parseTemplateHtml(html: string) {
+  // Use a more robust regex that allows for any characters inside the tag including newlines and attributes
+  const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)
+  const headContent = headMatch ? headMatch[1] : ''
+
+  // Attempt to find body content, falling back to full HTML if <body> is missing
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+  let bodyContent = bodyMatch ? bodyMatch[1] : html
+
+  // Clean up structural tags to prevent nesting issues when injected into Layout
+  bodyContent = bodyContent
+    .replace(/<!DOCTYPE html>/gi, '')
+    .replace(/<\/?html[^>]*>/gi, '')
+    .replace(/<\/?head[^>]*>/gi, '')
+    .replace(/<\/?body[^>]*>/gi, '')
+
+  // Extract classes with support for single or double quotes
+  const htmlClassMatch = html.match(/<html[^>]*class=["']([^"']+)["']/i)
+  const htmlClasses = htmlClassMatch ? htmlClassMatch[1] : ''
+
+  const bodyClassMatch = html.match(/<body[^>]*class=["']([^"']+)["']/i)
+  const bodyClasses = bodyClassMatch ? bodyClassMatch[1] : ''
+
+  return {
+    headContent,
+    bodyContent,
+    htmlClasses,
+    bodyClasses,
+  }
 }
 
 export default async function ArticlePage({ params }: Args) {
@@ -23,6 +84,98 @@ export default async function ArticlePage({ params }: Args) {
   const article = await fetchArticleBySlug(tenant.id, articleSlug)
   if (!article) {
     return notFound()
+  }
+
+  // 3. Fetch deployed template if any
+  const contentTypeInput = typeof article.contentType === 'object' && article.contentType !== null
+    ? (article.contentType.slug || article.contentType.id)
+    : article.contentType
+  const templateHtml = await fetchActiveTemplateForSite(tenant.id, contentTypeInput || 'blogpost')
+
+  if (templateHtml) {
+    // Render the article content to HTML format
+    let contentHtml = ''
+    if (article.content) {
+      if (typeof article.content === 'string') {
+        contentHtml = article.content
+      } else {
+        // Fallback for JSON structure
+        contentHtml = `
+          <div class="p-8 bg-surface-container-low rounded-2xl border border-outline-variant/15 font-mono text-xs text-left max-w-2xl mx-auto">
+             <p class="text-outline mb-4">Structured Content Format detected. Rendering as raw preview:</p>
+             <pre class="whitespace-pre-wrap">${JSON.stringify(article.content, null, 2)}</pre>
+          </div>
+        `
+      }
+    } else {
+      contentHtml = `<p class="italic text-outline text-center">The narrative for this entry is currently unavailable.</p>`
+    }
+
+    const formattedDate = new Date(article.createdAt).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    // Interpolate placeholders in the HTML template
+    let compiledHtml = templateHtml
+    
+    // Replace standard placeholders
+    compiledHtml = compiledHtml.replace(/\{\{\s*title\s*\}\}/g, article.title || '')
+    compiledHtml = compiledHtml.replace(/\{\{\s*excerpt\s*\}\}/g, article.excerpt || '')
+    compiledHtml = compiledHtml.replace(/\{\{\s*date\s*\}\}/g, formattedDate)
+    compiledHtml = compiledHtml.replace(/\{\{\s*content\s*\}\}/g, contentHtml)
+
+    // Dynamic replacement for custom fields (e.g. model, engine, horsepower, topSpeed, price, etc.)
+    if (article.fieldsData && typeof article.fieldsData === 'object') {
+      Object.entries(article.fieldsData).forEach(([key, val]) => {
+        const stringVal = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val ?? '')
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g')
+        compiledHtml = compiledHtml.replace(regex, stringVal)
+      })
+    }
+
+    const parsed = parseTemplateHtml(compiledHtml)
+
+    return (
+      <>
+        {/* Inject CSS to hide default layout header/footer and reset body background for the custom page */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          header.navbar-container, footer.footer {
+            display: none !important;
+          }
+          body {
+            background-color: transparent !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: auto !important;
+          }
+        ` }} />
+
+        {/* Inject template's head elements (Next.js automatically hoists these) */}
+        {parsed.headContent && (
+          <div dangerouslySetInnerHTML={{ __html: parsed.headContent }} style={{ display: 'none' }} />
+        )}
+
+        {/* Apply theme classes from <html> */}
+        {parsed.htmlClasses ? (
+          <script dangerouslySetInnerHTML={{ __html: `
+            document.documentElement.className = "${parsed.htmlClasses}";
+          ` }} />
+        ) : (
+          <script dangerouslySetInnerHTML={{ __html: `
+            document.documentElement.className = "";
+          ` }} />
+        )}
+
+        {/* Render template's body content wrapped in a div with the template's body classes */}
+        <div 
+          className={parsed.bodyClasses || undefined} 
+          dangerouslySetInnerHTML={{ __html: parsed.bodyContent }} 
+        />
+      </>
+    )
   }
 
   return (

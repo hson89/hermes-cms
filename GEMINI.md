@@ -178,6 +178,8 @@ When adding custom React components to `payload.config.ts` (e.g., Dashboards, Gr
 8. **Check for Duplicate Image Overlaps:** Before copying or linking visual assets, inspect their checksums (MD5) or URLs to ensure they are visually distinct and not duplicate content mapped to different context templates.
 9. **PostgreSQL Relational Null Queries:** For relationship fields in PostgreSQL-backed Payload collections, use `{ field: { equals: null } }` instead of `{ field: { exists: false } }` to check for empty relations in access control queries.
 10. **Graceful DB Connection Termination:** Scripts that initialize the local Payload API (`getPayload()`) must explicitly invoke database pool destruction or call `process.exit(0)` to prevent the server process from hanging as an active background task.
+11. **Parameterize Seeding Templates & Dynamic Render:** When seeding HTML page templates, do not use hardcoded strings for content fields. Always use double-curly-brace placeholders (e.g., `{{ title }}`) and escape dollar signs (e.g., `\${{ price }}`) inside JavaScript/TypeScript template literals. Ensure site templates (Next.js/Astro) query the active template dynamically (e.g., via `fetchActiveTemplateForSite`) and interpolate all placeholders (including custom `fieldsData` properties) at render time.
+
 
 ## Payload CMS 3.x UI Guardrails (CRITICAL)
 When modifying the Payload Admin UI or adding custom components:
