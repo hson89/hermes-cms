@@ -55,6 +55,10 @@ const configPromise = buildConfig({
           Component: '/src/components/views/TemplateWorkspace#TemplateWorkspace',
           path: '/templates/builder/:templateId?',
         },
+        history: {
+          Component: '/src/components/views/TemplateHistoryPage#TemplateHistoryPage',
+          path: '/templates/history',
+        },
       },
       Nav: ['/src/components/ui/organisms/Nav#Nav'] as any,
       header: ['/src/components/ui/organisms/Header#Header'] as any,

@@ -55,6 +55,7 @@ import { TenantSelectionProvider as TenantSelectionProvider_d6d5f193a167989e2ee7
 import { Dashboard as Dashboard_2a99722be2bc34386fe3c5345b6f60e6 } from '../../../../src/components/views/Dashboard'
 import { InitPage as InitPage_9d8465fe0818a95e328764da64c051af } from '../../../../src/components/views/InitPage'
 import { LoginPage as LoginPage_11fe2e3d8aeddfa2c8dd279b1b5a0298 } from '../../../../src/components/views/LoginPage'
+import { TemplateHistoryPage as TemplateHistoryPage_f305759abd4ee574f4aca09f60514417 } from '../../../../src/components/views/TemplateHistoryPage'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -116,5 +117,6 @@ export const importMap = {
   "/src/components/views/Dashboard#Dashboard": Dashboard_2a99722be2bc34386fe3c5345b6f60e6,
   "/src/components/views/InitPage#InitPage": InitPage_9d8465fe0818a95e328764da64c051af,
   "/src/components/views/LoginPage#LoginPage": LoginPage_11fe2e3d8aeddfa2c8dd279b1b5a0298,
+  "/src/components/views/TemplateHistoryPage#TemplateHistoryPage": TemplateHistoryPage_f305759abd4ee574f4aca09f60514417,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

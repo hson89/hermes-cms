@@ -1,0 +1,243 @@
+[
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/AGENTS.md",
+      "/home/itlight/dev/hermes-cms/CHANGELOG.md",
+      "/home/itlight/dev/hermes-cms/CLAUDE.md",
+      "/home/itlight/dev/hermes-cms/DESIGN.md",
+      "/home/itlight/dev/hermes-cms/GEMINI.md",
+      "/home/itlight/dev/hermes-cms/README.md",
+      "/home/itlight/dev/hermes-cms/docker-compose.langfuse.yml",
+      "/home/itlight/dev/hermes-cms/docker-compose.yml",
+      "/home/itlight/dev/hermes-cms/pnpm-workspace.yaml",
+      "/home/itlight/dev/hermes-cms/.agents/rules/graphify.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/animate-text/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/animate-text/references/catalog.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/animate-text/references/implementation-notes.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/animate-text/references/schema.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/animate-text/references/selection-guide.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/deep-agents-core/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/deep-agents-memory/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/deep-agents-orchestration/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/framework-selection/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langchain-dependencies/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langchain-fundamentals/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langchain-middleware/SKILL.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/.agents/skills/langchain-rag/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/references/cli.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/references/error-analysis.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/references/instrumentation.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/references/prompt-migration.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/references/sdk-upgrade.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/references/skill-feedback.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langfuse/references/user-feedback.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langgraph-cli/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langgraph-fundamentals/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langgraph-human-in-the-loop/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/langgraph-persistence/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/managed-deep-agents/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/README.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/ACCESS-CONTROL-ADVANCED.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/ACCESS-CONTROL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/ADAPTERS.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/ADVANCED.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/COLLECTIONS.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/ENDPOINTS.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/FIELD-TYPE-GUARDS.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/FIELDS.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/HOOKS.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/PLUGIN-DEVELOPMENT.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/payload/reference/QUERIES.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/requesting-code-review/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/requesting-code-review/code-reviewer.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-analyze/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-checklist/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-clarify/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-constitution/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-git-commit/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-git-feature/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-git-initialize/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-git-remote/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-git-validate/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-implement/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-plan/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-specify/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-tasks/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/speckit-taskstoissues/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.agents/skills/swarm/SKILL.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/.agents/workflows/graphify.md",
+      "/home/itlight/dev/hermes-cms/.claude/CLAUDE.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/SKILL.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/add-watch.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/exports.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/extraction-spec.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/github-and-merge.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/hooks.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/query.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/transcribe.md",
+      "/home/itlight/dev/hermes-cms/.claude/skills/graphify/references/update.md",
+      "/home/itlight/dev/hermes-cms/.specify/extensions.yml",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/README.md",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/config-template.yml",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/extension.yml",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/git-config.yml",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/commands/speckit.git.commit.md",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/commands/speckit.git.feature.md",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/commands/speckit.git.initialize.md",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/commands/speckit.git.remote.md",
+      "/home/itlight/dev/hermes-cms/.specify/extensions/git/commands/speckit.git.validate.md",
+      "/home/itlight/dev/hermes-cms/.specify/memory/constitution.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/.specify/templates/checklist-template.md",
+      "/home/itlight/dev/hermes-cms/.specify/templates/constitution-template.md",
+      "/home/itlight/dev/hermes-cms/.specify/templates/plan-template.md",
+      "/home/itlight/dev/hermes-cms/.specify/templates/spec-template.md",
+      "/home/itlight/dev/hermes-cms/.specify/templates/tasks-template.md",
+      "/home/itlight/dev/hermes-cms/.specify/workflows/speckit/workflow.yml",
+      "/home/itlight/dev/hermes-cms/apps/content-authoring-service/README.md",
+      "/home/itlight/dev/hermes-cms/apps/content-authoring-service/requirements.txt",
+      "/home/itlight/dev/hermes-cms/apps/content-management-engine/README.md",
+      "/home/itlight/dev/hermes-cms/apps/content-management-engine/pnpm-workspace.yaml",
+      "/home/itlight/dev/hermes-cms/apps/site-templates/astro-portfolio/README.md",
+      "/home/itlight/dev/hermes-cms/apps/site-templates/astro-portfolio/pnpm-workspace.yaml",
+      "/home/itlight/dev/hermes-cms/apps/site-templates/nextjs-blog/README.md",
+      "/home/itlight/dev/hermes-cms/apps/site-templates/nextjs-blog/pnpm-workspace.yaml",
+      "/home/itlight/dev/hermes-cms/docs/architecture.md",
+      "/home/itlight/dev/hermes-cms/docs/tenant-management-quickstart.md",
+      "/home/itlight/dev/hermes-cms/k8s/content-authoring-deployment.yaml",
+      "/home/itlight/dev/hermes-cms/k8s/content-management-engine-deployment.yaml",
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/data-model.md",
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/research.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/checklists/requirements.md",
+      "/home/itlight/dev/hermes-cms/specs/001-ai-headless-cms/contracts/api.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/data-model.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/research.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/checklists/requirements.md",
+      "/home/itlight/dev/hermes-cms/specs/002-tenant-management/contracts/tenant-resolution.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/data-model.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/research.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/checklists/requirements.md",
+      "/home/itlight/dev/hermes-cms/specs/003-define-content-types/contracts/schema-generation.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/data-model.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/plan.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/research.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/checklists/requirements.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/contracts/cms-engine-api.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/contracts/content-authoring-api.md",
+      "/home/itlight/dev/hermes-cms/specs/004-ai-content-drafting/contracts/ui-contracts.md",
+      "/home/itlight/dev/hermes-cms/specs/005-app-marketplace/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/005-app-marketplace/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/005-app-marketplace/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/data-model.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/research.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/checklists/requirements.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/contracts/blocks-registry.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/contracts/delivery-api.md",
+      "/home/itlight/dev/hermes-cms/specs/006-template-builder/contracts/webhook-payload.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/data-model.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/manual.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/research.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/checklists/requirements.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/contracts/a2ui-dsl.md",
+      "/home/itlight/dev/hermes-cms/specs/007-a2a-mcp-integration/contracts/sse-api.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/data-model.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/research.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/spec.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/checklists/requirements.md",
+      "/home/itlight/dev/hermes-cms/specs/008-template-builder-agent/contracts/api.md",
+      "/home/itlight/dev/hermes-cms/specs/009-template-deployment-history/data-model.md",
+      "/home/itlight/dev/hermes-cms/specs/009-template-deployment-history/plan.md",
+      "/home/itlight/dev/hermes-cms/specs/009-template-deployment-history/quickstart.md",
+      "/home/itlight/dev/hermes-cms/specs/009-template-deployment-history/research.md",
+      "/home/itlight/dev/hermes-cms/specs/009-template-deployment-history/spec.md"
+    ]
+  },
+  {
+    "type": "text",
+    "files": [
+      "/home/itlight/dev/hermes-cms/specs/009-template-deployment-history/tasks.md",
+      "/home/itlight/dev/hermes-cms/specs/009-template-deployment-history/checklists/requirements.md"
+    ]
+  },
+  {
+    "type": "image",
+    "files": [
+      "/home/itlight/dev/hermes-cms/apps/content-management-engine/src/scripts/aurelian_discovery_v2_thumbnail.png"
+    ]
+  },
+  {
+    "type": "image",
+    "files": [
+      "/home/itlight/dev/hermes-cms/apps/content-management-engine/src/scripts/aurelian_thumbnail.png"
+    ]
+  },
+  {
+    "type": "image",
+    "files": [
+      "/home/itlight/dev/hermes-cms/apps/content-management-engine/tests/assets/test-logo.png"
+    ]
+  }
+]

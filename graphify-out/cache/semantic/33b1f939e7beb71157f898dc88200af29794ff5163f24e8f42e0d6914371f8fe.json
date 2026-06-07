@@ -1,0 +1,1 @@
+{"nodes": [{"id": "domain_schema_validator_schemavalidator", "label": "SchemaValidator", "file_type": "code", "source_file": "apps/content-authoring-service/src/domain/schema_validator.py", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

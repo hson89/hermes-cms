@@ -1,0 +1,1 @@
+{"nodes": [], "edges": [{"source": "integration_tenant_customization_test_branding_metadata", "target": "assets_test_logo_image", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/content-management-engine/tests/integration/tenant-customization.test.ts", "source_location": null, "weight": 1.0}], "hyperedges": []}
