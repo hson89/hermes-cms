@@ -13,12 +13,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Google Fonts: Inter, Noto Serif, Public Sans (imported via global CSS) */}
         {/* Material Symbols Outlined imported via @fontsource/material-symbols-outlined npm package */}
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <header className="navbar-container">
           <nav className="navbar">
             <span className="navbar-brand">HERMES AI</span>

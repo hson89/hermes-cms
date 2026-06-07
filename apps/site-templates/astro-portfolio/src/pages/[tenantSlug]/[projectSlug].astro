@@ -1,6 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getTenantBySlug, fetchProjectBySlug } from '../../lib/cms';
+import { getTenantBySlug, fetchProjectBySlug, fetchActiveTemplateForSite } from '../../lib/cms';
 
 const { tenantSlug, projectSlug } = Astro.params;
 
@@ -23,6 +22,62 @@ if (!project) {
 	return new Response(null, {
 		status: 404,
 		statusText: 'Project Not Found'
+	});
+}
+
+// 3. Fetch deployed template if any
+const contentTypeInput = typeof project.contentType === 'object' && project.contentType !== null
+  ? (project.contentType.slug || project.contentType.id)
+  : project.contentType;
+
+const templateHtml = await fetchActiveTemplateForSite(tenant.id, contentTypeInput || 'project');
+
+if (templateHtml) {
+	// Format date
+	const formattedDate = new Date(project.createdAt).toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+	});
+
+	// Render the project content to HTML format
+	let contentHtml = '';
+	if (project.content) {
+		if (typeof project.content === 'string') {
+			contentHtml = project.content;
+		} else {
+			// Fallback for JSON structure
+			contentHtml = `
+				<div class="structured-content-fallback" style="text-align: left; max-width: 600px; margin: 0 auto; padding: 2rem; border-radius: 1.5rem; background: var(--surface-container-low); border: 1px solid var(--outline-variant);">
+					<p class="fallback-note" style="font-size: 0.75rem; font-weight: 700; color: var(--outline); text-transform: uppercase; margin-bottom: 1rem;">Technical Specification (JSON Format):</p>
+					<pre style="font-size: 0.875rem; overflow-x: auto; white-space: pre-wrap;">${JSON.stringify(project.content, null, 2)}</pre>
+				</div>
+			`;
+		}
+	} else {
+		contentHtml = `<p class="empty-state-note" style="text-align: center; font-style: italic; color: var(--outline);">The architectural narrative for this project is currently unavailable.</p>`;
+	}
+
+	// Interpolate placeholders in the HTML template
+	let compiledHtml = templateHtml;
+	compiledHtml = compiledHtml.replace(/\{\{\s*title\s*\}\}/g, project.title || '');
+	compiledHtml = compiledHtml.replace(/\{\{\s*excerpt\s*\}\}/g, project.excerpt || '');
+	compiledHtml = compiledHtml.replace(/\{\{\s*date\s*\}\}/g, formattedDate);
+	compiledHtml = compiledHtml.replace(/\{\{\s*content\s*\}\}/g, contentHtml);
+
+	// Dynamic replacement for custom fields (e.g. model, engine, horsepower, topSpeed, price, etc.)
+	if (project.fieldsData && typeof project.fieldsData === 'object') {
+		Object.entries(project.fieldsData).forEach(([key, val]) => {
+			const stringVal = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val ?? '');
+			const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+			compiledHtml = compiledHtml.replace(regex, stringVal);
+		});
+	}
+
+	return new Response(compiledHtml, {
+		headers: {
+			'Content-Type': 'text/html; charset=utf-8'
+		}
 	});
 }
 ---
