@@ -1,4 +1,91 @@
-import type { CollectionConfig } from 'payload'
+import { getTenantIds } from '../Users/utils'
+import type { CollectionConfig, Access, Where } from 'payload'
+import type { User } from '../../payload-types'
+
+export const mediaAccess: {
+  read: Access
+  create: Access
+  update: Access
+  delete: Access
+} = {
+  read: ({ req: { user } }) => {
+    if (!user) {
+      return {
+        tenant: {
+          equals: null,
+        },
+      } as unknown as Where
+    }
+    const typedUser = user as User
+    if (typedUser.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) {
+      return {
+        tenant: {
+          equals: null,
+        },
+      } as unknown as Where
+    }
+
+    return {
+      or: [
+        {
+          tenant: {
+            in: tenantIds,
+          },
+        },
+        {
+          tenant: {
+            equals: null,
+          },
+        },
+      ],
+    } as unknown as Where
+  },
+  create: ({ req: { user } }) => {
+    if (!user) return false
+    const typedUser = user as User
+    if (typedUser.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) return false
+
+    return {
+      tenant: {
+        in: tenantIds,
+      },
+    } as unknown as Where
+  },
+  update: ({ req: { user } }) => {
+    if (!user) return false
+    const typedUser = user as User
+    if (typedUser.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) return false
+
+    return {
+      tenant: {
+        in: tenantIds,
+      },
+    } as unknown as Where
+  },
+  delete: ({ req: { user } }) => {
+    if (!user) return false
+    const typedUser = user as User
+    if (typedUser.role === 'super-admin') return true
+
+    const tenantIds = getTenantIds(user)
+    if (tenantIds.length === 0) return false
+
+    return {
+      tenant: {
+        in: tenantIds,
+      },
+    } as unknown as Where
+  },
+}
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -7,11 +94,11 @@ export const Media: CollectionConfig = {
     group: 'Content',
   },
   access: {
-    read: () => true,
+    read: mediaAccess.read,
     admin: ({ req: { user } }) => !!user,
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => !!user,
-    delete: ({ req: { user } }) => !!user,
+    create: mediaAccess.create,
+    update: mediaAccess.update,
+    delete: mediaAccess.delete,
   },
   fields: [
     {
@@ -31,3 +118,4 @@ export const Media: CollectionConfig = {
     },
   ],
 }
+

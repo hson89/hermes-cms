@@ -26,6 +26,9 @@ Key technical components:
 **Constraints**:
 - **Strict Multi-tenant Isolation**: All schema/template operations must be scoped and authorized using the tenant ID.
 - **Internal Secret Security**: Inter-service REST calls authenticated via `X-Internal-Secret` header.
+- **Cache-Busting Filenames**: All media generated or uploaded by the builder agent MUST assign unique, cache-busting filenames to invalidate Next.js and browser caches instantly.
+- **Postgres Relational Nulls**: Relation queries to local Payload endpoints for tenant isolation must check for empty/global relations via `{ field: { equals: null } }` instead of `{ exists: false }`.
+- **Graceful DB Pool Destruction**: Utility scripts and initialization checks run by the agent service must explicitly call database pool destruction or `process.exit(0)` to prevent process hangs.
 
 ## Constitution Check
 

@@ -21,15 +21,19 @@ describe('PageTemplates Collection Access Control and Config', () => {
       expect(result).toBe(true)
     })
 
-    it('should return false if there is no user', async () => {
+    it('should return global template filter if there is no user', async () => {
       const mockReq: any = {
         user: null,
       }
       const result = await pageTemplateAccess.read({ req: mockReq } as any)
-      expect(result).toBe(false)
+      expect(result).toEqual({
+        isGlobal: {
+          equals: true,
+        },
+      })
     })
 
-    it('should return false if user has no assigned tenants', async () => {
+    it('should return global template filter if user has no assigned tenants', async () => {
       const mockReq: any = {
         user: {
           id: 'user-123',
@@ -38,7 +42,11 @@ describe('PageTemplates Collection Access Control and Config', () => {
         },
       }
       const result = await pageTemplateAccess.read({ req: mockReq } as any)
-      expect(result).toBe(false)
+      expect(result).toEqual({
+        isGlobal: {
+          equals: true,
+        },
+      })
     })
 
     it('should return combined query permitting assigned tenant templates OR global templates', async () => {

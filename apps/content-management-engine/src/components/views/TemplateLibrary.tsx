@@ -84,7 +84,7 @@ export const TemplateLibrary: React.FC = () => {
   useEffect(() => {
     const fetchContentTypes = async () => {
       try {
-        const response = await fetch('/api/content-types?limit=100')
+        const response = await fetch('/api/content-types?limit=100', { cache: 'no-store' })
         if (response.ok) {
           const data = await response.json()
           setContentTypes(data.docs.map((doc: any) => ({ id: doc.id, name: doc.name })))
@@ -127,7 +127,7 @@ export const TemplateLibrary: React.FC = () => {
         url += `&${filterParts.join('&')}`
       }
 
-      const response = await fetch(url)
+      const response = await fetch(url, { cache: 'no-store' })
       if (!response.ok) throw new Error('Failed to retrieve template library.')
       
       const data = await response.json()
@@ -420,7 +420,9 @@ export const TemplateLibrary: React.FC = () => {
                         type="button"
                         onClick={(e) => toggleMenu(template.id, e)}
                         title="More Options"
-                        className="size-8 rounded-full hover:bg-surface-container flex items-center justify-center text-outline-variant hover:text-on-surface transition-all border-none bg-transparent cursor-pointer relative"
+                        aria-haspopup="true"
+                        aria-expanded={activeMenu === template.id}
+                        className="size-8 rounded-full hover:bg-surface-container flex items-center justify-center text-outline-variant hover:text-on-surface transition-all border-none bg-transparent cursor-pointer relative focus-visible:ring-2 focus-visible:ring-primary focus:outline-none"
                       >
                         <Icon name="more_vert" size={18} />
                       </button>
@@ -430,11 +432,13 @@ export const TemplateLibrary: React.FC = () => {
                         <div 
                           className="absolute right-0 bottom-10 bg-surface/90 backdrop-blur-md border border-outline-variant/15 rounded-xl modal-shadow w-48 py-1.5 z-40 animate-fade-slide-up text-left"
                           onClick={(e) => e.stopPropagation()}
+                          role="menu"
                         >
                           <button
                             type="button"
                             onClick={() => router.push(`/admin/templates/builder/${template.id}`)}
-                            className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                            className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container focus:bg-surface-container focus:text-primary transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus:outline-none"
+                            role="menuitem"
                           >
                             <Icon name="edit" size={14} />
                             Edit Schema
@@ -443,25 +447,28 @@ export const TemplateLibrary: React.FC = () => {
                            <button
                             type="button"
                             onClick={(e) => handleAction(e, 'preview', template.id)}
-                            className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                            className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container focus:bg-surface-container focus:text-primary transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus:outline-none"
+                            role="menuitem"
                           >
                             <Icon name="visibility" size={14} />
                             Preview Layout
                           </button>
 
-                          <button
+                           <button
                             type="button"
                             onClick={(e) => handleAction(e, 'deploy', template.id)}
-                            className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                            className="w-full text-left font-label text-xs font-semibold px-4 py-2.5 text-on-surface-variant hover:text-primary hover:bg-surface-container focus:bg-surface-container focus:text-primary transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus:outline-none"
+                            role="menuitem"
                           >
                             <Icon name="publish" size={14} />
                             Deploy to Site
                           </button>
 
-                          <button
+                           <button
                             type="button"
                             onClick={(e) => handleAction(e, 'delete', template.id)}
-                            className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-error hover:bg-error/10 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                            className="w-full text-left font-label text-xs font-bold px-4 py-2.5 text-error hover:bg-error/10 focus:bg-error/10 transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent focus-visible:ring-2 focus-visible:ring-error focus:outline-none"
+                            role="menuitem"
                           >
                             <Icon name="delete" size={14} className="text-error" />
                             Delete Blueprint

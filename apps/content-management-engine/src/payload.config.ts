@@ -94,7 +94,12 @@ const configPromise = buildConfig({
       collections: {
         'content-items': { customTenantField: true },
         'api-keys': { customTenantField: true },
-        'media': { customTenantField: true },
+        'media': {
+          customTenantField: true,
+          useTenantAccess: false,
+          useBaseFilter: false,
+          useBaseListFilter: false,
+        },
         'audit-logs': { customTenantField: true },
         'hosted-sites': { customTenantField: true },
         'building-blocks': { customTenantField: true },

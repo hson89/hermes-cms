@@ -488,7 +488,11 @@ Before completing any Payload UI modification task:
 
 ### 6. Compiler Stability & Acyclic Build Prevention (CRITICAL WSL 2)
 - **WSL 2 Webpack Opt-in**: The Next.js dev server defaults to Turbopack in v16, which exhibits compilation deadlocks when compiling catch-all views on WSL 2. Ensure `package.json` dev execution includes the `--webpack` flag in WSL contexts.
-- **Acyclic Import Graph**: Standalone custom views registered in `payload.config.ts` must NEVER import layout templates from `@payloadcms/next/templates` or `@payloadcms/next/views`. These templates import the core configuration recursively, creating an infinite bundler loop that hangs local resources. Use minimal wrapper layouts (such as `AdminView`) to render layout offsets.
+### 7. Seeding & Caching Stability Guardrails
+- **Cache-Busting Assets**: Always assign fresh cache-busting filenames (e.g. content hashes or versioning like `aurelian_discovery_v2_thumbnail.png`) when seeding or updating static templates assets (thumbnails, logos, backgrounds) to bypass Next.js and browser caches instantly.
+- **Relational Null Querying (PostgreSQL)**: To filter for null relationships (such as checking `tenant: null` in access control), PostgreSQL adapter does not support `{ tenant: { exists: false } }`. Always use `{ tenant: { equals: null } }` to check for empty relations.
+- **Visual Context Review**: Check source image hashes or filenames before downloading or linking to ensure two templates do not map to duplicates of the same visual content.
+- **Pool Connection Management**: Seeding scripts must explicitly call database pool destruction or `process.exit(0)` to prevent task hangs in background terminal runners.
 
 ## Reference Documentation
 

@@ -86,7 +86,12 @@ async def convert_html_to_template(
     """
 ```
 
-This ensures external systems (e.g. Claude Desktop) can perform end-to-end design ingestion in one click.
+### 5. Caching, Relational Queries, and Process Stability Decisions
+
+- **Cache-Busting Strategy**: The agent must automatically generate a unique hash for any visual assets uploaded to the CMS media library during template creation. The filenames will follow the pattern `[original_name]_[hash].[ext]` to bypass any CDN or browser cache.
+- **Relational Null Mapping**: All Payload collection queries targeting global assets (such as global page templates or shared media assets with `tenant: null`) must utilize the `{ equals: null }` operator rather than `{ exists: false }` to prevent PostgreSQL execution crashes.
+- **Visual Asset Overlap Prevention**: The client will compute MD5/SHA256 checksums of any downloaded or generated images before registration, rejecting duplicate media uploads to minimize storage layout noise.
+- **Process Terminations**: Next.js and Payload CMS local execution will explicitly destroy database client pools in lifecycle events to prevent background task locks in terminal runners.
 
 ## Alternatives Considered
 

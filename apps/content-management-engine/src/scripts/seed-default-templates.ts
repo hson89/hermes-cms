@@ -466,29 +466,272 @@ const AURELIAN_HTML = `<!DOCTYPE html>
 </script>
 </body></html>`
 
+const AURELIAN_DISCOVERY_HTML = `<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Discovery - Aurelian Automotive</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=Noto+Serif:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#094cb2",
+                    "inverse-on-surface": "#f2f0f0",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-container": "#efeded",
+                    "on-primary-container": "#b0c5ff",
+                    "outline": "#737784",
+                    "on-tertiary-container": "#c6c5c2",
+                    "on-surface": "#1b1c1c",
+                    "on-surface-variant": "#434653",
+                    "tertiary": "#3a3b39",
+                    "surface-container-low": "#f5f3f3",
+                    "outline-variant": "#c3c6d5",
+                    "inverse-primary": "#b1c5ff",
+                    "tertiary-fixed": "#e3e2df",
+                    "on-tertiary-fixed": "#1b1c1a",
+                    "background": "#fbf9f8",
+                    "primary-fixed-dim": "#b1c5ff",
+                    "inverse-surface": "#303031",
+                    "surface": "#fbf9f8",
+                    "secondary-container": "#e2dfde",
+                    "surface-dim": "#dbdad9",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-bright": "#fbf9f8",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-container-high": "#e9e8e7",
+                    "secondary": "#5f5e5e",
+                    "primary": "#003686",
+                    "primary-fixed": "#dae2ff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-background": "#1b1c1c",
+                    "on-tertiary-fixed-variant": "#464744",
+                    "surface-variant": "#e4e2e2",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-primary-fixed": "#001946",
+                    "surface-tint": "#2259bf",
+                    "on-secondary-container": "#636262",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#00419e",
+                    "tertiary-fixed-dim": "#c7c7c3",
+                    "surface-container-highest": "#e4e2e2",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#51524f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "32px",
+                    "margin-desktop": "64px",
+                    "section-gap": "128px",
+                    "margin-mobile": "24px",
+                    "unit": "8px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Noto Serif"],
+                    "headline-md": ["Noto Serif"],
+                    "label-md": ["Hanken Grotesk"],
+                    "display-lg-mobile": ["Noto Serif"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "headline-lg": ["Noto Serif"],
+                    "display-lg": ["Noto Serif"],
+                    "caption": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg-mobile": ["40px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f8; /* background */
+            color: #1b1c1c; /* on-background */
+        }
+        .editorial-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+        .hairline {
+            border-color: #e5e5e5;
+        }
+        .hover-lift {
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopNavBar -->
+<header class="bg-surface border-b border-outline-variant sticky top-0 z-50 transition-all duration-500 ease-in-out">
+<div class="flex justify-between items-center w-full px-margin-desktop h-20 max-w-container-max mx-auto hidden md:flex">
+<!-- Brand -->
+<a class="font-headline-md text-headline-md font-semibold tracking-tight text-on-surface" href="#">
+                Aurelian Automotive
+            </a>
+<!-- Navigation Links -->
+<nav class="flex gap-8">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Models</a>
+<a class="font-label-md text-label-md text-primary border-b-2 border-primary pb-1 transition-colors duration-300" href="#">Discovery</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Bespoke</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Heritage</a>
+</nav>
+<!-- Trailing Icon -->
+<div class="flex items-center gap-4">
+<button aria-label="Menu" class="text-on-surface hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</div>
+<!-- Mobile Nav (Simplified) -->
+<div class="flex justify-between items-center w-full px-margin-mobile h-16 md:hidden">
+<a class="font-headline-lg-mobile text-headline-lg-mobile font-semibold tracking-tight text-on-surface" href="#">
+                Aurelian Automotive
+            </a>
+<button aria-label="Menu" class="text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-24">
+<!-- Page Header -->
+<div class="mb-16 md:mb-section-gap text-center max-w-3xl mx-auto">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-6">Discovery</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">The journal of automotive excellence, engineering poetry, and the pursuit of absolute purity in motion.</p>
+</div>
+<!-- Category Filters -->
+<div class="flex flex-wrap justify-center gap-4 mb-16 border-b border-outline-variant hairline pb-6">
+<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-on-surface text-surface hover:bg-primary transition-colors">All Stories</button>
+<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Editorial</button>
+<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Engineering</button>
+<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Bespoke</button>
+<button class="font-label-md text-label-md px-6 py-2 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface transition-colors">Heritage</button>
+</div>
+<!-- Hero Article -->
+<article class="mb-section-gap group cursor-pointer">
+<div class="w-full aspect-[16/9] mb-8 overflow-hidden bg-surface-container">
+<img alt="Sculpted in Motion - Aurelian Automotive Hero Article" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8TFItxn5bgAyRZuJFDyCJGo1f45JYN2uTtJIY9hHlpDqA3ItX9VqhvUf0dud24FTjuzv2XLn4Jutr0wnQ1fR5LVdhQOKbC1x53mOeDihcY3JqH3S4TQGYu-s0l0NQbdLQW37jcBmEjGmuovPZeXzeva1ycMp2tOOZshmx9xSq60H_9jgxPqCAeVfPtmmaxzAvk8HhYW3zrKp4z2dmJPJeOjnde6RISD2Zy1rn2qZbzhcpM2xTLFd00_HzPgCd60-gHlFepCjIwlnA"/>
+</div>
+<div class="max-w-4xl mx-auto text-center">
+<div class="font-label-md text-label-md text-primary tracking-widest uppercase mb-4">Editorial — October 12, 2024</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-6 group-hover:text-primary transition-colors">Sculpted in Motion: The Philosophy of Form</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-2xl mx-auto">Explore how Aurelian’s designers blend aerodynamics with classical sculptural principles to create silhouettes that look fast even while standing still. A deep dive into the clay modeling process.</p>
+<span class="inline-flex items-center gap-2 font-label-md text-label-md text-primary uppercase tracking-wider group-hover:translate-x-2 transition-transform">
+                    Read Story <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</span>
+</div>
+</article>
+<!-- Featured Stories Grid -->
+<div class="mb-section-gap">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-12 border-b border-outline-variant hairline pb-4">Featured</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<article class="bg-surface-container-lowest editorial-shadow hover-lift p-6 flex flex-col h-full cursor-pointer group">
+<div class="aspect-[4/3] w-full mb-6 overflow-hidden bg-surface-container">
+<img alt="Engineering close up" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A close-up shot of a sophisticated V12 engine bay in a high-end luxury vehicle. The metal components are polished to a mirror finish, reflecting the bright, clinical lighting of a sterile automotive laboratory. The aesthetic is extremely clean and technical, emphasizing precision engineering with deep shadows and gleaming silver and chrome highlights against a minimalist background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9ylkBeRQvZNBRvU73H6z73vud0jggkOOePQgkr7GPSxCGczXGhCKQJeCv61HWYTg89ZludGIJxGev8dogh2BnUmDPzxqt4u1KDOYT64Y5W038OPwQ0nA4qeA-uQjfLmeGQJCE8wp9D5He8EPYCYJd-ZUayFfgWM_D5ozr1fsRup7RO1LRfizITwqCgCS6-CprYTmGeAbS9ZFM0aj-q2oZl-zSFCQM5hWY1cT0Yjvjeid_3ogXnewlo9PmZT7PaYjLoXjG7mpHBTvw"/>
+</div>
+<div class="flex-grow">
+<div class="font-label-md text-label-md text-primary mb-3">Engineering</div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-4 text-[24px] group-hover:text-primary transition-colors">The Symphony of Twelve Cylinders</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-3">The meticulous tuning required to achieve the signature Aurelian exhaust note, balancing raw power with refined acoustic engineering.</p>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-lowest editorial-shadow hover-lift p-6 flex flex-col h-full cursor-pointer group">
+<div class="aspect-[4/3] w-full mb-6 overflow-hidden bg-surface-container">
+<img alt="Leather stitching" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A craftsman's hands carefully stitching premium tan leather onto a luxury car steering wheel. The scene is warmly lit, highlighting the texture of the supple leather and the precision of the needlework. The background is a slightly out-of-focus artisan workshop with spools of thread and leather swatches, creating an intimate, premium, and tactile atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcB51d8yOG1TWPs2Urjr0gZyqC8ogeSO3diUjfgI9ZMYBvCsvZn0bYmcklQjE8MIURXMMjiyU9Z9y0o6zaBzVnPeQMQOF7HXHQmrN5vpgPRfHPXhIQjou2_TfMZwJiDYenqeCsCfKGblgOB909orsp45f4ieTQCIz3YsNi5BkVXqgTdm06GR2xLN2QkLx1Pj6zCGebQEcvl4sRKZu0WHqMzs6wXGsgfv23iNkSzS4mSrDjm05I6tSI0i1_cFj-DdjgEnTZsAuuBJvK"/>
+</div>
+<div class="flex-grow">
+<div class="font-label-md text-label-md text-primary mb-3">Bespoke</div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-4 text-[24px] group-hover:text-primary transition-colors">Stitch by Stitch: The Artisans</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-3">Meet the master upholsterers who spend over 100 hours hand-finishing the interior of every bespoke commission, using ethically sourced materials.</p>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-lowest editorial-shadow hover-lift p-6 flex flex-col h-full cursor-pointer group">
+<div class="aspect-[4/3] w-full mb-6 overflow-hidden bg-surface-container">
+<img alt="Vintage racing" class="w-full h-full object-cover grayscale transition-transform duration-500 group-hover:scale-105" data-alt="A vintage black and white photograph of a classic 1930s race car on a historic track. The image has a high-contrast, grainy, editorial feel, capturing the raw speed and danger of early motorsport. The car is sleek and elongated, speeding past a blurred background of cheering spectators in period clothing. The mood is nostalgic, authoritative, and cinematic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZrsATWL01PwIBFLeFLZaVmcq3VomK6HV94yUFcYm8uDlt1RkU-pfVDjqUGPAqPuhgTdgk-a2grNtW68aL_itEqlBAlaOgjlVU3TPG8Y9DhZ26UKJH3KlQKOXbaOUcywXF-VSVF5GqS9gFZQwREanGKclme_aaDpBraAmUg_huZp_7Ts3dF34CmIRW601oCj85Dt_Of-bkFtHDjaKTrUBKEjUV5ZbF0QI3nYJBW9vTbWyYFixtjrgPwEbfanCnksDlZ9XJvkLUtKxS"/>
+</div>
+<div class="flex-grow">
+<div class="font-label-md text-label-md text-primary mb-3">Heritage</div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-4 text-[24px] group-hover:text-primary transition-colors">Echoes of the 1934 Grand Prix</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-3">Revisiting the seminal victory that defined Aurelian's racing pedigree, featuring unseen archival photographs and race logs.</p>
+</div>
+</article>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low w-full border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-12 md:py-section-gap max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md text-on-surface mb-8 md:mb-0">
+                Aurelian Automotive
+            </div>
+<div class="flex flex-wrap justify-center gap-8 mb-8 md:mb-0">
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors duration-200" href="#">Archives</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors duration-200" href="#">Press</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors duration-200" href="#">Privacy</a>
+</div>
+<div class="font-caption text-caption text-secondary">
+                © 2024 Aurelian Automotive. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>`
+
 async function seed() {
   console.log('Initializing Payload...')
   const payload = await getPayload({ config: await config })
   console.log('Payload initialized.')
 
   try {
-    // Check if the default template already exists
-    console.log('Checking if default template is already seeded...')
+    // Check if the default templates already exist
+    console.log('Checking if default templates are already seeded...')
     const templateCheck = await payload.find({
       collection: 'page-templates' as any,
       where: {
         slug: {
-          equals: 'aurelian-spectre-v12',
+          in: ['aurelian-spectre-v12', 'aurelian-discovery'],
         },
         isGlobal: {
           equals: true,
         },
       },
-      limit: 1,
+      limit: 2,
     } as any)
 
-    if (templateCheck.docs && templateCheck.docs.length > 0) {
-      console.log('Default template "aurelian-spectre-v12" already exists. Seeding skipped.')
+    if (templateCheck.docs && templateCheck.docs.length >= 2) {
+      console.log('Default templates already exist. Seeding skipped.')
       return
     }
 
@@ -621,6 +864,20 @@ async function seed() {
       console.log(`Global Content Type created successfully! ID: ${contentTypeId}`)
     }
 
+    // 2b. Lookup Content Type: BlogPost (slug: 'blogpost')
+    console.log('Looking up Content Type: BlogPost...')
+    const blogPostCtSearch = await payload.find({
+      collection: 'content-types',
+      where: {
+        slug: {
+          equals: 'blogpost',
+        },
+      },
+      limit: 1,
+    })
+    const blogPostCtId = blogPostCtSearch.docs[0]?.id || null
+    console.log(`Found BlogPost Content Type ID: ${blogPostCtId}`)
+
     // 3. Upload Premium Cinematic Automotive Thumbnail
     console.log('Uploading Premium Cinematic Automotive Thumbnail to Media collection...')
     const thumbnailPath = path.resolve(dirname, 'aurelian_thumbnail.png')
@@ -662,6 +919,53 @@ async function seed() {
       }
     } else {
       console.warn(`Warning: Seeding thumbnail was not found at ${thumbnailPath}. Skipping upload step.`)
+    }
+
+    // 3b. Upload Premium Discovery Thumbnail
+    console.log('Uploading Premium Discovery Thumbnail to Media collection...')
+    const discoveryThumbnailPath = path.resolve(dirname, 'aurelian_discovery_v2_thumbnail.png')
+    let discoveryMediaDocId: string | number | null = null
+
+    if (fs.existsSync(discoveryThumbnailPath)) {
+      const discoveryImageBuffer = fs.readFileSync(discoveryThumbnailPath)
+      
+      const discoveryMediaSearch = await payload.find({
+        collection: 'media',
+        where: {
+          alt: {
+            equals: 'Aurelian Discovery Journal Showcase',
+          },
+        },
+        limit: 1,
+      } as any)
+
+      if (discoveryMediaSearch.docs.length > 0) {
+        console.log(`Deleting existing media discovery thumbnail document (ID: ${discoveryMediaSearch.docs[0].id})...`)
+        await payload.delete({
+          collection: 'media',
+          id: discoveryMediaSearch.docs[0].id,
+          overrideAccess: true,
+        })
+      }
+
+      const discoveryMediaDoc = (await payload.create({
+        collection: 'media',
+        data: {
+          alt: 'Aurelian Discovery Journal Showcase',
+          tenant: null,
+        },
+        file: {
+          data: discoveryImageBuffer,
+          name: 'aurelian_discovery_v2_thumbnail.png',
+          mimetype: 'image/png',
+          size: discoveryImageBuffer.byteLength,
+        },
+        overrideAccess: true,
+      } as any)) as any
+      discoveryMediaDocId = discoveryMediaDoc.id
+      console.log(`Discovery media uploaded successfully! ID: ${discoveryMediaDocId}`)
+    } else {
+      console.warn(`Warning: Seeding discovery thumbnail was not found at ${discoveryThumbnailPath}. Skipping upload step.`)
     }
 
     // 4. Create/Update Global Page Template: Aurelian Spectre V12
@@ -710,6 +1014,57 @@ async function seed() {
         overrideAccess: true,
       } as any)) as any
       console.log(`Global Page Template created successfully! ID: ${newTemplate.id}`)
+    }
+
+    // 5. Create/Update Global Page Template: Aurelian Discovery
+    console.log('Creating/updating Global Page Template: Aurelian Discovery...')
+    const discoveryTemplateSearch = await payload.find({
+      collection: 'page-templates' as any,
+      where: {
+        slug: {
+          equals: 'aurelian-discovery',
+        },
+        isGlobal: {
+          equals: true,
+        },
+      },
+      limit: 1,
+    } as any)
+
+    const discoveryTemplateData = {
+      name: 'Aurelian Discovery',
+      description: 'Editorial journal, engineering stories, and articles archive page template for Aurelian Automotive',
+      slug: 'aurelian-discovery',
+      isGlobal: true,
+      tenant: null,
+      contentType: blogPostCtId || undefined,
+      archetype: 'minimal' as const,
+      status: 'active' as const,
+      htmlContent: AURELIAN_DISCOVERY_HTML,
+      image: discoveryMediaDocId || undefined,
+      createdBy: adminUser.id,
+      tags: [
+        { tag: 'Blog Post' },
+      ],
+    }
+
+    if (discoveryTemplateSearch.docs.length > 0) {
+      const existingTemplate = discoveryTemplateSearch.docs[0]
+      console.log(`Global Page Template Aurelian Discovery already exists (ID: ${existingTemplate.id}). Updating HTML and details...`)
+      await payload.update({
+        collection: 'page-templates' as any,
+        id: existingTemplate.id,
+        data: discoveryTemplateData,
+        overrideAccess: true,
+      } as any)
+      console.log(`Global Page Template Aurelian Discovery updated successfully!`)
+    } else {
+      const newTemplate = (await payload.create({
+        collection: 'page-templates' as any,
+        data: discoveryTemplateData,
+        overrideAccess: true,
+      } as any)) as any
+      console.log(`Global Page Template Aurelian Discovery created successfully! ID: ${newTemplate.id}`)
     }
 
     console.log('--- SEEDING SYSTEM SUCESSFULLY COMPLETE ---')
