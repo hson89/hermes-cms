@@ -1,16 +1,16 @@
 # Graph Report - hermes-cms  (2026-06-07)
 
 ## Corpus Check
-- 607 files · ~425,046 words
+- 613 files · ~426,773 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 9127 nodes · 10372 edges · 869 communities (701 shown, 168 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 290 edges (avg confidence: 0.65)
+- 9174 nodes · 10453 edges · 870 communities (701 shown, 169 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 306 edges (avg confidence: 0.64)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `153290fb`
+- Built from commit: `daf5ede7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -822,16 +822,17 @@
 - [[_COMMUNITY_Community 864|Community 864]]
 - [[_COMMUNITY_Community 865|Community 865]]
 - [[_COMMUNITY_Community 866|Community 866]]
+- [[_COMMUNITY_Community 868|Community 868]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `AIService` - 52 edges
+1. `AIService` - 50 edges
 2. `Icon()` - 47 edges
 3. `AIAgentSession` - 31 edges
-4. `DraftingService` - 28 edges
-5. `RefineService` - 26 edges
+4. `DraftingService` - 26 edges
+5. `RefineService` - 24 edges
 6. `Badge()` - 22 edges
-7. `BRANDING` - 21 edges
-8. `CopilotService` - 19 edges
+7. `CMSClient` - 21 edges
+8. `BRANDING` - 21 edges
 9. `skills` - 19 edges
 10. `Payload Field Types Reference` - 19 edges
 
@@ -848,8 +849,8 @@
   docs/architecture.md → apps/content-authoring-service/README.md
 
 ## Import Cycles
-- 1-file cycle: `apps/content-authoring-service/src/application/copilot_service.py -> apps/content-authoring-service/src/application/copilot_service.py`
 - 1-file cycle: `apps/content-authoring-service/src/main.py -> apps/content-authoring-service/src/main.py`
+- 1-file cycle: `apps/content-authoring-service/src/application/copilot_service.py -> apps/content-authoring-service/src/application/copilot_service.py`
 - 1-file cycle: `apps/content-authoring-service/src/domain/repositories/session_repository.py -> apps/content-authoring-service/src/domain/repositories/session_repository.py`
 - 1-file cycle: `apps/content-authoring-service/src/infrastructure/repositories/session_repository.py -> apps/content-authoring-service/src/infrastructure/repositories/session_repository.py`
 
@@ -877,7 +878,7 @@
 - **Template Builder Agent Architecture** — 008_template_builder_agent_spec_feature, 008_template_builder_agent_research_state_schema, 008_template_builder_agent_research_structured_output [EXTRACTED 1.00]
 - **TDD Test Pyramid** — 009_template_deployment_history_tasks_tenant_scoped_api_access, 009_template_deployment_history_tasks_e2e_test_skeleton, 009_template_deployment_history_tasks_unit_tests [INFERRED 0.95]
 
-## Communities (869 total, 168 thin omitted)
+## Communities (870 total, 169 thin omitted)
 
 ### Community 0 - "AI Batching & Prompt Pipeline"
 Cohesion: 0.07
@@ -888,12 +889,12 @@ Cohesion: 0.04
 Nodes (10): AIAuditLogs, AIRateLimits, AuditLogs, generateMarketplaceTokenEndpoint, MarketplaceApps, configPromise, dirname, filename (+2 more)
 
 ### Community 2 - "Admin Actions & Content Init"
-Cohesion: 0.13
-Nodes (34): setupInitialAdmin(), FieldDefinition, FieldsDataEditor(), GenerateTokenButton(), GenerateTokenButtonProps, Button(), ButtonProps, Heading() (+26 more)
+Cohesion: 0.14
+Nodes (31): setupInitialAdmin(), FieldDefinition, GenerateTokenButton(), GenerateTokenButtonProps, Button(), ButtonProps, Heading(), HeadingProps (+23 more)
 
 ### Community 3 - "AI Copilot Drafting Service"
-Cohesion: 0.05
-Nodes (60): AI Suggestion Self-Correction Loop, AIService, Application-layer service for AI-powered content operations.      Responsibiliti, Lazy initialization of the Langfuse client., CopilotService, AI Copilot application service.  Handles localized section editing for the CMS r, Application-layer service for the AI Copilot (inline content editing).      The, Return (or create) the LangChain chat model instance. (+52 more)
+Cohesion: 0.06
+Nodes (55): AIService, CopilotService, Application-layer service for the AI Copilot (inline content editing).      The, Return (or create) the LangChain chat model instance., DraftingService, Orchestrates the AI drafting workflow, including streaming and tool calling., RefineService application service for handling AI content refinement.  T027 - Im, Orchestrates the AI refinement workflow. (+47 more)
 
 ### Community 4 - "Design System & UI Components"
 Cohesion: 0.17
@@ -904,40 +905,40 @@ Cohesion: 0.05
 Nodes (32): TestClient, client(), mock_llm_response(), Integration tests for the AI content creation flow.  T013 - Integration test for, An empty prompt should result in a 422 validation error., Missing tenant_id should be rejected., After generation, the session should be retrievable via GET /api/ai/sessions/{id, If the LLM returns non-JSON, the service raises ValueError -> 422. (+24 more)
 
 ### Community 6 - "Admin Custom Views & Import Map"
-Cohesion: 0.05
-Nodes (34): AdminView(), importMap, GeneratorView(), Header(), Args, metadata, handleServerFunctions(), Args (+26 more)
+Cohesion: 0.06
+Nodes (32): FieldsDataEditor(), importMap, GeneratorView(), Header(), Args, metadata, handleServerFunctions(), Args (+24 more)
 
 ### Community 7 - "Text Animation Catalog"
 Cohesion: 0.05
 Nodes (45): word_opacity_duration_ms, word_opacity_from, word_opacity_to, duration_ms, easing, from, stagger_ms, to (+37 more)
 
 ### Community 8 - "AI Agent Session Management"
-Cohesion: 0.05
-Nodes (45): ABC, AIAgentSession, ConversationMessage, A single message in the conversation history., Aggregate root for the AI Agent context.      Tracks a single user's conversatio, Append a message to the conversation history and touch updated_at., Mark the session as completed., Mark the session as failed. (+37 more)
+Cohesion: 0.06
+Nodes (34): ABC, AIAgentSession, ConversationMessage, A single message in the conversation history., Aggregate root for the AI Agent context.      Tracks a single user's conversatio, Append a message to the conversation history and touch updated_at., Mark the session as completed., Mark the session as failed. (+26 more)
 
 ### Community 9 - "Animation Build Configs"
 Cohesion: 0.05
 Nodes (42): build, word_opacity_duration_ms, word_opacity_from, word_opacity_to, custom_renderer, description, display_name, enter (+34 more)
 
 ### Community 10 - "AI Self-Correction Loop"
-Cohesion: 0.50
-Nodes (3): _extract_partial_explanation(), AI Agent application service.  Orchestrates LangChain to generate content schema, Helper to extract the partial explanation string from a streaming JSON block.
+Cohesion: 0.19
+Nodes (12): AsyncSession, db_session(), Unit tests for the SQLSessionRepository., Ensure tables exist before running tests., Fixture providing a transactional db session that rolls back after each test., Test that a session can be saved and retrieved via the SQL repository., Test that updating an existing session changes it in the DB., Test that a session can be deleted successfully. (+4 more)
 
 ### Community 11 - "Deployment & Payload Types"
 Cohesion: 0.05
-Nodes (40): AiAuditLog, AiAuditLogsSelect, AiPromptHistory, AiPromptHistorySelect, AiRateLimit, AiRateLimitsSelect, ApiKeyAuthOperations, ApiKeysSelect (+32 more)
+Nodes (41): AiAuditLog, AiAuditLogsSelect, AiPromptHistory, AiPromptHistorySelect, AiRateLimit, AiRateLimitsSelect, ApiKey, ApiKeyAuthOperations (+33 more)
 
 ### Community 12 - "Admin View & Block Library"
 Cohesion: 0.08
-Nodes (24): AdminViewProps, BlockLibrary(), BuilderCanvas(), BuilderCanvasProps, BuilderWorkspace(), DeploymentToolbar(), DeploymentToolbarProps, MappingPanel() (+16 more)
+Nodes (26): AdminView(), AdminViewProps, BlockLibrary(), BuilderCanvas(), BuilderCanvasProps, BuilderWorkspace(), DeploymentToolbar(), DeploymentToolbarProps (+18 more)
 
 ### Community 13 - "Animation Library Adapters"
 Cohesion: 0.06
 Nodes (39): gsap, cancellation, completion, easing, import_statement, install, keyframe_shape, renderers (+31 more)
 
 ### Community 14 - "MCP Tool Adapters (Python)"
-Cohesion: 0.12
-Nodes (26): Any, BaseModel, CallToolResult, A2UIBase, A2UICard, A2UIChart, A2UIChartDataset, A2UIForm (+18 more)
+Cohesion: 0.07
+Nodes (39): Any, Any, AsyncClient, BaseModel, CallToolResult, mock_llm(), A2UIBase, A2UICard (+31 more)
 
 ### Community 15 - "AI Authoring Service Core"
 Cohesion: 0.08
@@ -956,8 +957,8 @@ Cohesion: 0.07
 Nodes (35): description, display_name, enter, duration_ms, easing, from, stagger_ms, to (+27 more)
 
 ### Community 19 - "Tenant Access Control"
-Cohesion: 0.29
-Nodes (5): copilotEditEndpoint, beforeValidateHook(), ContentItems, validateContentItem(), ValidationError
+Cohesion: 0.40
+Nodes (5): StateGraph for autonomous and self-correcting page template generation., State tracking across the template builder graph workflow., Decides whether to retry design analysis or exit., should_continue_builder(), TemplateBuilderState
 
 ### Community 20 - "Schema Validator Domain Tests"
 Cohesion: 0.08
@@ -1108,8 +1109,8 @@ Cohesion: 0.10
 Nodes (7): resolveTenantId(), POST(), POST(), DeploymentService, BlockRegistrationPayload, TemplateService, getPrimaryTenantId()
 
 ### Community 57 - "Module Group 57"
-Cohesion: 0.10
-Nodes (24): Any, Request, Any, AsyncClient, Any, AsyncClient, CMSClient, Validates the provided API key with the Payload CMS monolith.                  R (+16 more)
+Cohesion: 0.08
+Nodes (30): Any, Request, Any, Any, AsyncClient, CMSClient, Retrieves a Page Template by slug for a specific tenant., Creates or updates a Page Template. (+22 more)
 
 ### Community 58 - "Module Group 58"
 Cohesion: 0.09
@@ -1672,8 +1673,8 @@ Cohesion: 0.15
 Nodes (13): framer motion, greensock, gsap, motion, motion.dev, motion react, waapi, web animations api (+5 more)
 
 ### Community 198 - "Module Group 198"
-Cohesion: 0.13
-Nodes (11): FieldRenderer(), FloatingAIBar(), TipTapEditor(), TipTapEditorProps, EditorPanel(), EditorPanelProps, RecoveryDialog(), DraftingTemplate() (+3 more)
+Cohesion: 0.11
+Nodes (14): FieldRenderer(), FloatingAIBar(), TipTapEditor(), TipTapEditorProps, ChatPanel(), EditorPanel(), EditorPanelProps, RecoveryDialog() (+6 more)
 
 ### Community 199 - "Module Group 199"
 Cohesion: 0.23
@@ -2096,8 +2097,8 @@ Cohesion: 0.20
 Nodes (9): config, customAgent, systemPromptConfig, systemPromptSections, toolNames, description, hidden, name (+1 more)
 
 ### Community 304 - "Module Group 304"
-Cohesion: 0.27
-Nodes (9): Any, RunnableConfig, call_schema_llm(), LangGraph nodes for the Schema Generation state machine., Validates the generated schema and captures validation errors for self-correctio, Helper to convert Pydantic FieldDefinition objects back to standard dicts., Invokes the LLM configured for structured schema output., _serialize_field() (+1 more)
+Cohesion: 0.07
+Nodes (25): AI Suggestion Self-Correction Loop, AIService, _extract_partial_explanation(), AI Agent application service.  Orchestrates LangChain to generate content schema, Return a configured LangChain chat model, optionally overriding the default., Helper to extract the partial explanation string from a streaming JSON block., Application-layer service for AI-powered content operations.      Responsibiliti, Return (or create) the LangChain chat model instance. (+17 more)
 
 ### Community 305 - "Module Group 305"
 Cohesion: 0.20
@@ -2468,8 +2469,8 @@ Cohesion: 0.08
 Nodes (25): Dependencies & Execution Order, Format: `[ID] [P?] [Story] Description`, Implementation for User Story 1, Implementation for User Story 2, Implementation for User Story 3, Implementation Strategy, Incremental Delivery, MVP First (User Story 1) (+17 more)
 
 ### Community 397 - "Module Group 397"
-Cohesion: 0.13
-Nodes (14): tenantAccess(), tenantReadAccess(), AIPromptHistory, BuildingBlocks, tenantDeliveryAccess(), HostedSites, JWTTokens, Media (+6 more)
+Cohesion: 0.11
+Nodes (16): tenantAccess(), tenantReadAccess(), AIPromptHistory, BuildingBlocks, tenantDeliveryAccess(), copilotEditEndpoint, beforeValidateHook(), ContentItems (+8 more)
 
 ### Community 398 - "Module Group 398"
 Cohesion: 0.29
@@ -3436,24 +3437,24 @@ Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ## Knowledge Gaps
-- **5569 isolated node(s):** `name`, `description`, `hidden`, `systemPromptSections`, `toolNames` (+5564 more)
+- **5569 isolated node(s):** `Any`, `Args`, `Format: `[ID] [P?] [Story] Description``, `Phase 1: Setup (Shared Infrastructure)`, `Phase 2: Foundational (Blocking Prerequisites)` (+5564 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **168 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **169 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AIService` connect `AI Copilot Drafting Service` to `AI Agent Session Management`, `Module Group 200`, `AI Self-Correction Loop`, `Community 846`, `MCP Tool Adapters (Python)`, `Module Group 48`, `Module Group 304`, `AI Authoring Service Core`, `Schema Validator Domain Tests`, `Module Group 248`, `Module Group 57`?**
+- **Why does `AIService` connect `Module Group 304` to `AI Copilot Drafting Service`, `AI Agent Session Management`, `Module Group 200`, `MCP Tool Adapters (Python)`, `AI Authoring Service Core`, `Module Group 48`, `Schema Validator Domain Tests`, `Module Group 248`?**
+  _High betweenness centrality (0.002) - this node is a cross-community bridge._
+- **Why does `DraftingService` connect `AI Copilot Drafting Service` to `Module Group 199`, `AI Agent Session Management`, `Module Group 519`, `MCP Tool Adapters (Python)`, `Module Group 304`, `Module Group 248`?**
   _High betweenness centrality (0.001) - this node is a cross-community bridge._
-- **Why does `showcase` connect `Module Group 131` to `Module Group 196`, `Module Group 359`, `Module Group 295`, `Module Group 297`, `Module Group 105`, `Module Group 399`, `Module Group 335`?**
+- **Why does `Icon()` connect `Admin Actions & Content Init` to `Module Group 321`, `Design System & UI Components`, `Module Group 198`, `Admin Custom Views & Import Map`, `Admin View & Block Library`, `Module Group 47`, `Module Group 401`, `Module Group 145`, `Module Group 442`?**
   _High betweenness centrality (0.001) - this node is a cross-community bridge._
-- **Why does `RefineService` connect `AI Copilot Drafting Service` to `AI Agent Session Management`, `Module Group 248`, `Module Group 342`?**
-  _High betweenness centrality (0.001) - this node is a cross-community bridge._
-- **Are the 40 inferred relationships involving `AIService` (e.g. with `AIAgentSession` and `ConversationMessage`) actually correct?**
-  _`AIService` has 40 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 38 inferred relationships involving `AIService` (e.g. with `AIAgentSession` and `ConversationMessage`) actually correct?**
+  _`AIService` has 38 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 23 inferred relationships involving `AIAgentSession` (e.g. with `AIAgentSessionModel` and `AIService`) actually correct?**
   _`AIAgentSession` has 23 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 23 inferred relationships involving `DraftingService` (e.g. with `AIAgentSession` and `AIService`) actually correct?**
-  _`DraftingService` has 23 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `name`, `description`, `hidden` to the rest of the system?**
-  _5821 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Are the 21 inferred relationships involving `DraftingService` (e.g. with `AIAgentSession` and `AIService`) actually correct?**
+  _`DraftingService` has 21 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `StateGraph for autonomous and self-correcting page template generation.`, `State tracking across the template builder graph workflow.`, `Decides whether to retry design analysis or exit.` to the rest of the system?**
+  _5837 weakly-connected nodes found - possible documentation gaps or missing edges._

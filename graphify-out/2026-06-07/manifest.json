@@ -1035,9 +1035,9 @@
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/ContentItems/access.ts": {
-    "mtime": 1779588452.602806,
-    "ast_hash": "0149d4bef3b61359069e9bfd4ac2e83a",
-    "semantic_hash": "0149d4bef3b61359069e9bfd4ac2e83a"
+    "mtime": 1780835066.6592095,
+    "ast_hash": "43c52dbc5d5ff8f43201dadbee1a85fe",
+    "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/ContentItems/endpoints.ts": {
     "mtime": 1780757136.90434,
@@ -1090,8 +1090,8 @@
     "semantic_hash": "eb711adfceba17aff4844539d4ebf33d"
   },
   "apps/content-management-engine/src/collections/HostedSites/index.ts": {
-    "mtime": 1780834322.4230003,
-    "ast_hash": "de0929b6fedb5b760ed44c792071118d",
+    "mtime": 1780834950.1816995,
+    "ast_hash": "6dcb8efe8abc306f90341a97672894d4",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/JWTTokens/index.ts": {
@@ -1110,8 +1110,8 @@
     "semantic_hash": "4863caa132ded7b891cc53a2683ade22"
   },
   "apps/content-management-engine/src/collections/PageTemplates/index.ts": {
-    "mtime": 1780834324.9516962,
-    "ast_hash": "355273c4dbfff3299768677df334fcce",
+    "mtime": 1780835069.7966778,
+    "ast_hash": "bc7966d3a0bd2dcb50d5899bdcd1c792",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/StyleModifiers/index.ts": {
@@ -1130,9 +1130,9 @@
     "semantic_hash": "1cce363fb35ff45d66157d1783f69ed4"
   },
   "apps/content-management-engine/src/collections/Tenants/index.ts": {
-    "mtime": 1780737173.2727244,
-    "ast_hash": "501eab4b32787a8dfac79ff188e1c331",
-    "semantic_hash": "501eab4b32787a8dfac79ff188e1c331"
+    "mtime": 1780834994.2129464,
+    "ast_hash": "c9e11759a8d9c56440fc0758b6bf557b",
+    "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/Tenants/tests/access.test.ts": {
     "mtime": 1779003539.1042156,
@@ -1160,8 +1160,8 @@
     "semantic_hash": "dfbb58b514cad26b2d4f5be7c3c54c24"
   },
   "apps/content-management-engine/src/collections/access/tenantAccess.ts": {
-    "mtime": 1780834317.8220377,
-    "ast_hash": "6d1bfa191cbc917763a40bdcead7788f",
+    "mtime": 1780835057.4708006,
+    "ast_hash": "f9128051e4ad135fc47c008573b507b5",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/components/Builder/BlockLibrary.tsx": {
