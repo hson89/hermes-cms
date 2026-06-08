@@ -1035,8 +1035,8 @@
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/ContentItems/access.ts": {
-    "mtime": 1780842056.2517097,
-    "ast_hash": "43c52dbc5d5ff8f43201dadbee1a85fe",
+    "mtime": 1780892277.6155107,
+    "ast_hash": "ed1369e7733ac9dbfdff3c14a481a8af",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/ContentItems/endpoints.ts": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": "1cce363fb35ff45d66157d1783f69ed4"
   },
   "apps/content-management-engine/src/collections/Tenants/index.ts": {
-    "mtime": 1780842056.2517097,
-    "ast_hash": "c9e11759a8d9c56440fc0758b6bf557b",
+    "mtime": 1780894359.6071692,
+    "ast_hash": "a6f4e6606d8216f893649e419097ebe8",
     "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/Tenants/tests/access.test.ts": {
@@ -1145,14 +1145,14 @@
     "semantic_hash": "39a87f39992c72a5100e3af8bd952713"
   },
   "apps/content-management-engine/src/collections/Users/APIKeys.ts": {
-    "mtime": 1779580223.3765676,
+    "mtime": 1780894392.4199243,
     "ast_hash": "4a090066113155a691dcc37ea7a0f8bd",
     "semantic_hash": "4a090066113155a691dcc37ea7a0f8bd"
   },
   "apps/content-management-engine/src/collections/Users/index.ts": {
-    "mtime": 1779587955.2910898,
-    "ast_hash": "a6e348838f7fb37d7484f7053f242c39",
-    "semantic_hash": "a6e348838f7fb37d7484f7053f242c39"
+    "mtime": 1780892269.5077507,
+    "ast_hash": "af873246bc1716f0db2b004c7a79f4dd",
+    "semantic_hash": ""
   },
   "apps/content-management-engine/src/collections/Users/utils.ts": {
     "mtime": 1779549969.1767087,
@@ -1565,19 +1565,14 @@
     "semantic_hash": "bf49a251f000fe9019076345e328319c"
   },
   "apps/content-management-engine/src/payload.config.ts": {
-    "mtime": 1780833455.5964477,
-    "ast_hash": "ed3a5cc71088cd853876ebd09ad476f7",
-    "semantic_hash": "ed3a5cc71088cd853876ebd09ad476f7"
+    "mtime": 1780887511.7477918,
+    "ast_hash": "8bf299ba831e1201e4d711cc0ac3a0a2",
+    "semantic_hash": ""
   },
   "apps/content-management-engine/src/scripts/check-data.ts": {
     "mtime": 1780737332.4344776,
     "ast_hash": "9debd40a26db628dc55403e72a797d3a",
     "semantic_hash": "9debd40a26db628dc55403e72a797d3a"
-  },
-  "apps/content-management-engine/src/scripts/check-key.ts": {
-    "mtime": 1779581505.1424026,
-    "ast_hash": "dac9cd946798e068cbe729bfa4104ac3",
-    "semantic_hash": "dac9cd946798e068cbe729bfa4104ac3"
   },
   "apps/content-management-engine/src/scripts/create-first-user.ts": {
     "mtime": 1779003539.1079948,
@@ -1588,11 +1583,6 @@
     "mtime": 1779549969.1849294,
     "ast_hash": "73722893e22a485172de7118d423058d",
     "semantic_hash": "73722893e22a485172de7118d423058d"
-  },
-  "apps/content-management-engine/src/scripts/inspect-key.ts": {
-    "mtime": 1779588029.0582395,
-    "ast_hash": "3bf095a9789da28bf9a42a6e136afe58",
-    "semantic_hash": "3bf095a9789da28bf9a42a6e136afe58"
   },
   "apps/content-management-engine/src/scripts/list-media.ts": {
     "mtime": 1780811049.5484328,
@@ -1623,11 +1613,6 @@
     "mtime": 1780359841.020613,
     "ast_hash": "87b690ecfa93c04bb53180c38c299463",
     "semantic_hash": "87b690ecfa93c04bb53180c38c299463"
-  },
-  "apps/content-management-engine/src/scripts/test-frontend-fetch.ts": {
-    "mtime": 1779585316.0053182,
-    "ast_hash": "778b1ae4a4f99569e8bee36c7f38f539",
-    "semantic_hash": "778b1ae4a4f99569e8bee36c7f38f539"
   },
   "apps/content-management-engine/src/scripts/test-payload.ts": {
     "mtime": 1778919944.9207432,
@@ -2020,7 +2005,7 @@
     "semantic_hash": "5174c8bc533dfc68f0bcf411aaedf9ba"
   },
   "apps/site-templates/astro-portfolio/.astro/types.d.ts": {
-    "mtime": 1780844636.7479446,
+    "mtime": 1780892890.5300243,
     "ast_hash": "72c584e3bd8b5f007b2beb870517b437",
     "semantic_hash": ""
   },
@@ -2040,13 +2025,13 @@
     "semantic_hash": "c2880402468d892d17e18e24442c0b20"
   },
   "apps/site-templates/astro-portfolio/src/lib/cms.ts": {
-    "mtime": 1780842056.2597725,
-    "ast_hash": "5d66787bb103d645fc28b31986b7da0c",
+    "mtime": 1780873204.9659436,
+    "ast_hash": "61c5da60887f0034cf59ffb66359726e",
     "semantic_hash": ""
   },
   "apps/site-templates/astro-portfolio/src/pages/[tenantSlug]/[projectSlug].astro": {
-    "mtime": 1780847575.549873,
-    "ast_hash": "12ea8015aa644aa495ff509d0a095a02",
+    "mtime": 1780873207.9066103,
+    "ast_hash": "5a86dff48d370554db10c81593ab59c9",
     "semantic_hash": ""
   },
   "apps/site-templates/astro-portfolio/src/pages/[tenantSlug]/index.astro": {
@@ -2080,8 +2065,8 @@
     "semantic_hash": "32e46801cb4edf26d4db29983d9e53bc"
   },
   "apps/site-templates/nextjs-blog/src/app/[tenantSlug]/[articleSlug]/page.tsx": {
-    "mtime": 1780847573.8116724,
-    "ast_hash": "cf724f976ef3a5a4cc5243111fe45f70",
+    "mtime": 1780873188.2019436,
+    "ast_hash": "6af41f0eb82f61fcb400eaaf01c66db0",
     "semantic_hash": ""
   },
   "apps/site-templates/nextjs-blog/src/app/[tenantSlug]/page.tsx": {
@@ -2105,8 +2090,8 @@
     "semantic_hash": "d3b0e33b1e9bd9b227ad0801dece78bd"
   },
   "apps/site-templates/nextjs-blog/src/lib/cms.ts": {
-    "mtime": 1780842056.2597725,
-    "ast_hash": "a0567c0f1735c07deeed44edbdc4ec80",
+    "mtime": 1780873196.5216103,
+    "ast_hash": "be2b8f2ae48e5ca327441239c282d2cf",
     "semantic_hash": ""
   },
   "apps/site-templates/nextjs-blog/tsconfig.json": {
@@ -2670,9 +2655,9 @@
     "semantic_hash": "11cd21e2f357e142eddd285d5ee8032d"
   },
   "apps/site-templates/astro-portfolio/README.md": {
-    "mtime": 1779589748.8398576,
-    "ast_hash": "4e823229dda51465428780fc5d6234e6",
-    "semantic_hash": "4e823229dda51465428780fc5d6234e6"
+    "mtime": 1780873218.9297001,
+    "ast_hash": "5c431d64c2913e306ccdc85e4b969621",
+    "semantic_hash": ""
   },
   "apps/site-templates/astro-portfolio/pnpm-workspace.yaml": {
     "mtime": 1779549969.1890397,
@@ -2680,9 +2665,9 @@
     "semantic_hash": "11cd21e2f357e142eddd285d5ee8032d"
   },
   "apps/site-templates/nextjs-blog/README.md": {
-    "mtime": 1779589750.7782583,
-    "ast_hash": "1cdfd431165f4e8e120431f818e13d86",
-    "semantic_hash": "1cdfd431165f4e8e120431f818e13d86"
+    "mtime": 1780873221.9548812,
+    "ast_hash": "3d3a1fa685779433325adf9bdc24918f",
+    "semantic_hash": ""
   },
   "apps/site-templates/nextjs-blog/pnpm-workspace.yaml": {
     "mtime": 1779549969.1890397,

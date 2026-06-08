@@ -1,16 +1,16 @@
-# Graph Report - hermes-cms  (2026-06-07)
+# Graph Report - hermes-cms  (2026-06-08)
 
 ## Corpus Check
-- 614 files · ~428,034 words
+- 611 files · ~427,956 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 9204 nodes · 10547 edges · 875 communities (707 shown, 168 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 327 edges (avg confidence: 0.64)
+- 9195 nodes · 10536 edges · 872 communities (703 shown, 169 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 324 edges (avg confidence: 0.63)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c41d8564`
+- Built from commit: `0fe95ccb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -431,6 +431,7 @@
 - [[_COMMUNITY_Module Group 413|Module Group 413]]
 - [[_COMMUNITY_Module Group 414|Module Group 414]]
 - [[_COMMUNITY_Module Group 415|Module Group 415]]
+- [[_COMMUNITY_Module Group 417|Module Group 417]]
 - [[_COMMUNITY_Module Group 418|Module Group 418]]
 - [[_COMMUNITY_Module Group 419|Module Group 419]]
 - [[_COMMUNITY_Module Group 420|Module Group 420]]
@@ -561,6 +562,7 @@
 - [[_COMMUNITY_Module Group 567|Module Group 567]]
 - [[_COMMUNITY_Module Group 569|Module Group 569]]
 - [[_COMMUNITY_Module Group 570|Module Group 570]]
+- [[_COMMUNITY_Module Group 574|Module Group 574]]
 - [[_COMMUNITY_Module Group 575|Module Group 575]]
 - [[_COMMUNITY_Module Group 576|Module Group 576]]
 - [[_COMMUNITY_Module Group 577|Module Group 577]]
@@ -803,7 +805,6 @@
 - [[_COMMUNITY_Community 846|Community 846]]
 - [[_COMMUNITY_Community 847|Community 847]]
 - [[_COMMUNITY_Community 848|Community 848]]
-- [[_COMMUNITY_Community 849|Community 849]]
 - [[_COMMUNITY_Community 850|Community 850]]
 - [[_COMMUNITY_Community 851|Community 851]]
 - [[_COMMUNITY_Community 852|Community 852]]
@@ -823,8 +824,6 @@
 - [[_COMMUNITY_Community 866|Community 866]]
 - [[_COMMUNITY_Community 868|Community 868]]
 - [[_COMMUNITY_Community 870|Community 870]]
-- [[_COMMUNITY_Community 871|Community 871]]
-- [[_COMMUNITY_Community 872|Community 872]]
 - [[_COMMUNITY_Community 873|Community 873]]
 - [[_COMMUNITY_Community 874|Community 874]]
 
@@ -882,7 +881,7 @@
 - **Template Builder Agent Architecture** — 008_template_builder_agent_spec_feature, 008_template_builder_agent_research_state_schema, 008_template_builder_agent_research_structured_output [EXTRACTED 1.00]
 - **TDD Test Pyramid** — 009_template_deployment_history_tasks_tenant_scoped_api_access, 009_template_deployment_history_tasks_e2e_test_skeleton, 009_template_deployment_history_tasks_unit_tests [INFERRED 0.95]
 
-## Communities (875 total, 168 thin omitted)
+## Communities (872 total, 169 thin omitted)
 
 ### Community 0 - "AI Batching & Prompt Pipeline"
 Cohesion: 0.07
@@ -893,8 +892,8 @@ Cohesion: 0.04
 Nodes (10): AIAuditLogs, AIRateLimits, AuditLogs, generateMarketplaceTokenEndpoint, MarketplaceApps, configPromise, dirname, filename (+2 more)
 
 ### Community 2 - "Admin Actions & Content Init"
-Cohesion: 0.14
-Nodes (31): setupInitialAdmin(), FieldDefinition, GenerateTokenButton(), GenerateTokenButtonProps, Button(), ButtonProps, Heading(), HeadingProps (+23 more)
+Cohesion: 0.13
+Nodes (34): setupInitialAdmin(), FieldDefinition, FieldsDataEditor(), GenerateTokenButton(), GenerateTokenButtonProps, Button(), ButtonProps, Heading() (+26 more)
 
 ### Community 3 - "AI Copilot Drafting Service"
 Cohesion: 0.06
@@ -909,8 +908,8 @@ Cohesion: 0.05
 Nodes (32): TestClient, client(), mock_llm_response(), Integration tests for the AI content creation flow.  T013 - Integration test for, An empty prompt should result in a 422 validation error., Missing tenant_id should be rejected., After generation, the session should be retrievable via GET /api/ai/sessions/{id, If the LLM returns non-JSON, the service raises ValueError -> 422. (+24 more)
 
 ### Community 6 - "Admin Custom Views & Import Map"
-Cohesion: 0.06
-Nodes (32): FieldsDataEditor(), importMap, GeneratorView(), Header(), Args, metadata, handleServerFunctions(), Args (+24 more)
+Cohesion: 0.05
+Nodes (34): AdminView(), importMap, GeneratorView(), Header(), Args, metadata, handleServerFunctions(), Args (+26 more)
 
 ### Community 7 - "Text Animation Catalog"
 Cohesion: 0.05
@@ -930,11 +929,11 @@ Nodes (9): Any, RunnableConfig, call_schema_llm(), LangGraph nodes for the Schem
 
 ### Community 11 - "Deployment & Payload Types"
 Cohesion: 0.05
-Nodes (41): AiAuditLog, AiAuditLogsSelect, AiPromptHistory, AiPromptHistorySelect, AiRateLimit, AiRateLimitsSelect, ApiKey, ApiKeyAuthOperations (+33 more)
+Nodes (40): AiAuditLog, AiAuditLogsSelect, AiPromptHistory, AiPromptHistorySelect, AiRateLimit, AiRateLimitsSelect, ApiKeyAuthOperations, ApiKeysSelect (+32 more)
 
 ### Community 12 - "Admin View & Block Library"
 Cohesion: 0.08
-Nodes (26): AdminView(), AdminViewProps, BlockLibrary(), BuilderCanvas(), BuilderCanvasProps, BuilderWorkspace(), DeploymentToolbar(), DeploymentToolbarProps (+18 more)
+Nodes (24): AdminViewProps, BlockLibrary(), BuilderCanvas(), BuilderCanvasProps, BuilderWorkspace(), DeploymentToolbar(), DeploymentToolbarProps, MappingPanel() (+16 more)
 
 ### Community 13 - "Animation Library Adapters"
 Cohesion: 0.06
@@ -1081,28 +1080,28 @@ Cohesion: 0.09
 Nodes (22): AIAgentSession domain model and aggregate root.  T014 - Create AIAgentSession mo, Lifecycle states for an AI Agent conversation session., SessionStatus, Creates a new schema generation session, invokes the LangGraph schema_graph,, Continues an existing schema co-creation session, returning a real-time SSE even, Retrieve an existing session's LangGraph state and format it as AIAgentSession c, Initialize Langfuse callback handler if configured., Any (+14 more)
 
 ### Community 49 - "Module Group 49"
-Cohesion: 0.08
-Nodes (26): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+18 more)
+Cohesion: 0.09
+Nodes (22): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+14 more)
 
 ### Community 50 - "Module Group 50"
-Cohesion: 0.08
-Nodes (26): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+18 more)
+Cohesion: 0.09
+Nodes (22): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+14 more)
 
 ### Community 51 - "Module Group 51"
 Cohesion: 0.06
 Nodes (31): A2A, MCP & A2UI Integration Developer & Operator Manual, A2A, MCP & A2UI Integration Implementation Plan, A2A, MCP & A2UI Integration Research & Rationale, Internal API Key Validation, A2A, MCP & A2UI Integration Spec, SSE (Server-Sent Events) Transport, Stdio Transport, Template Builder Data Model (+23 more)
 
 ### Community 52 - "Module Group 52"
-Cohesion: 0.08
-Nodes (24): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, fill, filter, letter_spacing, opacity_default (+16 more)
+Cohesion: 0.10
+Nodes (21): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+13 more)
 
 ### Community 53 - "Module Group 53"
 Cohesion: 0.09
 Nodes (23): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, fill, filter, letter_spacing, opacity_default (+15 more)
 
 ### Community 54 - "Module Group 54"
-Cohesion: 0.12
-Nodes (16): perspective_note, perspective_px, requirement, coordinate_origin, position, requirement, stage, container (+8 more)
+Cohesion: 0.08
+Nodes (24): perspective_note, perspective_px, requirement, coordinate_origin, position, requirement, absolute_centered, backface_visibility (+16 more)
 
 ### Community 55 - "Module Group 55"
 Cohesion: 0.08
@@ -1153,8 +1152,8 @@ Cohesion: 0.09
 Nodes (22): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+14 more)
 
 ### Community 67 - "Module Group 67"
-Cohesion: 0.09
-Nodes (22): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+14 more)
+Cohesion: 0.08
+Nodes (26): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+18 more)
 
 ### Community 68 - "Module Group 68"
 Cohesion: 0.09
@@ -1181,12 +1180,12 @@ Cohesion: 0.11
 Nodes (21): duration_ms, easing, from, scaled_duration_ms, scaled_stagger_ms, source_duration_ms, source_stagger_ms, stagger_ms (+13 more)
 
 ### Community 74 - "Module Group 74"
-Cohesion: 0.10
-Nodes (21): sample, samples, default_policy, loop_policy, showcase_samples, cycle, gap_ms, hold_ms (+13 more)
+Cohesion: 0.11
+Nodes (18): sample, samples, default_policy, loop_policy, showcase_samples, id, params, source (+10 more)
 
 ### Community 75 - "Module Group 75"
-Cohesion: 0.10
-Nodes (21): sample, samples, default_policy, loop_policy, showcase_samples, cycle, gap_ms, hold_ms (+13 more)
+Cohesion: 0.11
+Nodes (18): sample, samples, default_policy, loop_policy, showcase_samples, id, params, source (+10 more)
 
 ### Community 76 - "Module Group 76"
 Cohesion: 0.11
@@ -1205,8 +1204,8 @@ Cohesion: 0.11
 Nodes (21): duration_ms, easing, from, scaled_duration_ms, scaled_stagger_ms, source_duration_ms, source_stagger_ms, stagger_ms (+13 more)
 
 ### Community 80 - "Module Group 80"
-Cohesion: 0.08
-Nodes (24): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, fill, filter, letter_spacing, opacity_default (+16 more)
+Cohesion: 0.10
+Nodes (21): branches_on_swap_mode, note, uses_micro_delay_ms, uses_overlap_ms, canonical_loop_pseudocode, current_site_swap_support, id, loop_algorithm (+13 more)
 
 ### Community 81 - "Module Group 81"
 Cohesion: 0.11
@@ -1345,8 +1344,8 @@ Cohesion: 0.11
 Nodes (18): coordinate_space, filter, opacity, transform, existing_word_push, exit_word, first_word, incoming_word_push (+10 more)
 
 ### Community 115 - "Module Group 115"
-Cohesion: 0.11
-Nodes (18): sample, samples, default_policy, loop_policy, showcase_samples, id, params, source (+10 more)
+Cohesion: 0.14
+Nodes (14): sample, samples, default_policy, loop_policy, showcase_samples, asset, key, showcase (+6 more)
 
 ### Community 116 - "Module Group 116"
 Cohesion: 0.11
@@ -1393,8 +1392,8 @@ Cohesion: 0.14
 Nodes (18): duration_ms, easing, from, stagger_ms, to, duration_ms, easing, from (+10 more)
 
 ### Community 127 - "Module Group 127"
-Cohesion: 0.11
-Nodes (18): sample, samples, default_policy, loop_policy, showcase_samples, id, params, source (+10 more)
+Cohesion: 0.10
+Nodes (21): sample, samples, default_policy, loop_policy, showcase_samples, cycle, gap_ms, hold_ms (+13 more)
 
 ### Community 128 - "Module Group 128"
 Cohesion: 0.14
@@ -1517,8 +1516,8 @@ Cohesion: 0.13
 Nodes (14): id, portable_spec, description, display_name, id, inspiration, signature_easing, swap (+6 more)
 
 ### Community 158 - "Module Group 158"
-Cohesion: 0.18
-Nodes (11): easing, scaled_duration_ms, source_duration_ms, easing, scaled_duration_ms, source_duration_ms, timing, first_word (+3 more)
+Cohesion: 0.13
+Nodes (15): easing, scaled_duration_ms, source_duration_ms, easing, scaled_duration_ms, source_duration_ms, easing, scaled_duration_ms (+7 more)
 
 ### Community 159 - "Module Group 159"
 Cohesion: 0.13
@@ -1573,8 +1572,8 @@ Cohesion: 0.14
 Nodes (14): sample, samples, default_policy, loop_policy, showcase_samples, asset, key, showcase (+6 more)
 
 ### Community 172 - "Module Group 172"
-Cohesion: 0.11
-Nodes (18): sample, samples, default_policy, loop_policy, showcase_samples, id, params, source (+10 more)
+Cohesion: 0.14
+Nodes (14): sample, samples, default_policy, loop_policy, showcase_samples, asset, key, showcase (+6 more)
 
 ### Community 173 - "Module Group 173"
 Cohesion: 0.14
@@ -1677,8 +1676,8 @@ Cohesion: 0.15
 Nodes (13): framer motion, greensock, gsap, motion, motion.dev, motion react, waapi, web animations api (+5 more)
 
 ### Community 198 - "Module Group 198"
-Cohesion: 0.11
-Nodes (14): FieldRenderer(), FloatingAIBar(), TipTapEditor(), TipTapEditorProps, ChatPanel(), EditorPanel(), EditorPanelProps, RecoveryDialog() (+6 more)
+Cohesion: 0.13
+Nodes (11): FieldRenderer(), FloatingAIBar(), TipTapEditor(), TipTapEditorProps, EditorPanel(), EditorPanelProps, RecoveryDialog(), DraftingTemplate() (+3 more)
 
 ### Community 199 - "Module Group 199"
 Cohesion: 0.23
@@ -1694,7 +1693,7 @@ Nodes (9): Any, Config, ContentDraft, DraftField, ContentDraft domain model for 
 
 ### Community 202 - "Module Group 202"
 Cohesion: 0.17
-Nodes (11): ContentItem, Tenant, Args, ArticlePage(), generateMetadata(), parseTemplateHtml(), fetchActiveTemplateForSite(), fetchArticleBySlug() (+3 more)
+Nodes (10): ContentItem, Tenant, Args, ArticlePage(), generateMetadata(), parseTemplateHtml(), fetchArticleBySlug(), fetchContentItems() (+2 more)
 
 ### Community 203 - "Module Group 203"
 Cohesion: 0.21
@@ -1881,8 +1880,8 @@ Cohesion: 0.10
 Nodes (16): Refines an existing draft by delegating to RefineService., Generates a content draft using a streaming LLM.         Yields events for expla, Refines an existing draft based on user feedback., extract_json_from_text(), handle_graph_stream(), Unified handler for LangGraph astream_events, processing chunks, field detection, Extracts and parses JSON from a text block, handling markdown blocks and raw str, Any (+8 more)
 
 ### Community 249 - "Module Group 249"
-Cohesion: 0.24
-Nodes (11): Astro Portfolio Starter README, Content Authoring Service, Self-Healing Output Parsing, Content Management Engine, Content Authoring Service (AI Microservice), Content Management Engine (CMS Monolith), Postgres-Backed Sliding-Window Rate Limiting, Single-User Session Locking & Recovery (+3 more)
+Cohesion: 0.28
+Nodes (9): Content Authoring Service, Self-Healing Output Parsing, Content Management Engine, Content Authoring Service (AI Microservice), Content Management Engine (CMS Monolith), Postgres-Backed Sliding-Window Rate Limiting, Single-User Session Locking & Recovery, Content Authoring K8s Deployment (+1 more)
 
 ### Community 250 - "Module Group 250"
 Cohesion: 0.20
@@ -1917,16 +1916,16 @@ Cohesion: 0.18
 Nodes (11): waapi, cancellation, completion, easing, import_statement, install, keyframe_shape, renderer_notes (+3 more)
 
 ### Community 258 - "Module Group 258"
-Cohesion: 0.22
-Nodes (11): max, min, mode, initial_delay_ms, gap_ms, hold_ms, initial_delay_ms, preset (+3 more)
+Cohesion: 0.12
+Nodes (19): max, min, mode, content_replacement, fill_behavior, initial_delay_ms, renderer, stagger_mode (+11 more)
 
 ### Community 259 - "Module Group 259"
 Cohesion: 0.18
 Nodes (11): waapi, cancellation, completion, easing, import_statement, install, keyframe_shape, renderer_notes (+3 more)
 
 ### Community 260 - "Module Group 260"
-Cohesion: 0.22
-Nodes (11): max, min, mode, initial_delay_ms, gap_ms, hold_ms, initial_delay_ms, preset (+3 more)
+Cohesion: 0.12
+Nodes (19): max, min, mode, content_replacement, fill_behavior, initial_delay_ms, renderer, stagger_mode (+11 more)
 
 ### Community 261 - "Module Group 261"
 Cohesion: 0.18
@@ -1997,8 +1996,8 @@ Cohesion: 0.18
 Nodes (11): waapi, cancellation, completion, easing, import_statement, install, keyframe_shape, renderer_notes (+3 more)
 
 ### Community 278 - "Module Group 278"
-Cohesion: 0.22
-Nodes (11): max, min, mode, initial_delay_ms, gap_ms, hold_ms, initial_delay_ms, preset (+3 more)
+Cohesion: 0.12
+Nodes (19): max, min, mode, content_replacement, fill_behavior, initial_delay_ms, renderer, stagger_mode (+11 more)
 
 ### Community 279 - "Module Group 279"
 Cohesion: 0.18
@@ -2013,8 +2012,8 @@ Cohesion: 0.18
 Nodes (11): waapi, cancellation, completion, easing, import_statement, install, keyframe_shape, renderer_notes (+3 more)
 
 ### Community 282 - "Module Group 282"
-Cohesion: 0.12
-Nodes (19): max, min, mode, content_replacement, fill_behavior, initial_delay_ms, renderer, stagger_mode (+11 more)
+Cohesion: 0.22
+Nodes (11): max, min, mode, initial_delay_ms, gap_ms, hold_ms, initial_delay_ms, preset (+3 more)
 
 ### Community 283 - "Module Group 283"
 Cohesion: 0.18
@@ -2161,8 +2160,8 @@ Cohesion: 0.39
 Nodes (3): createMockTenant(), createMockUser(), POST()
 
 ### Community 319 - "Module Group 319"
-Cohesion: 0.22
-Nodes (7): Any, HTTPAuthorizationCredentials, Internal signature and secret verification for service-to-service communication., Verifies the HS256 Marketplace JWT.     Returns the decoded claims (tenant_id, a, verify_marketplace_token(), test_circuit_breaker_trips(), test_jwt_verification_success()
+Cohesion: 0.15
+Nodes (12): Any, HTTPAuthorizationCredentials, Internal signature and secret verification for service-to-service communication., Validate the internal service-to-service secret header in a timing-safe manner., Verifies the HS256 Marketplace JWT.     Returns the decoded claims (tenant_id, a, require_internal_secret(), verify_marketplace_token(), test_circuit_breaker_trips() (+4 more)
 
 ### Community 320 - "Module Group 320"
 Cohesion: 0.22
@@ -2209,8 +2208,8 @@ Cohesion: 0.22
 Nodes (9): scaled_duration_ms, scaled_stagger_ms, source_duration_ms, source_stagger_ms, timing, exit, total_formulas, enter_total_ms (+1 more)
 
 ### Community 331 - "Module Group 331"
-Cohesion: 0.27
-Nodes (10): duration_ms, easing, from, stagger_ms, from, blur_px, opacity, scale (+2 more)
+Cohesion: 0.31
+Nodes (9): from, duration_ms, from, stagger_ms, blur_px, opacity, scale, y_px (+1 more)
 
 ### Community 332 - "Module Group 332"
 Cohesion: 0.14
@@ -2305,8 +2304,8 @@ Cohesion: 0.17
 Nodes (10): AIService, AIService, AsyncSession, get_db(), get_db_checkpointer(), SQLAlchemy database setup and session helpers. Satisfies T004 / T005b., Dependency to obtain a new database session., Asynchronous context manager returning the AsyncPostgresSaver checkpointer conne (+2 more)
 
 ### Community 355 - "Module Group 355"
-Cohesion: 0.25
-Nodes (8): content_replacement, fill_behavior, renderer, stagger_mode, target, transform_order, y_travel_multiplier, rendering_contract
+Cohesion: 0.29
+Nodes (7): cycle, gap_ms, hold_ms, kind, micro_delay_ms, replacement_behavior, playback
 
 ### Community 356 - "Module Group 356"
 Cohesion: 0.07
@@ -2397,8 +2396,8 @@ Cohesion: 0.29
 Nodes (7): cycle, gap_ms, hold_ms, kind, micro_delay_ms, replacement_behavior, playback
 
 ### Community 378 - "Module Group 378"
-Cohesion: 0.25
-Nodes (8): content_replacement, fill_behavior, renderer, stagger_mode, target, transform_order, y_travel_multiplier, rendering_contract
+Cohesion: 0.29
+Nodes (7): cycle, gap_ms, hold_ms, kind, micro_delay_ms, replacement_behavior, playback
 
 ### Community 379 - "Module Group 379"
 Cohesion: 0.29
@@ -2473,8 +2472,8 @@ Cohesion: 0.08
 Nodes (25): Dependencies & Execution Order, Format: `[ID] [P?] [Story] Description`, Implementation for User Story 1, Implementation for User Story 2, Implementation for User Story 3, Implementation Strategy, Incremental Delivery, MVP First (User Story 1) (+17 more)
 
 ### Community 397 - "Module Group 397"
-Cohesion: 0.13
-Nodes (13): tenantAccess(), tenantReadAccess(), AIPromptHistory, BuildingBlocks, tenantDeliveryAccess(), HostedSites, JWTTokens, Media (+5 more)
+Cohesion: 0.15
+Nodes (12): tenantAccess(), tenantReadAccess(), AIPromptHistory, BuildingBlocks, tenantDeliveryAccess(), HostedSites, JWTTokens, ApiKey (+4 more)
 
 ### Community 398 - "Module Group 398"
 Cohesion: 0.29
@@ -2509,8 +2508,8 @@ Cohesion: 0.33
 Nodes (5): Any, InjectedToolArg, LangChain tool for resolving and updating content type schemas in the CMS.  T016, Updates the structural definition (schema) of a content type in the CMS.      Us, schema_resolver()
 
 ### Community 406 - "Module Group 406"
-Cohesion: 0.33
-Nodes (5): kinetic-center-build, algorithm, id, required_measurements, summary
+Cohesion: 0.18
+Nodes (10): kinetic-center-build, algorithm, id, required_measurements, summary, kinetic-top-build, algorithm, id (+2 more)
 
 ### Community 407 - "Module Group 407"
 Cohesion: 0.53
@@ -2547,6 +2546,10 @@ Nodes (12): Chroma Vector Store, Complete RAG Pipeline, Document Loaders, FAISS 
 ### Community 415 - "Module Group 415"
 Cohesion: 0.40
 Nodes (3): EventBus, MarketplaceEventMap, MarketplaceEventName
+
+### Community 417 - "Module Group 417"
+Cohesion: 0.29
+Nodes (7): fill, filter, letter_spacing, opacity_default, scale_default, transform_order, frame_materialization
 
 ### Community 418 - "Module Group 418"
 Cohesion: 0.33
@@ -2637,8 +2640,8 @@ Cohesion: 0.40
 Nodes (4): Aurelian Spectre V12 Premium Showcase Image, dirname, filename, seed()
 
 ### Community 442 - "Community 442"
-Cohesion: 0.25
-Nodes (8): absolute_centered, backface_visibility, left, position, top, white_space, will_change, kinetic_word
+Cohesion: 0.29
+Nodes (7): fill, filter, letter_spacing, opacity_default, scale_default, transform_order, frame_materialization
 
 ### Community 443 - "Module Group 443"
 Cohesion: 0.40
@@ -2717,8 +2720,8 @@ Cohesion: 0.33
 Nodes (5): mockCreate, mockDelete, mockFind, mockPayloadInstance, mockUpdate
 
 ### Community 462 - "Module Group 462"
-Cohesion: 0.29
-Nodes (7): cycle, gap_ms, hold_ms, kind, micro_delay_ms, replacement_behavior, playback
+Cohesion: 0.40
+Nodes (5): stagger_rank_algorithms, center-out, edges-in, normal, reverse
 
 ### Community 463 - "Module Group 463"
 Cohesion: 0.50
@@ -2729,8 +2732,8 @@ Cohesion: 0.67
 Nodes (3): spring-scale-in, sample, samples
 
 ### Community 465 - "Module Group 465"
-Cohesion: 0.29
-Nodes (7): duration_ms, easing, scaled_duration_ms, source_duration_ms, stagger_ms, exit, exit
+Cohesion: 0.50
+Nodes (4): duration_ms, easing, stagger_ms, enter
 
 ### Community 466 - "Module Group 466"
 Cohesion: 0.11
@@ -3412,10 +3415,6 @@ Nodes (3): API Contract: Content Delivery (Hydrated), Error Response (404 Not Fo
 Cohesion: 0.50
 Nodes (3): Contract: Webhook Deployment Payload, Expected Response, Payload
 
-### Community 849 - "Community 849"
-Cohesion: 0.47
-Nodes (5): Validate the internal service-to-service secret header in a timing-safe manner., require_internal_secret(), test_require_internal_secret_fail_closed(), test_require_internal_secret_mismatch(), test_require_internal_secret_success()
-
 ### Community 850 - "Community 850"
 Cohesion: 0.50
 Nodes (4): End-to-End Tests (Playwright), Integration Tests (Vitest) (optional), Local Development with dev/ Directory (optional), Testing Plugins
@@ -3448,31 +3447,23 @@ Nodes (4): enter, duration_ms, easing, stagger_ms
 Cohesion: 0.47
 Nodes (3): beforeChangeHook(), pageTemplateAccess, PageTemplates
 
-### Community 871 - "Community 871"
-Cohesion: 0.40
-Nodes (5): kinetic-top-build, algorithm, id, required_measurements, summary
-
-### Community 872 - "Community 872"
-Cohesion: 0.40
-Nodes (5): split_rules, per-character, per-line, per-word, whole
-
 ### Community 874 - "Community 874"
 Cohesion: 0.50
 Nodes (3): _extract_partial_explanation(), AI Agent application service.  Orchestrates LangChain to generate content schema, Helper to extract the partial explanation string from a streaming JSON block.
 
 ## Knowledge Gaps
-- **5569 isolated node(s):** `name`, `description`, `hidden`, `systemPromptSections`, `toolNames` (+5564 more)
+- **5569 isolated node(s):** `filename`, `dirname`, `configPromise`, `Environment Variables`, `Fetching Content` (+5564 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **168 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **169 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `AIService` connect `AI Copilot Drafting Service` to `Module Group 354`, `AI Agent Session Management`, `Module Group 200`, `Community 874`, `AI Self-Correction Loop`, `Community 846`, `MCP Tool Adapters (Python)`, `Module Group 304`, `Module Group 48`, `AI Authoring Service Core`, `Schema Validator Domain Tests`, `Module Group 248`, `Module Group 57`?**
   _High betweenness centrality (0.002) - this node is a cross-community bridge._
-- **Why does `AIAgentSession` connect `AI Agent Session Management` to `AI Copilot Drafting Service`, `MCP Tool Adapters (Python)`, `AI Authoring Service Core`, `Module Group 48`, `Module Group 248`?**
+- **Why does `showcase` connect `Module Group 172` to `Module Group 160`, `Module Group 195`, `Module Group 103`, `Module Group 104`, `Module Group 334`, `Module Group 80`, `Module Group 377`?**
   _High betweenness centrality (0.001) - this node is a cross-community bridge._
-- **Why does `Icon()` connect `Admin Actions & Content Init` to `Module Group 321`, `Design System & UI Components`, `Module Group 198`, `Admin Custom Views & Import Map`, `Community 873`, `Admin View & Block Library`, `Module Group 47`, `Module Group 145`, `Community 830`?**
+- **Why does `FastAPI` connect `AI Copilot Drafting Service` to `Module Group 57`, `Module Group 354`, `Module Group 363`, `Module Group 319`?**
   _High betweenness centrality (0.001) - this node is a cross-community bridge._
 - **Are the 46 inferred relationships involving `AIService` (e.g. with `AIAgentSession` and `ConversationMessage`) actually correct?**
   _`AIService` has 46 INFERRED edges - model-reasoned connections that need verification._
@@ -3480,5 +3471,5 @@ _Questions this graph is uniquely positioned to answer:_
   _`AIAgentSession` has 23 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 24 inferred relationships involving `DraftingService` (e.g. with `AIAgentSession` and `AIService`) actually correct?**
   _`DraftingService` has 24 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `name`, `description`, `hidden` to the rest of the system?**
+- **What connects `filename`, `dirname`, `configPromise` to the rest of the system?**
   _5847 weakly-connected nodes found - possible documentation gaps or missing edges._
