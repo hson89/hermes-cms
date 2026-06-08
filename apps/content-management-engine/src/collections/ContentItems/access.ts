@@ -16,11 +16,11 @@ import type { User, ApiKey } from '../../payload-types'
  */
 export const tenantDeliveryAccess: Access = ({ req }) => {
   const user = req.user
-  const authHeader = req.headers.get('authorization')
+  const authHeader = req.headers.get('Authorization') || req.headers.get('authorization')
   
   // Security: Check for demo bypass key via environment variable ONLY
   const bypassKey = process.env.DEMO_BYPASS_KEY
-  if (bypassKey && authHeader?.includes(bypassKey)) return true
+  if (bypassKey && authHeader && authHeader.includes(bypassKey)) return true
 
   if (!user) {
     return false

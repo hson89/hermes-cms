@@ -33,9 +33,9 @@ export const Tenants: CollectionConfig = {
     // Read: Multi-tenant plugin will automatically filter results based on user/tenant association.
     // Super-admins and Global API keys can see all via userHasAccessToAllTenants hook in config.
     read: ({ req }) => {
-      const authHeader = req.headers?.get?.('authorization')
+      const authHeader = req.headers.get('Authorization') || req.headers.get('authorization')
       const bypassKey = process.env.DEMO_BYPASS_KEY
-      if (bypassKey && authHeader?.includes(bypassKey)) return true
+      if (bypassKey && authHeader && authHeader.includes(bypassKey)) return true
       return Boolean(req.user)
     },
     admin: ({ req: { user } }) => !!user,

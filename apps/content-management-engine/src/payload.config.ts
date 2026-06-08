@@ -91,7 +91,7 @@ const configPromise = buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || 'postgresql://postgres:postgres@localhost:5432/hermes_cms',
     },
-    push: true,
+    push: false,
   }),
   plugins: [
     multiTenantPlugin({
@@ -154,7 +154,7 @@ configPromise.then((config) => {
       )
       if (tenantsField && typeof tenantsField === 'object') {
         ;(tenantsField as any).saveToJWT = true
-        // Also ensure the nested relationship field is in the JWT
+
         if ('fields' in tenantsField && Array.isArray(tenantsField.fields)) {
           const tenantRelField = tenantsField.fields.find(
             (f) => 'name' in f && f.name === 'tenant',

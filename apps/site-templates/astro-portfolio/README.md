@@ -16,7 +16,7 @@ When deployed via the Hermes AI Deployment Service, the following environment va
 // Example data fetching in Astro frontmatter
 const res = await fetch(`${import.meta.env.PAYLOAD_URL}/api/content-items`, {
   headers: {
-    'Authorization': `API-Key ${import.meta.env.PAYLOAD_API_KEY}`
+    'Authorization': `api-keys API-Key ${import.meta.env.PAYLOAD_API_KEY}`
   }
 })
 const data = await res.json()

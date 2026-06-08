@@ -146,7 +146,7 @@ export default async function ArticlePage({ params }: Args) {
           try {
             const userRes = await fetch(`${PAYLOAD_URL}/api/users/${author}`, {
               headers: {
-                'Authorization': `API-Key ${API_KEY}`,
+                'Authorization': `api-keys API-Key ${API_KEY}`,
                 'Content-Type': 'application/json',
               },
               next: { revalidate: 300 },

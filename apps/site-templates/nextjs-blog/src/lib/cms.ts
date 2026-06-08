@@ -30,7 +30,7 @@ export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
     console.log(`[CMS] Fetching: ${url}`)
     const res = await fetch(url, {
       headers: {
-        'Authorization': `API-Key ${API_KEY}`,
+        'Authorization': `api-keys API-Key ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       next: { revalidate: 300 }, // Cache tenant resolution for 5 minutes
@@ -70,7 +70,7 @@ export async function fetchContentItems(tenantId: string | number): Promise<Cont
   try {
     const res = await fetch(`${PAYLOAD_URL}/api/content-items?where[tenant][equals]=${tenantId}&limit=10&sort=-createdAt`, {
       headers: {
-        'Authorization': `API-Key ${API_KEY}`,
+        'Authorization': `api-keys API-Key ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       next: { revalidate: 60 },
@@ -104,7 +104,7 @@ export async function fetchArticleBySlug(tenantId: string | number, articleSlug:
   try {
     const res = await fetch(`${PAYLOAD_URL}/api/content-items?where[tenant][equals]=${tenantId}&where[fieldsData.slug][equals]=${articleSlug}&limit=1`, {
       headers: {
-        'Authorization': `API-Key ${API_KEY}`,
+        'Authorization': `api-keys API-Key ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       next: { revalidate: 60 },
@@ -150,7 +150,7 @@ export async function fetchActiveTemplateForSite(
     const siteUrl = `${PAYLOAD_URL}/api/hosted-sites?where[tenant][equals]=${tenantId}&where[template][equals]=nextjs-blog&limit=1`
     const siteRes = await fetch(siteUrl, {
       headers: {
-        'Authorization': `API-Key ${API_KEY}`,
+        'Authorization': `api-keys API-Key ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       next: { revalidate: 60 },
@@ -165,7 +165,7 @@ export async function fetchActiveTemplateForSite(
     const depUrl = `${PAYLOAD_URL}/api/template-deployments?where[site][equals]=${siteId}&where[status][equals]=success&sort=-createdAt&limit=5`
     const depRes = await fetch(depUrl, {
       headers: {
-        'Authorization': `API-Key ${API_KEY}`,
+        'Authorization': `api-keys API-Key ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       next: { revalidate: 60 },
@@ -183,7 +183,7 @@ export async function fetchActiveTemplateForSite(
       const tempUrl = `${PAYLOAD_URL}/api/page-templates/${templateId}`
       const tempRes = await fetch(tempUrl, {
         headers: {
-          'Authorization': `API-Key ${API_KEY}`,
+          'Authorization': `api-keys API-Key ${API_KEY}`,
           'Content-Type': 'application/json',
         },
         next: { revalidate: 60 },
@@ -206,7 +206,7 @@ export async function fetchActiveTemplateForSite(
           const ctUrl = `${PAYLOAD_URL}/api/content-types/${ctId}`
           const ctRes = await fetch(ctUrl, {
             headers: {
-              'Authorization': `API-Key ${API_KEY}`,
+              'Authorization': `api-keys API-Key ${API_KEY}`,
               'Content-Type': 'application/json',
             },
             next: { revalidate: 300 },

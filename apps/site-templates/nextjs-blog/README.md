@@ -15,7 +15,7 @@ When deployed via the Hermes AI Deployment Service, the following environment va
 // Example data fetching
 const res = await fetch(`${process.env.PAYLOAD_URL}/api/content-items`, {
   headers: {
-    'Authorization': `API-Key ${process.env.PAYLOAD_API_KEY}`
+    'Authorization': `api-keys API-Key ${process.env.PAYLOAD_API_KEY}`
   }
 })
 const data = await res.json()

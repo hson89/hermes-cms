@@ -28,7 +28,7 @@ export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
 	try {
 		const res = await fetch(`${PAYLOAD_URL}/api/tenants?where[or][0][slug][equals]=${slug}&where[or][1][id][equals]=${slug}`, {
 			headers: {
-				'Authorization': `API-Key ${API_KEY}`,
+				'Authorization': `api-keys API-Key ${API_KEY}`,
 				'Content-Type': 'application/json',
 			}
 		});
@@ -62,7 +62,7 @@ export async function fetchPortfolioItems(tenantId: string | number): Promise<Co
 	try {
 		const res = await fetch(`${PAYLOAD_URL}/api/content-items?where[tenant][equals]=${tenantId}&limit=10&sort=-createdAt`, {
 			headers: {
-				'Authorization': `API-Key ${API_KEY}`,
+				'Authorization': `api-keys API-Key ${API_KEY}`,
 				'Content-Type': 'application/json',
 			}
 		});
@@ -96,7 +96,7 @@ export async function fetchProjectBySlug(tenantId: string | number, projectSlug:
 	try {
 		const res = await fetch(`${PAYLOAD_URL}/api/content-items?where[tenant][equals]=${tenantId}&where[fieldsData.slug][equals]=${projectSlug}&limit=1`, {
 			headers: {
-				'Authorization': `API-Key ${API_KEY}`,
+				'Authorization': `api-keys API-Key ${API_KEY}`,
 				'Content-Type': 'application/json',
 			}
 		});
@@ -142,7 +142,7 @@ export async function fetchActiveTemplateForSite(
     const siteUrl = `${PAYLOAD_URL}/api/hosted-sites?where[tenant][equals]=${tenantId}&where[template][equals]=astro-portfolio&limit=1`;
     const siteRes = await fetch(siteUrl, {
       headers: {
-        'Authorization': `API-Key ${API_KEY}`,
+        'Authorization': `api-keys API-Key ${API_KEY}`,
         'Content-Type': 'application/json',
       }
     });
@@ -156,7 +156,7 @@ export async function fetchActiveTemplateForSite(
     const depUrl = `${PAYLOAD_URL}/api/template-deployments?where[site][equals]=${siteId}&where[status][equals]=success&sort=-createdAt&limit=5`;
     const depRes = await fetch(depUrl, {
       headers: {
-        'Authorization': `API-Key ${API_KEY}`,
+        'Authorization': `api-keys API-Key ${API_KEY}`,
         'Content-Type': 'application/json',
       }
     });
@@ -173,7 +173,7 @@ export async function fetchActiveTemplateForSite(
       const tempUrl = `${PAYLOAD_URL}/api/page-templates/${templateId}`;
       const tempRes = await fetch(tempUrl, {
         headers: {
-          'Authorization': `API-Key ${API_KEY}`,
+          'Authorization': `api-keys API-Key ${API_KEY}`,
           'Content-Type': 'application/json',
         }
       });
@@ -195,7 +195,7 @@ export async function fetchActiveTemplateForSite(
           const ctUrl = `${PAYLOAD_URL}/api/content-types/${ctId}`;
           const ctRes = await fetch(ctUrl, {
             headers: {
-              'Authorization': `API-Key ${API_KEY}`,
+              'Authorization': `api-keys API-Key ${API_KEY}`,
               'Content-Type': 'application/json',
             }
           });
